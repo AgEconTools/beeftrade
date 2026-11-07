@@ -300,9 +300,11 @@ table.qt .n { text-align: right; white-space: nowrap; }
     <p class="note">Beef here is fresh, frozen and processed beef; variety meats (offal) and live cattle are counted
       separately. Pounds are product weight, as shipped, not carcass weight. USDA reports beef trade in carcass weight,
       so its totals run higher.</p>
+    <div class="sec"><h2>Monthly Comparisons</h2><p class="sub" id="month-cmp-sub"></p></div>
+    <div class="ctrls"><div class="field" id="month-cmp-field"></div></div>
     <div class="two">
-      <div class="card"><h3>U.S. beef imports by month</h3><p class="note">Million pounds.</p><div id="month-imp-chart"></div></div>
-      <div class="card"><h3>U.S. beef exports by month</h3><p class="note">Million pounds.</p><div id="month-exp-chart"></div></div>
+      <div class="card"><h3 id="month-imp-h">U.S. beef imports by month</h3><p class="note">Million pounds.</p><div id="month-imp-chart"></div></div>
+      <div class="card"><h3 id="month-exp-h">U.S. beef exports by month</h3><p class="note">Million pounds.</p><div id="month-exp-chart"></div></div>
     </div>
     <div class="two">
       <div class="card"><h3 id="month-imp-mom-h">Imports, this month vs. last</h3><p class="note" id="month-imp-mom-note"></p><div id="month-imp-mom"></div></div>
@@ -581,6 +583,7 @@ const S = {
   exp: { period: "12m", year: null, measure: "lb", form: "beef", country: null, zoom: "World", by: "country", sea: "all", seaView: "pattern" },
   cat: { dir: "imp", measure: "head", country: "all", cls: "all", by: "country" },
   q: { chBy: "lb" },
+  month: { c: "all" },
 };
 // "beef" = fresh, frozen and processed; variety meats only when chosen
 const pass = (dir, st, r) => (st.form === "beef" ? r.f <= 2 : r.f === +st.form) && !(dir === "imp" && st.chan !== "all" && r.s !== +st.chan);
@@ -1006,10 +1009,10 @@ function momBars(host, { years, vals, dots, label, avg, avgName }) {
   host.replaceChildren(keys, svg, out, srTable(label, ["Year", dots ? "Entries" : "Change", ...(dots ? ["Arrivals"] : [])],
     years.map((yy, i) => [String(yy), pct(vals[i]), ...(dots ? [pct(dots[i])] : [])])));
 }
-function drawMoM(dir) {
+function drawMoM(dir, c = null) {
   const L = N - 1, lm = mo(L), ly = yr(L), pm = (lm + 11) % 12;
   const sum = new Array(N).fill(0), gen = new Array(N).fill(0);
-  for (const r of R[dir]) if (r.f <= 2) { sum[r.m] += r.lb; if (dir === "imp") gen[r.m] += r.gen || 0; }
+  for (const r of R[dir]) if (r.f <= 2 && (c == null || r.c === c)) { sum[r.m] += r.lb; if (dir === "imp") gen[r.m] += r.gen || 0; }
   const idx = (y, m) => IDX.get(`${y}-${String(m + 1).padStart(2, "0")}`);
   const years = [], vals = [], dots = [];
   for (let y = yr(0); y <= ly; y++) {
@@ -1020,12 +1023,12 @@ function drawMoM(dir) {
   }
   const prior = vals.slice(0, -1), avg = prior.length ? prior.reduce((a, v) => a + v, 0) / prior.length : null;
   const avgName = prior.length ? `Average, ${years[0]}–${years[years.length - 2]}` : "";
-  const noun = dir === "imp" ? "imports" : "exports";
-  $(`#month-${dir}-mom-h`).textContent = `${dir === "imp" ? "Imports" : "Exports"}: ${MONTH[lm]} vs. ${MONTH[pm]}, each year`;
-  $(`#month-${dir}-mom-note`).textContent = `Change in beef ${noun} (pounds) from ${MONTH[pm]} to ${MONTH[lm]}.`
+  const noun = dir === "imp" ? "imports" : "exports", who = c == null ? "" : ` ${dir === "imp" ? "from" : "to"} ${D.countries[c].name}`;
+  $(`#month-${dir}-mom-h`).textContent = `${dir === "imp" ? "Imports" : "Exports"}${who}: ${MONTH[lm]} vs. ${MONTH[pm]}, each year`;
+  $(`#month-${dir}-mom-note`).textContent = `Change in beef ${noun}${who} (pounds) from ${MONTH[pm]} to ${MONTH[lm]}.`
     + (dir === "imp" ? " Bars are entries (imports for consumption, the basis this page uses); dots are arrivals, which differ when beef goes into or comes out of bonded warehouses." : "");
   momBars($(`#month-${dir}-mom`), { years, vals, dots: dir === "imp" ? dots : null, avg, avgName,
-    label: `Change in U.S. beef ${noun} from ${MONTH[pm]} to ${MONTH[lm]}, each year, percent` });
+    label: `Change in U.S. beef ${noun}${who} from ${MONTH[pm]} to ${MONTH[lm]}, each year, percent` });
 }
 function drawSeasonal(dir) {
   const st = S[dir], w = WORD[dir], m = st.measure, L = N - 1, ly = yr(L);
@@ -1295,18 +1298,47 @@ function renderMonth() {
         ...trs.slice(-2).map((t) => el("li", {}, [`Lean trimmings quota, ${dateShort(t.start)}–${dateShort(t.end)}: `, el("b", { text: `${mtTxt(t.weeks.at(-1)[1])}` }), ` of ${mtTxt(t.qty)}`])),
       ].filter(Boolean)), go("quota", "Quota and tariffs")]),
   );
-  const totLines = (dir, name) => {
-    const ms = monthly(dir, BEEF);
+  buildMonthCmp();
+}
+// ---- Monthly Comparisons: the four charts for the U.S. total or one country (Josh, 2026-11-07) ----
+// The menu lists countries with at least 10 million lb of beef trade with the U.S., either way, in
+// the last 12 months, alphabetically. A direction under 1 million lb gets a note instead of charts.
+function buildMonthCmp() {
+  const L = N - 1, t = new Map();
+  for (const dir of ["imp", "exp"]) for (const r of R[dir]) if (r.m > L - 12 && r.f <= 2) { const o = t.get(r.c) || [0, 0]; o[dir === "imp" ? 0 : 1] += r.lb; t.set(r.c, o); }
+  const list = [...t].filter(([, o]) => o[0] >= 1e7 || o[1] >= 1e7).map(([c]) => c);
+  if (S.month.c !== "all" && !list.includes(+S.month.c)) list.push(+S.month.c);
+  list.sort((a, b) => D.countries[a].name.localeCompare(D.countries[b].name));
+  $("#month-cmp-field").replaceChildren(el("span", { text: "Country" }),
+    select("month-cmp-c", [["all", "U.S. total"], ...list.map((c) => [c, D.countries[c].name])], S.month.c, (v) => { S.month.c = v; drawMonthCmp(); }, "Country for the monthly comparisons"));
+  drawMonthCmp();
+}
+function drawMonthCmp() {
+  const c = S.month.c === "all" ? null : +S.month.c, L = N - 1, ly = yr(L), name = c == null ? null : D.countries[c].name;
+  $("#month-cmp-sub").textContent = c == null
+    ? "U.S. beef imports and exports, all countries. Choose a country to see its trade with the United States."
+    : `U.S. beef imports from and exports to ${name}.`;
+  for (const dir of ["imp", "exp"]) {
+    const noun = dir === "imp" ? "imports" : "exports", prep = dir === "imp" ? "from" : "to";
+    const ms = monthly(dir, BEEF, c), last12 = ms.lb.slice(-12).reduce((a, v) => a + v, 0);
+    $(`#month-${dir}-h`).textContent = c == null ? `U.S. beef ${noun} by month` : `Beef ${noun} ${prep} ${name}, by month`;
+    if (c != null && last12 < 1e6) {
+      const msg = `Under 1 million pounds of beef ${noun} ${prep} ${name} in the last 12 months, too little to chart.`;
+      $(`#month-${dir}-chart`).replaceChildren(el("p", { class: "note", text: msg }));
+      $(`#month-${dir}-mom-h`).textContent = `${noun[0].toUpperCase() + noun.slice(1)} ${prep} ${name}`;
+      $(`#month-${dir}-mom-note`).textContent = "";
+      $(`#month-${dir}-mom`).replaceChildren(el("p", { class: "note", text: msg }));
+      continue;
+    }
     const f = (v) => +(v / 1e6).toFixed(1);
-    lineChart($(`#month-${dir}-chart`), { labels: MON, label: name, fmt: (v) => nf.format(f(v)), tipFmt: (v) => `${nf.format(f(v))}M lb`, series: [
+    lineChart($(`#month-${dir}-chart`), { labels: MON, label: `${c == null ? "U.S. beef" : `Beef`} ${noun}${c == null ? "" : ` ${prep} ${name}`} by month, million pounds`,
+      fmt: (v) => nf.format(f(v)), tipFmt: (v) => `${nf.format(f(v))}M lb`, series: [
       { name: String(ly), cls: "s-now", values: yearLine(ms, ly, "lb"), dots: true },
       { name: String(ly - 1), cls: "s-last", values: yearLine(ms, ly - 1, "lb") },
       { name: `3-year average (${ly - 3}–${String(ly - 1).slice(2)})`, cls: "s-avg", values: avg3Line(ms, ly, "lb") },
     ] });
-  };
-  totLines("imp", "U.S. beef imports by month, million pounds");
-  totLines("exp", "U.S. beef exports by month, million pounds");
-  drawMoM("imp"); drawMoM("exp");
+    drawMoM(dir, c);
+  }
 }
 
 // About text that changes with each year's quota comes from CBP's newest report, so it can't go stale.
