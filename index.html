@@ -366,8 +366,8 @@ table.qt .n { text-align: right; white-space: nowrap; }
         <li><b>Imports</b> count beef entered for use in the United States, including beef taken out of bonded warehouses
           (Census calls these imports for consumption). That is the basis the quota is charged on.</li>
         <li><b>Exports</b> are domestic exports only: beef and cattle of U.S. origin. Re-exports of imported beef are left out.</li>
-        <li><b>Pounds</b> are product weight as shipped, converted from Census's kilograms (1 kg = 2.20462 lb). USDA's
-          supply and use tables convert trade to carcass weight, so their totals run higher than this page's.</li>
+        <li><b>Pounds</b> are product weight as shipped, not carcass weight, converted from Census's kilograms
+          (1 kg = 2.20462 lb).</li>
         <li><b>Dollars</b> for imports are customs value: the price paid, not counting freight and insurance to the United
           States or duties. For exports, dollars are the value at the U.S. port (free alongside ship). <b>Price per pound</b>
           is dollars divided by pounds: an average declared value, not a market price. Prices based on under 10,000 lb are
@@ -378,9 +378,9 @@ table.qt .n { text-align: right; white-space: nowrap; }
           average: 13 months, the two ends at half weight), averaged over the last five full years.</li>
       </ul>
       <h3>Comparing with other sources</h3>
-      <p>Beef here is defined the same way as USDA ERS's beef and veal (fresh, frozen and processed; variety meats
-        separate). ERS reports carcass weight, so its totals run about 35% higher. USMEF's export figures also count
-        variety meats and tripe, so they run higher for Mexico and Japan.</p>
+      <p>Beef here matches USDA ERS's beef and veal. ERS and USDA's supply and use tables report carcass weight, so their
+        totals run about 35% higher than this page's product weight. USMEF's export figures also count variety meats and
+        tripe, so they run higher for Mexico and Japan.</p>
       <h3 id="channels">How beef enters</h3>
       <p>Each import is grouped by how it entered:</p>
       <ul>
@@ -389,8 +389,8 @@ table.qt .n { text-align: right; white-space: nowrap; }
           quota table</span>), at the low in-quota tariff.</li>
         <li><b>Other-countries quota</b>: within the shared quota for all other countries, including the 2026 lean
           trimmings tranches (Proclamation 11059), at the low in-quota tariff.</li>
-        <li><b>Over quota</b>: beef entered on the over-quota tariff lines, after a quota filled. The over-quota tariff is
-          26.4%; in 2025 extra tariffs applied on top. When Australia's own quota fills, its beef shows up on these lines
+        <li><b>Over quota</b>: beef entered on the over-quota tariff lines, after a quota filled (the tariff is under
+          Tariffs, below). When Australia's own quota fills, its beef shows up on these lines
           too. Census's calculated duty puts that beef at the 26.4% rate in November and December 2025, although the
           U.S.-Australia agreement provides duty-free treatment above the WTO quota when it is claimed. Some beef on these
           lines from other countries was declared duty-free under chapter 99 provisions, mostly in December 2025 and
@@ -414,15 +414,13 @@ table.qt .n { text-align: right; white-space: nowrap; }
       <p>Australian beef also has a separate quantity under the U.S.-Australia Free Trade Agreement (<span id="ab-ausfta">set each year by USTR</span>), the
         level used for the agreement's price-based safeguard on beef. CBP counts entries against it, and the quota table
         shows it.</p>
-      <p>U.S. Customs and Border Protection reports how full each quota is every week; this page shows its newest report.
-        CBP's quota counts and Census's monthly trade totals are compiled differently and will not match exactly.
+      <p>CBP's quota counts and Census's monthly trade totals are compiled differently and will not match exactly.
         1 metric ton (t) = 2,204.6 lb.</p>
       <h3>Tariffs in 2025</h3>
       <p>Over-quota beef pays 26.4%. In 2025 extra tariffs applied on top: a 10% tariff on most countries from April 5, and
         an extra 40% on Brazil from August 6. Beef was exempted from both effective November 13, 2025 (the Brazil order was
         signed November 20 and applied from November 13). The temporary 10% import surcharge of February 24 to July 24,
-        2026 (Proclamation 11012) excluded beef.<span id="ab-dutygap"> Duties for December 2025 and January 2026 are low
-        because most over-quota entries were declared duty-free (see the note under the duties table).</span></p>
+        2026 (Proclamation 11012) excluded beef.</p>
       <h3>Live cattle</h3>
       <p>Head counts of feeder and slaughter cattle crossing the border with Canada and Mexico. Breeding and dairy
         cattle are left out. Imports from Mexico were halted at times from late 2024 to keep New World screwworm out of the
@@ -436,7 +434,7 @@ table.qt .n { text-align: right; white-space: nowrap; }
         breeding and dairy animals.</p>
       <h3>When it updates</h3>
       <p>The U.S. Census Bureau releases each month's trade about five weeks after the month ends, and revises recent months
-        in later releases. U.S. Customs and Border Protection updates its quota reports weekly.</p>
+        in later releases. U.S. Customs and Border Protection updates its quota reports weekly; this page shows the newest.</p>
     </div>
   </section>
 </main>
@@ -1360,7 +1358,6 @@ function dutyGap() {
 }
 // About text that changes with each year's quota comes from CBP's newest report, so it can't go stale.
 function fillAbout() {
-  $("#ab-dutygap").hidden = !dutyGap();
   const mx = D.countries.findIndex((c) => c.name === "Mexico");
   let lm = -1, lh = 0; for (const r of D.cimp) if (r.c === mx && r.head > 0 && r.m >= lm) { if (r.m > lm) lh = 0; lm = r.m; lh += r.head; }
   $("#ab-mx").textContent = lm >= 0 ? ` Latest month with cattle from Mexico: ${mName(lm)}, ${nf.format(lh)} head.` : "";
@@ -1379,7 +1376,7 @@ function renderQuota() {
   const Q = D.quota, L = N - 1;
   $("#q-wto-h").textContent = `${Q.year} quota fill`;
   $("#q-ch-seg").replaceChildren(segBtns("q-ch-by", [["lb", "Pounds"], ["usd", "Dollars"]], S.q.chBy, (v) => { S.q.chBy = v; drawChannels(); }));
-  $("#q-wto-note").textContent = `Metric tons of product, from U.S. Customs and Border Protection's report of ${dateTxt(Q.asOf)}. Canada and Mexico are outside the quota.`
+  $("#q-wto-note").textContent = `Metric tons of product, from U.S. Customs and Border Protection's report of ${dateTxt(Q.asOf)}.`
     + (Q.ausfta ? ` The last row is a separate quantity for Australian beef under the U.S.-Australia Free Trade Agreement, the level used for the agreement's price-based safeguard on beef.` : "");
   $("#q-wto").replaceChildren(el("table", { class: "qt" }, [
     el("thead", {}, el("tr", {}, [el("th", { text: "Allocation" }), el("th", { class: "n", text: "Quota" }), el("th", { class: "n", text: "Entered" }), el("th", { text: "Filled" }), el("th", { text: "Status" })])),
@@ -1391,7 +1388,7 @@ function renderQuota() {
     })),
   ]));
   const trs = Q.tranches;
-  $("#q-tr-note").textContent = `Extra in-quota room for lean beef trimmings (HTS 0201.30.5091, 0201.30.5097, 0202.30.5091 and 0202.30.5097) from other countries, Proclamation 11059: 100,000 t a tranche. Cumulative entries by CBP's weekly reports. The proclamation makes no provision for unused room to carry to the next tranche.`;
+  $("#q-tr-note").textContent = `Extra in-quota room for lean beef trimmings from other countries (Proclamation 11059): 100,000 t a tranche, with cumulative entries from CBP's weekly reports. The proclamation makes no provision for unused room to carry to the next tranche.`;
   $("#q-tr").replaceChildren(...trs.map((t) => {
     const lastW = t.weeks.at(-1), v = lastW ? lastW[1] : 0;
     return el("div", { class: "tranche" }, [
@@ -1442,7 +1439,7 @@ function renderQuota() {
     el("tfoot", {}, tr("All countries", tot)),
   ]), "q-ctry", 3));
   $("#q-tariff-notes").textContent = (dutyGap()
-    ? "Census reports almost no duty on beef from any country except Australia in December 2025 and January 2026, including the small in-quota duty. USITC DataWeb shows most of that beef was declared duty-free under a chapter 99 provision, so Census calculates no duty for it; whether duty was collected later can't be seen in public data. Treat duties and average tariffs for those two months with caution. "
+    ? "Census reports almost no duty on beef from any country except Australia in December 2025 and January 2026, including the small in-quota duty. Most over-quota beef in those months was declared duty-free under a chapter 99 provision (USITC DataWeb); whether duty was collected later isn't public. Treat duties and average tariffs for those two months with caution. "
     : "") + "The newest month is often revised.";
 }
 function drawChannels() {
