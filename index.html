@@ -245,6 +245,9 @@ table.rank tr[aria-current="true"] > :first-child { box-shadow: inset 4px 0 0 va
 th[aria-sort="ascending"] .sortb, th[aria-sort="descending"] .sortb { color: var(--ink); }
 .sortb .arr { font-size: 9px; width: 9px; display: inline-block; }
 th.n .sortb { flex-direction: row-reverse; }
+.more { margin-top: 8px; background: none; border: 1px solid var(--rule); border-radius: 6px; padding: 6px 12px; font: inherit; font-size: 14px; color: var(--link); cursor: pointer; }
+.more:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
+.jump { font-size: 14.5px; }
 .sr-only { position: absolute; width: 1px; height: 1px; margin: -1px; padding: 0; border: 0; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
 .vh { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
 /* beef: six tabs */
@@ -295,7 +298,8 @@ table.qt .n { text-align: right; white-space: nowrap; }
     <div><h2 id="month-h">This month</h2><p class="sub" id="month-sub"></p></div>
     <div class="cards" id="month-cards"></div>
     <p class="note">Beef here is fresh, frozen and processed beef; variety meats (offal) and live cattle are counted
-      separately. Pounds are product weight, as shipped, not carcass weight.</p>
+      separately. Pounds are product weight, as shipped, not carcass weight. USDA reports beef trade in carcass weight,
+      so its totals run higher.</p>
     <div class="two">
       <div class="card"><h3>U.S. beef imports by month</h3><p class="note">Million pounds.</p><div id="month-imp-chart"></div></div>
       <div class="card"><h3>U.S. beef exports by month</h3><p class="note">Million pounds.</p><div id="month-exp-chart"></div></div>
@@ -310,14 +314,15 @@ table.qt .n { text-align: right; white-space: nowrap; }
   <section class="panel" id="quota" role="tabpanel" aria-labelledby="t-quota" hidden>
     <div><h2>The beef import quota and tariffs</h2>
       <p class="sub">Each year a set amount of beef can enter the United States at a low tariff. Beef past that amount pays
-        26.4%. Canada and Mexico trade beef duty-free under USMCA and are outside the quota.</p></div>
+        26.4%, unless a trade agreement covers it. Canada and Mexico trade beef duty-free under USMCA and are outside the
+        quota. Figures are fresh, frozen and processed beef, in pounds of product weight, unless noted.</p></div>
     <div class="card"><h3 id="q-wto-h">Quota fill</h3><p class="note" id="q-wto-note" style="margin:4px 0 8px"></p>
       <div class="tablewrap" style="max-height:none" id="q-wto"></div></div>
     <div class="two">
-      <div class="card"><h3>Affordable Beef quota, 2026</h3><p class="note" id="q-tr-note" style="margin:4px 0 4px"></p><div id="q-tr"></div></div>
+      <div class="card"><h3>Lean trimmings quota, 2026</h3><p class="note" id="q-tr-note" style="margin:4px 0 4px"></p><div id="q-tr"></div></div>
       <div class="card"><h3>When the other-countries quota filled</h3><p class="note" style="margin:4px 0 8px">The shared quota for
         countries without their own allocation, by year.</p><div class="tablewrap" style="max-height:none" id="q-others"></div>
-        <h3 style="margin-top:16px">Argentina's separate 2026 quota</h3><p class="note" id="q-ar-note" style="margin:4px 0 4px"></p><div id="q-ar"></div></div>
+        <h3 style="margin-top:16px">Argentina's lean trimmings quota, 2026</h3><p class="note" id="q-ar-note" style="margin:4px 0 4px"></p><div id="q-ar"></div></div>
     </div>
     <div class="card"><div class="cardbar"><h3>How beef imports entered, by month</h3><div id="q-ch-seg"></div></div>
       <p class="note" id="q-ch-note" style="margin:4px 0 8px"></p><div id="q-ch"></div></div>
@@ -345,7 +350,7 @@ table.qt .n { text-align: right; white-space: nowrap; }
         <tr><td>0202</td><td>Beef, frozen</td><td>Frozen beef</td></tr>
         <tr><td>1602.50, 0210.20</td><td>Beef prepared or preserved (cooked, canned, seasoned), or salted, dried or smoked</td><td>Processed beef</td></tr>
         <tr><td>0206.10, 0206.21, 0206.22, 0206.29</td><td>Edible offal of cattle: tongues, livers and other organs</td><td>Variety meats</td></tr>
-        <tr><td>0102.29</td><td>Live cattle other than purebred breeding cattle (dairy and breeding lines, buffalo and bison are left out)</td><td>Live cattle</td></tr>
+        <tr><td>0102.29</td><td>Cattle other than purebred breeding cattle; dairy cows, other breeding cattle, buffalo and bison are left out</td><td>Live cattle</td></tr>
       </tbody></table></div>
       <p>"Beef" on this page means fresh, frozen and processed beef together. Variety meats are counted on their own, chosen
         with the Product menu, and never added into beef totals. Veal is part of beef in these codes.</p>
@@ -354,43 +359,61 @@ table.qt .n { text-align: right; white-space: nowrap; }
         <li><b>Imports</b> count beef entered for use in the United States, including beef taken out of bonded warehouses
           (Census calls these imports for consumption). That is the basis the quota is charged on.</li>
         <li><b>Exports</b> are domestic exports only: beef and cattle of U.S. origin. Re-exports of imported beef are left out.</li>
-        <li><b>Pounds</b> are product weight as shipped, converted from Census's kilograms (1 kg = 2.20462 lb). A pound of
-          boneless beef is a pound of boneless beef. USDA's supply and use tables convert trade to carcass weight, so their
-          totals run higher than this page's.</li>
+        <li><b>Pounds</b> are product weight as shipped, converted from Census's kilograms (1 kg = 2.20462 lb). USDA's
+          supply and use tables convert trade to carcass weight, so their totals run higher than this page's.</li>
         <li><b>Dollars</b> for imports are customs value: the price paid, not counting freight and insurance to the United
           States or duties. For exports, dollars are the value at the U.S. port (free alongside ship). <b>Price per pound</b>
           is dollars divided by pounds: an average declared value, not a market price. Prices based on under 10,000 lb are
           marked <span class="few">few lb</span>.</li>
         <li><b>Duties</b> are Census's calculated duty: the tariff owed on each shipment by its tariff line and value,
           including the extra tariffs of 2025. The <b>average tariff</b> is duties divided by customs value.</li>
+        <li><b>Seasonal pattern</b>: each month's value against the centered 12-month average around it (a 2x12 moving
+          average: 13 months, the two ends at half weight), averaged over the last five full years.</li>
       </ul>
+      <h3>Comparing with other sources</h3>
+      <p>Beef here is defined the same way as USDA ERS's beef and veal (fresh, frozen and processed; variety meats
+        separate). ERS reports carcass weight, so its totals run about 35% higher. USMEF's export figures also count
+        variety meats and tripe, so they run higher for Mexico and Japan.</p>
       <h3 id="channels">How beef enters</h3>
       <p>Each import is grouped by how it entered:</p>
       <ul>
         <li><b>Canada and Mexico (USMCA)</b>: duty-free, outside the quota.</li>
         <li><b>Country quotas</b>: within a country's own allocation under the WTO beef quota (Australia, New Zealand,
           Argentina, Uruguay, and the United Kingdom from 2026), at the low in-quota tariff.</li>
-        <li><b>Other-countries quota</b>: within the shared quota for all other countries, including the 2026 Affordable
-          Beef tranches, at the low in-quota tariff.</li>
-        <li><b>Over quota (26.4%)</b>: beef entered on the over-quota tariff lines, after a quota filled.</li>
-        <li><b>Other trade agreements</b>: duty-free under other U.S. trade agreements (CAFTA-DR countries and Chile), not
-          charged to the quota.</li>
+        <li><b>Other-countries quota</b>: within the shared quota for all other countries, including the 2026 lean
+          trimmings tranches (Proclamation 11059), at the low in-quota tariff.</li>
+        <li><b>Over quota</b>: beef entered on the over-quota tariff lines, after a quota filled. The over-quota tariff is
+          26.4%; in 2025 extra tariffs applied on top. Australian beef entered under the U.S.-Australia trade agreement
+          after Australia's own quota fills shows up on these lines as well.</li>
+        <li><b>Other trade agreements</b>: duty-free under other U.S. trade agreements (in practice, CAFTA-DR countries and
+          Chile), not charged to the quota.</li>
         <li><b>Outside the beef quota</b>: processed beef and variety meats, which the quota doesn't cover, plus a little
           beef on other tariff lines.</li>
       </ul>
       <h3>The quota</h3>
       <p>The U.S. beef tariff-rate quota sets yearly amounts, in metric tons of product, for Australia (378,214 t), New Zealand
         (213,402 t), Argentina (20,000 t), Uruguay (20,000 t), the United Kingdom (13,000 t, from 2026) and all other
-        countries together (65,005 t through 2025; 52,005 t in 2026, after the United Kingdom's share was split off). A
-        2026 proclamation (Proclamation 11059) added 300,000 t for lean beef trimmings from other countries, in three
-        monthly tranches of 100,000 t from September 1 to November 30. U.S. Customs and Border Protection reports how full
-        each quota is every week; this page shows its newest report. 1 metric ton (t) = 2,204.6 lb.</p>
+        countries together (65,005 t through 2025; 52,005 t in 2026, after the United Kingdom's share was split off).</p>
+      <p>Two 2026 proclamations added room for lean beef trimmings (HTS 0201.30.5091, 0201.30.5097, 0202.30.5091 and
+        0202.30.5097) at the in-quota tariff. Proclamation 11010, "Ensuring Affordable Beef for the American Consumer"
+        (February 2026), added 80,000 t for Argentina in four quarterly tranches of 20,000 t, the first opening February 13,
+        on top of Argentina's 20,000 t allocation. Proclamation 11059, "Further Ensuring Affordable Beef for the American
+        Consumer" (August 2026), added 300,000 t for other countries in three tranches of 100,000 t: September 1 to 30,
+        October 1 to 30, and October 31 to November 30. It makes no provision for unused room to carry to the next tranche.</p>
+      <p>Australian beef also has a separate quantity under the U.S.-Australia Free Trade Agreement (71,695 t in 2026), the
+        level used for the agreement's price-based safeguard on beef. CBP counts entries against it, and the quota table
+        shows it.</p>
+      <p>U.S. Customs and Border Protection reports how full each quota is every week; this page shows its newest report.
+        CBP's quota counts and Census's monthly trade totals are compiled differently and will not match exactly.
+        1 metric ton (t) = 2,204.6 lb.</p>
       <h3>Tariffs in 2025</h3>
       <p>Over-quota beef pays 26.4%. In 2025 extra tariffs applied on top: a 10% tariff on most countries from April 5, and
-        an extra 40% on Brazil from August 6. Beef was exempted from both on November 13, 2025. Census shows almost no duty
-        on over-quota beef in December 2025 and January 2026; the reason isn't known, so treat those two months with caution.</p>
+        an extra 40% on Brazil from August 6. Beef was exempted from both effective November 13, 2025 (the Brazil order was
+        signed November 20 and applied from November 13). The temporary import surcharge of February 2026 (Proclamation
+        11012) does not apply to beef. Duties for December 2025 and January 2026 look incomplete (see the note under the
+        duties table).</p>
       <h3>Live cattle</h3>
-      <p>Head counts of feeder and slaughter cattle crossing the border, mostly with Mexico and Canada. Breeding and dairy
+      <p>Head counts of feeder and slaughter cattle crossing the border with Canada and Mexico. Breeding and dairy
         cattle are left out. Imports from Mexico were halted at times from late 2024 to keep New World screwworm out of the
         United States, and those months show few or none.</p>
       <p>Imports are split by their tariff lines into <b>feeder cattle</b> (calves and feeders under 705 lb, or 320 kg, plus
@@ -481,6 +504,8 @@ const usdTxt = (n) => (n >= 1e9 ? `$${(n / 1e9).toFixed(2)} billion` : n >= 1e6 
 const priceTxt = (o) => (o.lb > 0 ? `$${(o.usd / o.lb).toFixed(2)}/lb` : "–");
 const compact = (n) => (n >= 1e9 ? `${+(n / 1e9).toFixed(1)}B` : n >= 1e6 ? `${+(n / 1e6).toFixed(1)}M` : n >= 1e3 ? `${+(n / 1e3).toFixed(1)}K` : `${+n.toFixed(2)}`);
 const val = (o, m) => (!o ? null : m === "lb" ? o.lb : m === "usd" ? o.usd : o.lb > 0 ? o.usd / o.lb : null);
+// chart readouts and tables, where most values are millions: a few hundred pounds reads "<0.1 million lb", not "357 lb"
+const lbM = (n) => (n >= 1e9 ? `${(n / 1e9).toFixed(2)} billion lb` : n >= 5e4 ? `${(n / 1e6).toFixed(1)} million lb` : n > 0 ? "<0.1 million lb" : "0 lb");
 const tblLb = (n) => (n >= 1e6 ? `${(n / 1e6).toFixed(1)}M` : nf.format(Math.round(n)));
 const tblUsd = (n) => (n >= 1e6 ? `${(n / 1e6).toFixed(1)}M` : `${nf.format(Math.round(n))}`);
 const axTxt = (m) => (m === "usd" ? (v) => `$${compact(v)}` : m === "price" ? (v) => `$${v.toFixed(2)}` : compact);
@@ -490,7 +515,7 @@ function change(cur, prev) {
   if (cur == null || prev == null) return { t: "–", c: "flat" };
   if (!prev) return cur ? { t: "new", c: "up" } : { t: "–", c: "flat" };
   const p = (cur / prev - 1) * 100;
-  if (Math.abs(p) < 0.5) return { t: "same", c: "flat" };
+  if (Math.abs(p) < 0.5) return { t: "unchanged", c: "flat" };
   if (p >= 900) return { t: `${nf.format(Math.round(cur / prev))}x`, c: "up" };
   return { t: `${p > 0 ? "+" : "−"}${Math.abs(p) >= 10 ? Math.round(Math.abs(p)) : Math.abs(p).toFixed(1)}%`, c: p > 0 ? "up" : "down" };
 }
@@ -505,7 +530,8 @@ const chk = (cur, prev) => (cur == null || prev == null ? null : !prev ? (cur ? 
 // the bottom. A table keeps the order a viewer picked until the page reloads.
 const SORT = {};
 const keyed = (tr, k) => { tr._k = k; return tr; };
-function sortable(table, id, def, ok = () => true) {
+const SHOWALL = {};
+function sortable(table, id, def, ok = () => true, limit = 0) {
   const ths = [...table.tHead.rows[0].cells], tb = table.tBodies[0];
   let st = SORT[id] && ok(SORT[id].col) ? SORT[id] : { col: def, desc: def !== 0 };
   const apply = () => {
@@ -517,6 +543,7 @@ function sortable(table, id, def, ok = () => true) {
       return st.desc ? -d : d;
     });
     tb.append(...rows);
+    if (limit) rows.forEach((tr, k) => { tr.hidden = !SHOWALL[id] && k >= limit && tr.getAttribute("aria-current") !== "true"; });
     ths.forEach((th, j) => {
       th.setAttribute("aria-sort", j === i ? (st.desc ? "descending" : "ascending") : "none");
       th.querySelector(".arr").textContent = j === i ? (st.desc ? "▼" : "▲") : "";
@@ -530,7 +557,17 @@ function sortable(table, id, def, ok = () => true) {
     } }, [label, el("span", { class: "arr", "aria-hidden": "true" })]));
   });
   apply();
+  table._apply = apply;
   return table;
+}
+// "Show all N" under a long sortable list (the first `limit` rows show until then)
+function moreBtn(table, id, total, limit, noun) {
+  if (total <= limit) return null;
+  const b = el("button", { type: "button", class: "more", "aria-expanded": String(!!SHOWALL[id]) });
+  const label = () => { b.textContent = SHOWALL[id] ? `Show the top ${limit}` : `Show all ${total} ${noun}`; b.setAttribute("aria-expanded", String(!!SHOWALL[id])); };
+  b.onclick = () => { SHOWALL[id] = !SHOWALL[id]; table._apply(); label(); };
+  label();
+  return b;
 }
 
 // ---- state ----
@@ -742,8 +779,8 @@ const field = (label, ctl) => el("div", { class: "field" }, [el("span", { text: 
 // the two half-width Imports menus on a phone show these instead (the font stays 16px, or iPhone Safari zooms in)
 const SHORT = { "All beef": "All beef", "Fresh or chilled beef": "Fresh", "Frozen beef": "Frozen", "Processed beef": "Processed",
   "Variety meats": "Variety meats", "All": "All", "Canada and Mexico (USMCA)": "USMCA", "Country quotas": "Country quotas",
-  "Other-countries quota": "Other quota", "Over quota (26.4%)": "Over quota", "Other trade agreements": "Other FTAs",
-  "Outside the beef quota": "Not in quota", "Feeder and slaughter": "Feeder and slaughter", "Feeder cattle": "Feeders", "Slaughter cattle": "Slaughter" };
+  "Other-countries quota": "Other quota", "Over quota": "Over quota", "Other trade agreements": "Other FTAs",
+  "Outside the beef quota": "Outside quota", "Feeder and slaughter": "Feeder and slaughter", "Feeder cattle": "Feeders", "Slaughter cattle": "Slaughter" };
 const PHONE = matchMedia("(max-width: 640px)");
 function select(id, opts, cur, onPick, label, short = false) {
   const s = el("select", { id, "aria-label": label }, opts.map(([v, t]) => el("option", { value: v, text: t, "data-full": t })));
@@ -773,7 +810,8 @@ function buildTrade(dir) {
   const byOpts = dir === "imp" ? [["total", "Total"], ["country", "By country"], ["chan", "How it entered"], ["product", "By product"]] : [["total", "Total"], ["country", "By country"], ["product", "By product"]];
   host.replaceChildren(...[
     el("div", {}, [el("h2", { text: `U.S. beef ${w.noun} since ${D.meta.first.slice(0, 4)}` }),
-      el("p", { class: "sub", text: `Annual totals. ${dir === "imp" ? "Show, Product and How it entered" : "Show and Product"} apply here and to ${w.noun} by country below.` })]),
+      el("p", { class: "sub" }, [`Annual totals. Pounds are product weight; beef is fresh, frozen and processed unless the Product menu says otherwise. ${dir === "imp" ? "Show, Product and How it entered" : "Show and Product"} apply here and to ${w.noun} by country below. `,
+        el("a", { class: "jump", href: `#${dir}-h`, text: `Jump to ${w.noun} by country`, onclick: (e) => { e.preventDefault(); $(`#${dir}-h`).scrollIntoView({ block: "start" }); } })])]),
     shared,
     el("div", { class: "card" }, [
       el("div", { class: "cardbar" }, [el("h3", { text: `${Noun} by year` }), segBtns(`${dir}-by`, byOpts, st.by, (v) => { st.by = v; drawOverTime(dir); })]),
@@ -839,12 +877,12 @@ function drawOverTime(dir) {
     ] });
   } else {
     const pick = (o) => (m === "usd" ? o.usd : o.lb);
-    barChart(host, { cats: years, partial: part, label, fmt: m === "usd" ? (v) => `$${compact(v)}` : compact, tipFmt: m === "usd" ? usdTxt : lbTxt,
+    barChart(host, { cats: years, partial: part, label, fmt: m === "usd" ? (v) => `$${compact(v)}` : compact, tipFmt: m === "usd" ? usdTxt : lbM,
       stacks: used.map((g) => ({ name: g.name, color: g.color, values: g.sum.map(pick) })) });
   }
-  const unit = m === "lb" ? "Pounds (product weight)" : m === "usd" ? "Dollars" : "Average price per pound (years under 1,000 lb left out)";
-  const selNote = sel ? ` ${sel[0].toUpperCase() + sel.slice(1)} only.` : " Fresh, frozen and processed beef.";
-  $(`#${dir}-ot-note`).textContent = `${unit}.${selNote}${how}${part != null ? ` * ${ly} is ${janTo(mo(L))} only.` : ""}`;
+  const unit = m === "lb" ? "" : m === "usd" ? "Dollars." : "Average price per pound; years under 1,000 lb left out.";
+  const selNote = sel ? ` ${sel[0].toUpperCase() + sel.slice(1)} only.` : "";
+  $(`#${dir}-ot-note`).textContent = `${unit}${selNote}${how}${part != null ? ` * ${ly} is ${janTo(mo(L))} only.` : ""}`.trim();
   // average price by product (the Product menu doesn't apply; How it entered does)
   const prow = R[dir].filter((r) => dir !== "imp" || st.chan === "all" || r.s === +st.chan);
   const pr = (keep) => years.map((y) => { let lb = 0, usd = 0; for (const r of prow) if (yr(r.m) === y && keep(r)) { lb += r.lb; usd += r.usd; } return lb > 1000 ? usd / lb : null; });
@@ -925,21 +963,21 @@ function drawSeasonal(dir) {
   $(`#${dir}-sea-pick`).replaceChildren(select(`${dir}-sea-c`, [["all", "All countries"], ...top.map((c) => [c, D.countries[c].name])], st.sea, (v) => { st.sea = v; drawSeasonal(dir); }, "Country for the seasonal chart"));
   const c = st.sea === "all" ? null : +st.sea, who = c == null ? "All countries" : D.countries[c].name;
   const ms = monthly(dir, st, c), sel = selTxt(dir, st);
-  const what = sel ? ` ${sel[0].toUpperCase() + sel.slice(1)} only.` : " Fresh, frozen and processed beef.";
-  const unit = { lb: "pounds (product weight)", usd: "dollars", price: "average price per pound" }[m];
+  const what = sel ? ` ${sel[0].toUpperCase() + sel.slice(1)} only.` : "";
+  const unit = { lb: "pounds", usd: "dollars", price: "average price per pound" }[m];
   $(`#${dir}-sea-h`).textContent = `Seasonal pattern: ${who}`;
   if (st.seaView === "pattern") {
     const series = D.months.map((_, i) => (m === "price" ? (ms.lb[i] > 1000 ? ms.usd[i] / ms.lb[i] : null) : val(at(ms, i), m)));
     const { years, rows } = seasonIndex(series, ly);
     const yl = years.length ? `${years[0]}–${years.at(-1)}` : "";
     $(`#${dir}-sea-note`).textContent = years.length < 3 ? `Not enough months of trade for a seasonal pattern.${what}`
-      : `How far each month's ${unit} usually run above or below the average of the 12 months around it, ${yl}.${what} Thin lines show the lowest and highest year.`;
+      : `How much each month usually runs above or below a typical month, averaged over ${yl}${m === "lb" ? "" : `, in ${unit}`}.${what} Thin lines show the lowest and highest year.`;
     if (years.length < 3) { $(`#${dir}-sea`).replaceChildren(); return; }
     seasonBars($(`#${dir}-sea`), { rows, years, label: `${who}, usual seasonal pattern of beef ${w.noun}${sel ? ", " + sel : ""}, ${unit}, ${yl}` });
     return;
   }
   const fmt = m === "lb" ? (v) => compact(v) : axTxt(m);
-  const tipFmt = m === "lb" ? (v) => lbTxt(v) : m === "usd" ? (v) => usdTxt(v) : (v) => `$${v.toFixed(2)}/lb`;
+  const tipFmt = m === "lb" ? (v) => lbM(v) : m === "usd" ? (v) => usdTxt(v) : (v) => `$${v.toFixed(2)}/lb`;
   const earlier = [1, 2, 3, 4].map((d) => ly - d).filter((y) => y >= yr(0));
   // arrivals (general imports) this year, imports in pounds only: beef that has arrived, some of it waiting in a bonded warehouse
   let arr = null;
@@ -974,7 +1012,7 @@ function render(dir) {
     ? `no ${w.noun} ${w.toFrom} ${zone}${usTot}.`
     : `${zoned ? `${zone}, ` : ""}${lbTxt(T.lb)}, ${usdTxt(T.usd)}, ${priceTxt(T)}, ${w.toFrom} ${rank.length} ${rank.length === 1 ? "country" : "countries"}${usTot}.`);
   $(`#${dir}-legend`).textContent = !rank.length && zoned ? `No U.S. ${w.noun} ${w.toFrom} ${zone} in ${P.label}.`
-    : `Circle size shows ${st.measure === "usd" ? "dollars" : "pounds (product weight)"}. Click a country for its details, or a total row in the list for the whole ${zoned ? "region" : "selection"}.`;
+    : `Circle size shows ${st.measure === "usd" ? "dollars" : "pounds"}. Select a country for its details, or a total row in the list for the whole ${zoned ? "region" : "selection"}.`;
   // ranked list
   const mcls = (m) => `n opt${st.measure === m ? " on" : ""}`;
   const sbasis = st.measure === "usd" ? "usd" : "lb";
@@ -1003,9 +1041,13 @@ function render(dir) {
   const tfoot = el("tfoot", {}, [zoneRow, el("tr", totalProps(!zoned), [el("td", { text: zoned ? "All countries (U.S. total)" : "All countries" }), el("td", { class: mcls("lb"), text: tblLb(cur.tot.lb) }), el("td", { class: mcls("usd"), text: tblUsd(cur.tot.usd) }), el("td", { class: mcls("price"), text: cur.tot.lb ? `$${(cur.tot.usd / cur.tot.lb).toFixed(2)}` : "–" }), el("td", { class: "n", text: "100%" }), el("td", { class: `n ${tch.c}`, text: tch.t })])]);
   // on narrow screens only the chosen measure's column shows, so a sort on a hidden one falls back
   const shown = (j) => j === 0 || j > 3 || !matchMedia("(max-width: 1120px)").matches || ["lb", "usd", "price"][j - 1] === st.measure;
-  $(`#${dir}-table`).replaceChildren(sortable(el("table", { class: "rank" }, [thead, tbody, tfoot]), `${dir}-list`, st.measure === "usd" ? 2 : 1, shown));
+  const rtab = sortable(el("table", { class: "rank" }, [thead, tbody, tfoot]), `${dir}-list`, st.measure === "usd" ? 2 : 1, shown, 25);
+  $(`#${dir}-table`).replaceChildren(rtab);
+  $(`#${dir}-table`).parentElement.querySelectorAll(".more").forEach((x) => x.remove());
+  const mb = moreBtn(rtab, `${dir}-list`, rank.length, 25, "countries");
+  if (mb) $(`#${dir}-table`).after(mb);
   $(`#${dir}-list-h`).textContent = `${w.list}${zoned ? ` in ${zone}` : ""}, ${P.label}`;
-  $(`#${dir}-list-note`).textContent = rank.length ? `Tap a heading to sort. Share is of all U.S. beef ${w.noun}${filt.length ? " in this selection" : ""}${zoned ? ", from every country" : ""}.${P.prev ? ` Change compares with ${P.prevLabel}.` : ""}` : zoned ? "Choose World or another region." : `No U.S. ${w.noun} in this selection.`;
+  $(`#${dir}-list-note`).textContent = rank.length ? `Sort by any column. Share is of all U.S. beef ${w.noun}${filt.length ? " in this selection" : ""}${zoned ? ", from every country" : ""}.${P.prev ? ` Change compares with ${P.prevLabel}.` : ""}` : zoned ? "Choose World or another region." : `No U.S. ${w.noun} in this selection.`;
   drawMap(dir, cur);
   drawOverTime(dir);
   drawSeasonal(dir);
@@ -1132,7 +1174,7 @@ function renderMonth() {
   // a country's pounds against the same month a year earlier: "(101.1 million lb, +23% yoy)"
   const ctry = (t, tp, c, o) => { const p = tp.by.get(c), ch = change(o.lb, p ? p.lb : 0);
     return el("li", {}, [el("b", { text: `${((100 * o.lb) / t.tot.lb).toFixed(1)}%` }), ` ${D.countries[c].name} (${lbTxt(o.lb)}, `,
-      el("span", { class: ch.c, text: ch.t === "same" ? "same" : ch.t === "new" ? "new" : `${ch.t} yoy` }), ")"]); };
+      el("span", { class: ch.c, text: ch.t === "unchanged" ? "unchanged" : ch.t === "new" ? "new" : `${ch.t} yoy` }), ")"]); };
   const sp = new Array(D.channels.length).fill(0); for (const r of R.imp) if (r.m === L && r.f <= 2) sp[r.s] += r.lb;
   const fm = [0, 0, 0]; for (const r of R.exp) if (r.m === L && r.f <= 2) fm[r.f] += r.lb;
   const card = (k, big, lines) => el("div", { class: "card" }, [el("p", { class: "k", text: k }), el("p", { class: "big", text: big }), el("ul", { class: "lines" }, lines.map((l) => el("li", {}, l)))]);
@@ -1176,7 +1218,7 @@ function renderMonth() {
     el("div", { class: "card" }, [el("p", { class: "k", text: `Beef quota · CBP, ${dateTxt(Q.asOf)}` }),
       el("ul", { class: "lines", style: "margin-top:8px" }, [
         oth ? el("li", {}, [`Other-countries quota: `, el("b", { text: oth.status === "FILL" && oth.fillDate ? `filled ${dateShort(oth.fillDate)}` : `${pctTxt((100 * oth.entered) / oth.qty)} full` })]) : null,
-        ...trs.slice(-2).map((t) => el("li", {}, [`Affordable Beef, ${dateShort(t.start)}–${dateShort(t.end)}: `, el("b", { text: `${mtTxt(t.weeks.at(-1)[1])}` }), ` of ${mtTxt(t.qty)}`])),
+        ...trs.slice(-2).map((t) => el("li", {}, [`Lean trimmings quota, ${dateShort(t.start)}–${dateShort(t.end)}: `, el("b", { text: `${mtTxt(t.weeks.at(-1)[1])}` }), ` of ${mtTxt(t.qty)}`])),
       ].filter(Boolean)), go("quota", "Quota and tariffs")]),
   );
   const totLines = (dir, name) => {
@@ -1198,10 +1240,11 @@ function renderQuota() {
   const Q = D.quota, L = N - 1;
   $("#q-wto-h").textContent = `${Q.year} quota fill`;
   $("#q-ch-seg").replaceChildren(segBtns("q-ch-by", [["lb", "Pounds"], ["usd", "Dollars"]], S.q.chBy, (v) => { S.q.chBy = v; drawChannels(); }));
-  $("#q-wto-note").textContent = `Metric tons of product, from U.S. Customs and Border Protection's report of ${dateTxt(Q.asOf)}. Canada and Mexico are outside the quota.`;
+  $("#q-wto-note").textContent = `Metric tons of product, from U.S. Customs and Border Protection's report of ${dateTxt(Q.asOf)}. Canada and Mexico are outside the quota.`
+    + (Q.ausfta ? ` The last row is a separate quantity for Australian beef under the U.S.-Australia Free Trade Agreement, the level used for the agreement's price-based safeguard on beef.` : "");
   $("#q-wto").replaceChildren(el("table", { class: "qt" }, [
     el("thead", {}, el("tr", {}, [el("th", { text: "Allocation" }), el("th", { class: "n", text: "Quota" }), el("th", { class: "n", text: "Entered" }), el("th", { text: "Filled" }), el("th", { text: "Status" })])),
-    el("tbody", {}, Q.wto.map((w) => {
+    el("tbody", {}, [...Q.wto, ...(Q.ausfta ? [Q.ausfta] : [])].map((w) => {
       const pct = w.qty ? (100 * (w.entered || 0)) / w.qty : 0;
       return el("tr", {}, [el("td", { text: w.name }), el("td", { class: "n", text: mtTxt(w.qty) }), el("td", { class: "n", text: mtTxt(w.entered) }),
         el("td", { style: "min-width:90px" }, [progBar(pct, 100, `${w.name}: ${pctTxt(pct)} full`), el("span", { class: "note", text: pctTxt(pct) })]),
@@ -1209,7 +1252,7 @@ function renderQuota() {
     })),
   ]));
   const trs = Q.tranches;
-  $("#q-tr-note").textContent = `Extra in-quota room for lean beef trimmings from other countries (Proclamation 11059): 100,000 t a month. Cumulative entries by CBP's weekly reports. Unused room is not known to carry over.`;
+  $("#q-tr-note").textContent = `Extra in-quota room for lean beef trimmings (HTS 0201.30.5091, 0201.30.5097, 0202.30.5091 and 0202.30.5097) from other countries, Proclamation 11059: 100,000 t a tranche. Cumulative entries by CBP's weekly reports. The proclamation makes no provision for unused room to carry to the next tranche.`;
   $("#q-tr").replaceChildren(...trs.map((t) => {
     const lastW = t.weeks.at(-1), v = lastW ? lastW[1] : 0;
     return el("div", { class: "tranche" }, [
@@ -1223,7 +1266,8 @@ function renderQuota() {
     el("tbody", {}, Q.others.slice().reverse().map((o) => el("tr", {}, [el("td", { text: String(o.year) }), el("td", { class: "n", text: mtTxt(o.qty) }),
       el("td", { text: o.fillDate ? dateTxt(o.fillDate) : `${pctTxt((100 * (o.entered || 0)) / o.qty)} full, ${dateShort(o.asOf)}` })]))),
   ]));
-  $("#q-ar-note").textContent = "20,000 t a quarter, tracked by CBP apart from the WTO quota.";
+  $("#q-ar-note").textContent = "Lean beef trimmings only. 80,000 t for 2026 in quarterly tranches of 20,000 t (Proclamation 11010), tracked by CBP apart from Argentina's 20,000 t WTO allocation."
+    + (Q.argentina.length < 4 ? " Earlier quarters are no longer in CBP's weekly report." : "");
   $("#q-ar").replaceChildren(...Q.argentina.map((t) => {
     const lastW = t.weeks.at(-1), v = lastW ? lastW[1] : 0;
     return el("div", { class: "tranche" }, [
@@ -1235,7 +1279,7 @@ function renderQuota() {
   // tariffs: duties by year, the over-quota rate by month, and by country
   const years = [...new Set(D.months.map((s) => +s.slice(0, 4)))], part = mo(L) < 11 ? years.length - 1 : null;
   const dy = years.map(() => 0); for (const r of R.imp) if (r.f <= 2) dy[years.indexOf(yr(r.m))] += r.duty;
-  $("#q-duty-note").textContent = `Fresh, frozen and processed beef, all countries.${part != null ? ` * ${yr(L)} is ${janTo(mo(L))} only.` : ""}`;
+  $("#q-duty-note").textContent = `All countries.${part != null ? ` * ${yr(L)} is ${janTo(mo(L))} only.` : ""}`;
   barChart($("#q-duty"), { cats: years, partial: part, label: "Duties paid on U.S. beef imports by year, dollars", fmt: (v) => `$${compact(v)}`, tipFmt: usdTxt,
     stacks: [{ name: "Duties", color: "var(--c1)", values: dy }] });
   const since = Math.max(0, L - 59), months = range(since, L);
@@ -1251,24 +1295,24 @@ function renderQuota() {
   const rows = [...by].filter(([, o]) => o.duty > 0).sort((a, b) => b[1].duty - a[1].duty);
   const tot = [...by.values()].reduce((a, o) => ({ lb: a.lb + o.lb, usd: a.usd + o.usd, duty: a.duty + o.duty }), { lb: 0, usd: 0, duty: 0 });
   $("#q-ctry-h").textContent = `Duties by country, 12 months through ${mName(L)}`;
-  $("#q-ctry-note").textContent = "Fresh, frozen and processed beef. Countries that paid any duty, largest first; tap a heading to sort. The average tariff is duties divided by customs value, across everything the country shipped, including beef that paid none.";
+  $("#q-ctry-note").textContent = "Countries that paid any duty, largest first; sort by any column. The average tariff is duties divided by customs value, across everything the country shipped, including beef that paid none.";
   const tr = (name, o, cls) => keyed(el("tr", { class: cls }, [el("td", { text: name }), el("td", { class: "n", text: tblLb(o.lb) }), el("td", { class: "n", text: tblUsd(o.usd) }), el("td", { class: "n", text: tblUsd(o.duty) }), el("td", { class: "n", text: o.usd ? pctTxt((100 * o.duty) / o.usd) : "–" })]), [name, o.lb, o.usd, o.duty, o.usd ? o.duty / o.usd : null]);
   $("#q-ctry").replaceChildren(sortable(el("table", { class: "rank" }, [
     el("thead", {}, el("tr", {}, [el("th", { text: "Country" }), el("th", { class: "n", text: "Pounds" }), el("th", { class: "n", text: "Value" }), el("th", { class: "n", text: "Duties" }), el("th", { class: "n", text: "Avg. tariff" })])),
     el("tbody", {}, rows.map(([c, o]) => tr(D.countries[c].name, o))),
     el("tfoot", {}, tr("All countries", tot)),
   ]), "q-ctry", 3));
-  $("#q-tariff-notes").textContent = "Census shows almost no duty on over-quota beef in December 2025 and January 2026; the reason isn't known, so treat those months with caution. The newest month is often revised.";
+  $("#q-tariff-notes").textContent = "Census reports almost no duty on beef from any country except Australia in December 2025 and January 2026, including the small in-quota duty. This looks like a gap in Census's duty calculation rather than a policy change, so treat duties and average tariffs for those two months with caution. The newest month is often revised.";
 }
 function drawChannels() {
   const L = N - 1, months = range(Math.max(0, L - 35), L), m = S.q.chBy;
   syncSeg("q-ch-by", m);
   const sums = D.channels.map(() => months.map(() => 0));
   for (const r of R.imp) { const k = r.m - months[0]; if (k >= 0 && r.f <= 2) sums[r.s][k] += m === "usd" ? r.usd : r.lb; }
-  $("#q-ch-note").textContent = `Fresh, frozen and processed beef, the last three years, in ${m === "usd" ? "dollars" : "pounds (product weight)"}. `;
+  $("#q-ch-note").textContent = `The last three years, in ${m === "usd" ? "dollars" : "pounds"}. `;
   $("#q-ch-note").append(el("a", { href: "#channels", text: "What each group means", onclick: (e) => { e.preventDefault(); openAnchor("channels"); } }), ".");
   barChart($("#q-ch"), { cats: months, labels: months.map((i) => `${MON[mo(i)]} '${String(yr(i)).slice(2)}`), names: months.map(mName), first: "Month",
-    label: `U.S. beef imports by how they entered, by month, ${m === "usd" ? "dollars" : "pounds"}`, fmt: m === "usd" ? (v) => `$${compact(v)}` : compact, tipFmt: m === "usd" ? usdTxt : lbTxt,
+    label: `U.S. beef imports by how they entered, by month, ${m === "usd" ? "dollars" : "pounds"}`, fmt: m === "usd" ? (v) => `$${compact(v)}` : compact, tipFmt: m === "usd" ? usdTxt : lbM,
     stacks: D.channels.map((n, i) => ({ name: n, color: CCOL[i], values: sums[i] })) });
 }
 
@@ -1281,7 +1325,7 @@ function renderCattle() {
   const host = $("#cattle"), st = S.cat;
   if (!cattleBuilt) {
     host.replaceChildren(
-      el("div", {}, [el("h2", { text: "Live cattle trade" }), el("p", { class: "sub", text: "Head of feeder and slaughter cattle crossing the border, mostly with Mexico and Canada. Breeding and dairy cattle, buffalo and bison are left out." })]),
+      el("div", {}, [el("h2", { text: "Live cattle trade" }), el("p", { class: "sub", text: "Head of feeder and slaughter cattle crossing the border with Canada and Mexico. Breeding and dairy cattle, buffalo and bison are left out." })]),
       el("div", { class: "ctrls" }, [
         field("Direction", segBtns("cat-dir", [["imp", "Imports"], ["exp", "Exports"]], st.dir, (v) => { st.dir = v; st.country = "all"; st.cls = "all"; renderCattle(); })),
         field("Show", segBtns("cat-measure", [["head", "Head"], ["usd", "Dollars"], ["each", "$ per head"]], st.measure, (v) => { st.measure = v; renderCattle(); })),
@@ -1303,7 +1347,7 @@ function renderCattle() {
   if (split) $("#cat-cls-field").replaceChildren(el("span", { text: "Class" }), select("cat-cls", [["all", "Feeder and slaughter"], ...classes.map((n, i) => [i, n])], st.cls, (v) => { st.cls = v; renderCattle(); }, "Class of cattle"));
   if (!split) st.by = "country";
   $("#cat-cls-note").textContent = st.dir === "imp"
-    ? "Classes follow the import tariff lines: feeder cattle (calves and feeders, plus heavier cattle not entered for slaughter or breeding), and slaughter cattle (steers, heifers, cows and bulls entered for immediate slaughter)."
+    ? "Feeder and slaughter classes follow the import tariff lines. See About the data."
     : "Feeder and slaughter cattle together, to Canada and Mexico only: Census export records put both under one code, so they can't be shown apart, and cattle sent anywhere else are breeding stock.";
   const all = st.dir === "imp" ? D.cimp : D.cexp, L = N - 1, ly = yr(L), lm = mo(L), m = st.measure;
   const rows = st.cls === "all" ? all : all.filter((r) => r.k === +st.cls);
@@ -1368,7 +1412,7 @@ function renderCattle() {
   const list = [...by].filter(([, o]) => o.head > 0).sort((a, b) => b[1].head - a[1].head);
   const T = sum(P), Tp = sum(Pp);
   $("#cat-list-h").textContent = `${st.dir === "imp" ? "Supplying countries" : "Destinations"}, 12 months through ${mName(L)}`;
-  $("#cat-list-note").textContent = `${clsTxt}Change compares head with the 12 months before. Tap a heading to sort.`;
+  $("#cat-list-note").textContent = `${clsTxt}Change compares head with the 12 months before. Sort by any column.`;
   const row = (name, o, p, cls) => { const c = change(o.head, p ? p.head : 0); return keyed(el("tr", { class: cls }, [el("td", { text: name }), el("td", { class: "n", text: nf.format(o.head) }), el("td", { class: "n", text: tblUsd(o.usd) }), el("td", { class: "n", text: o.head ? `$${nf.format(Math.round(o.usd / o.head))}` : "–" }), el("td", { class: "n", text: T.head ? `${((100 * o.head) / T.head).toFixed(1)}%` : "–" }), el("td", { class: `n ${c.c}`, text: c.t })]), [name, o.head, o.usd, o.head ? o.usd / o.head : null, T.head ? o.head / T.head : null, chk(o.head, p ? p.head : 0)]); };
   $("#cat-list").replaceChildren(sortable(el("table", { class: "rank" }, [
     el("thead", {}, el("tr", {}, [el("th", { text: "Country" }), el("th", { class: "n", text: "Head" }), el("th", { class: "n", text: "Dollars" }), el("th", { class: "n", text: "$/head" }), el("th", { class: "n", text: "Share" }), el("th", { class: "n", text: "Head change" })])),
