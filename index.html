@@ -304,6 +304,10 @@ table.qt .n { text-align: right; white-space: nowrap; }
       <div class="card"><h3>U.S. beef imports by month</h3><p class="note">Million pounds.</p><div id="month-imp-chart"></div></div>
       <div class="card"><h3>U.S. beef exports by month</h3><p class="note">Million pounds.</p><div id="month-exp-chart"></div></div>
     </div>
+    <div class="two">
+      <div class="card"><h3 id="month-imp-mom-h">Imports, this month vs. last</h3><p class="note" id="month-imp-mom-note"></p><div id="month-imp-mom"></div></div>
+      <div class="card"><h3 id="month-exp-mom-h">Exports, this month vs. last</h3><p class="note" id="month-exp-mom-note"></p><div id="month-exp-mom"></div></div>
+    </div>
   </section>
 
   <!-- Imports / Exports share one layout, built by the script -->
@@ -378,8 +382,8 @@ table.qt .n { text-align: right; white-space: nowrap; }
       <p>Each import is grouped by how it entered:</p>
       <ul>
         <li><b>Canada and Mexico (USMCA)</b>: duty-free, outside the quota.</li>
-        <li><b>Country quotas</b>: within a country's own allocation under the WTO beef quota (Australia, New Zealand,
-          Argentina, Uruguay, and the United Kingdom from 2026), at the low in-quota tariff.</li>
+        <li><b>Country quotas</b>: within a country's own allocation under the WTO beef quota (<span id="ab-holders">see the
+          quota table</span>), at the low in-quota tariff.</li>
         <li><b>Other-countries quota</b>: within the shared quota for all other countries, including the 2026 lean
           trimmings tranches (Proclamation 11059), at the low in-quota tariff.</li>
         <li><b>Over quota</b>: beef entered on the over-quota tariff lines, after a quota filled. The over-quota tariff is
@@ -392,16 +396,16 @@ table.qt .n { text-align: right; white-space: nowrap; }
           beef on other tariff lines.</li>
       </ul>
       <h3>The quota</h3>
-      <p>The U.S. beef tariff-rate quota sets yearly amounts, in metric tons of product, for Australia (378,214 t), New Zealand
-        (213,402 t), Argentina (20,000 t), Uruguay (20,000 t), the United Kingdom (13,000 t, from 2026) and all other
-        countries together (65,005 t through 2025; 52,005 t in 2026, after the United Kingdom's share was split off).</p>
+      <p><span id="ab-alloc">The U.S. beef tariff-rate quota sets yearly amounts, in metric tons of product, for each country
+        with its own allocation and for all other countries together.</span> Other countries together had 65,005 t through
+        2025, before the United Kingdom's 13,000 t was split off in 2026.</p>
       <p>Two 2026 proclamations added room for lean beef trimmings (HTS 0201.30.5091, 0201.30.5097, 0202.30.5091 and
         0202.30.5097) at the in-quota tariff. Proclamation 11010, "Ensuring Affordable Beef for the American Consumer"
         (February 2026), added 80,000 t for Argentina in four quarterly tranches of 20,000 t, the first opening February 13,
         on top of Argentina's 20,000 t allocation. Proclamation 11059, "Further Ensuring Affordable Beef for the American
         Consumer" (August 2026), added 300,000 t for other countries in three tranches of 100,000 t: September 1 to 30,
         October 1 to 30, and October 31 to November 30. It makes no provision for unused room to carry to the next tranche.</p>
-      <p>Australian beef also has a separate quantity under the U.S.-Australia Free Trade Agreement (71,695 t in 2026), the
+      <p>Australian beef also has a separate quantity under the U.S.-Australia Free Trade Agreement (<span id="ab-ausfta">set each year by USTR</span>), the
         level used for the agreement's price-based safeguard on beef. CBP counts entries against it, and the quota table
         shows it.</p>
       <p>U.S. Customs and Border Protection reports how full each quota is every week; this page shows its newest report.
@@ -954,6 +958,75 @@ function seasonBars(host, { rows, label, years }) {
   host.replaceChildren(svg, out, srTable(label, ["Month", "vs. a typical month", "Lowest year", "Highest year"],
     rows.map((r, i) => [MONTH[i], r ? pct(r.index) : "–", r ? pct(r.low) : "–", r ? pct(r.high) : "–"])));
 }
+// The newest month's change from the month before, in every year the data cover: whether this
+// month's move is the usual seasonal one (Josh, 2026-11-07). Earlier years grey, this year maroon,
+// the average of earlier years dashed; on imports a gold dot per year for arrivals (general imports).
+function momBars(host, { years, vals, dots, label, avg, avgName }) {
+  const W = chartW(host), H = chartH(W), L = 46, Rt = 8, T = 18, B = 26, n = years.length;
+  const all = [...vals, ...(dots || []), avg].filter((v) => v != null);
+  const span = Math.max(5, ...all.map(Math.abs));
+  const step = span <= 6 ? 2 : span <= 15 ? 5 : span <= 40 ? 10 : 20, top = Math.ceil(span / step) * step;
+  const lo = Math.min(0, ...all) < 0 ? -top : 0, hi = Math.max(0, ...all) > 0 ? top : 0;
+  const bw = (W - L - Rt) / n, y = (v) => T + (1 - (v - lo) / ((hi - lo) || 1)) * (H - T - B);
+  const pct = (v) => (v == null ? "–" : `${v >= 0 ? "+" : "−"}${Math.abs(v) < 9.95 ? Math.abs(v).toFixed(1) : Math.round(Math.abs(v))}%`);
+  const svg = sv("svg", { class: "chart", viewBox: `0 0 ${W} ${H}`, role: "img", "aria-label": label });
+  for (let v = lo; v <= hi + 0.01; v += step) svg.append(sv("line", { class: "grid", x1: L, x2: W - Rt, y1: y(v), y2: y(v) }),
+    sv("text", { class: "ax", x: L - 8, y: y(v) + 4, "text-anchor": "end", text: v === 0 ? "0%" : `${v > 0 ? "+" : "−"}${Math.abs(v)}%` }));
+  years.forEach((yy, i) => {
+    const cx = L + i * bw + bw / 2, w = bw * 0.6, v = vals[i], last = i === n - 1;
+    if (v != null) {
+      svg.append(sv("rect", { x: cx - w / 2, y: Math.min(y(0), y(v)), width: w, height: Math.max(1.5, Math.abs(y(v) - y(0))), rx: 2,
+        style: `fill:${last ? "var(--c1)" : "var(--line-3)"}` }));
+      if (last) svg.append(sv("text", { class: "ax", x: cx, y: v >= 0 ? y(v) - 5 : y(v) + 13, "text-anchor": "middle", style: "font-weight:700;fill:var(--c1)", text: pct(v) }));
+    }
+    if (dots && dots[i] != null) svg.append(sv("circle", { cx, cy: y(dots[i]), r: Math.max(2.5, Math.min(4, bw * 0.14)), style: "fill:var(--c2);stroke:var(--surface);stroke-width:1" }));
+    svg.append(sv("text", { class: "ax", x: cx, y: H - 8, "text-anchor": "middle", text: W < 420 && (n - 1 - i) % 2 ? "" : `'${String(yy).slice(2)}` }));
+  });
+  svg.append(sv("line", { x1: L, x2: W - Rt, y1: y(0), y2: y(0), style: "stroke:var(--ink);stroke-width:1" }));
+  if (avg != null) svg.append(sv("line", { x1: L, x2: L + (n - 1) * bw, y1: y(avg), y2: y(avg), class: "s-avg" }));
+  const keys = el("ul", { class: "keys" }, [
+    el("li", {}, [el("span", { class: "sw ln", style: "background:var(--c1)" }), String(years[n - 1])]),
+    el("li", {}, [el("span", { class: "sw ln", style: "background:var(--line-3)" }), "Earlier years"]),
+    avg != null ? el("li", {}, [el("span", { class: "sw dash" }), `${avgName} (${pct(avg)})`]) : null,
+    dots ? el("li", {}, [el("span", { class: "sw", style: "background:var(--c2);border-radius:50%;width:9px;height:9px" }), "Arrivals (general imports)"]) : null,
+  ].filter(Boolean));
+  const out = el("p", { class: "readout", "aria-live": "polite" });
+  const mark = sv("rect", { class: "cur", y: T - 3, width: bw * 0.6 + 6, height: H - B - T + 3, visibility: "hidden" });
+  svg.append(mark);
+  let cur = n - 1;
+  const show = (i, kb) => {
+    cur = i;
+    mark.setAttribute("x", L + i * bw + bw * 0.2 - 3); mark.setAttribute("visibility", kb ? "visible" : "hidden");
+    out.textContent = `${years[i]}: ${pct(vals[i])}${dots ? `; arrivals ${pct(dots[i])}` : ""}`;
+  };
+  const hide = () => { mark.setAttribute("visibility", "hidden"); out.textContent = ""; };
+  svg.addEventListener("pointermove", (e) => { const b = svg.getBoundingClientRect(); show(Math.max(0, Math.min(n - 1, Math.floor(((((e.clientX - b.left) / b.width) * W) - L) / bw)))); });
+  svg.addEventListener("pointerleave", hide);
+  keyNav(svg, n, () => cur, show, hide);
+  host.replaceChildren(keys, svg, out, srTable(label, ["Year", dots ? "Entries" : "Change", ...(dots ? ["Arrivals"] : [])],
+    years.map((yy, i) => [String(yy), pct(vals[i]), ...(dots ? [pct(dots[i])] : [])])));
+}
+function drawMoM(dir) {
+  const L = N - 1, lm = mo(L), ly = yr(L), pm = (lm + 11) % 12;
+  const sum = new Array(N).fill(0), gen = new Array(N).fill(0);
+  for (const r of R[dir]) if (r.f <= 2) { sum[r.m] += r.lb; if (dir === "imp") gen[r.m] += r.gen || 0; }
+  const idx = (y, m) => IDX.get(`${y}-${String(m + 1).padStart(2, "0")}`);
+  const years = [], vals = [], dots = [];
+  for (let y = yr(0); y <= ly; y++) {
+    const a = idx(y, lm), b = lm === 0 ? idx(y - 1, 11) : idx(y, pm);
+    if (a == null || b == null || !sum[b]) continue;
+    years.push(y); vals.push(100 * (sum[a] / sum[b] - 1));
+    dots.push(gen[b] ? 100 * (gen[a] / gen[b] - 1) : null);
+  }
+  const prior = vals.slice(0, -1), avg = prior.length ? prior.reduce((a, v) => a + v, 0) / prior.length : null;
+  const avgName = prior.length ? `Average, ${years[0]}–${years[years.length - 2]}` : "";
+  const noun = dir === "imp" ? "imports" : "exports";
+  $(`#month-${dir}-mom-h`).textContent = `${dir === "imp" ? "Imports" : "Exports"}: ${MONTH[lm]} vs. ${MONTH[pm]}, each year`;
+  $(`#month-${dir}-mom-note`).textContent = `Change in beef ${noun} (pounds) from ${MONTH[pm]} to ${MONTH[lm]}.`
+    + (dir === "imp" ? " Bars are entries (imports for consumption, the basis this page uses); dots are arrivals, which differ when beef goes into or comes out of bonded warehouses." : "");
+  momBars($(`#month-${dir}-mom`), { years, vals, dots: dir === "imp" ? dots : null, avg, avgName,
+    label: `Change in U.S. beef ${noun} from ${MONTH[pm]} to ${MONTH[lm]}, each year, percent` });
+}
 function drawSeasonal(dir) {
   const st = S[dir], w = WORD[dir], m = st.measure, L = N - 1, ly = yr(L);
   syncSeg(`${dir}-sea-view`, st.seaView);
@@ -1233,8 +1306,20 @@ function renderMonth() {
   };
   totLines("imp", "U.S. beef imports by month, million pounds");
   totLines("exp", "U.S. beef exports by month, million pounds");
+  drawMoM("imp"); drawMoM("exp");
 }
 
+// About text that changes with each year's quota comes from CBP's newest report, so it can't go stale.
+function fillAbout() {
+  const Q = D.quota, own = Q.wto.filter((w) => w.name !== "Other countries" && w.qty), oth = Q.wto.find((w) => w.name === "Other countries");
+  const list = (a) => (a.length < 2 ? a.join("") : `${a.slice(0, -1).join(", ")} and ${a.at(-1)}`);
+  const the = (n) => (/^United /.test(n) ? `the ${n}` : n);
+  if (own.length) {
+    $("#ab-alloc").textContent = `In ${Q.year} the U.S. beef tariff-rate quota sets amounts, in metric tons of product, for ${list(own.map((w) => `${the(w.name)} (${nf.format(Math.round(w.qty))} t)`))}${oth && oth.qty ? `, and for all other countries together (${nf.format(Math.round(oth.qty))} t)` : ""}.`;
+    $("#ab-holders").textContent = `in ${Q.year}: ${list(own.map((w) => the(w.name)))}`;
+  }
+  if (Q.ausfta && Q.ausfta.qty) $("#ab-ausfta").textContent = `${nf.format(Math.round(Q.ausfta.qty))} t in ${Q.year}`;
+}
 // ---- Quota and tariffs ----
 const STATUS = { FILL: "Filled", POTF: "Close to full", OPEN: "Open", "-": "Open" };
 function renderQuota() {
@@ -1474,6 +1559,7 @@ Promise.all(["data/beef.json", "data/world.json"].map((u) => fetch(u, { cache: "
     const hm = ct({ hour: "numeric", minute: "2-digit" }).replace(/\s?([AP])M$/, (_, x) => ` ${x.toLowerCase()}.m.`);
     $("#foot-gen").textContent = `Data through ${mName(L)}. Page version ${D.meta.version}, built ${ct({ month: "long", day: "numeric", year: "numeric" })}, ${hm} CT.`;
     $("#foot-year").textContent = ct({ year: "numeric" });
+    fillAbout();
     renderMonth();
     const h = location.hash.slice(1);
     if (!(h && !tabOf(h) && openAnchor(h))) show(h);
