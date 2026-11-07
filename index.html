@@ -1,0 +1,1440 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta name="robots" content="noindex">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>U.S. Beef Trade</title>
+<meta name="description" content="Monthly U.S. beef and cattle imports and exports by country and product since 2015, with the beef import quota and tariffs, from U.S. Census Bureau and U.S. Customs and Border Protection data.">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Mississippi State University Extension">
+<meta property="og:title" content="U.S. Beef Trade">
+<meta property="og:description" content="Monthly U.S. beef and cattle imports and exports by country and product since 2015, with the beef import quota and tariffs, from U.S. Census Bureau and U.S. Customs and Border Protection data.">
+<meta property="og:url" content="https://agecontools.github.io/beeftrade/">
+<meta property="og:image" content="https://agecontools.github.io/beeftrade/og-image.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="U.S. Beef Trade: monthly beef and cattle trade by country, with the import quota and tariffs, since 2015. Mississippi State University Extension.">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="canonical" href="https://agecontools.github.io/beeftrade/">
+<style>
+@font-face { font-family: "Bitter"; font-weight: 600; font-style: normal; font-display: swap; src: url(fonts/bitter-latin-600-normal.woff2) format("woff2"); }
+@font-face { font-family: "Bitter"; font-weight: 700; font-style: normal; font-display: swap; src: url(fonts/bitter-latin-700-normal.woff2) format("woff2"); }
+@font-face { font-family: "Public Sans"; font-weight: 400; font-style: normal; font-display: swap; src: url(fonts/public-sans-latin-400-normal.woff2) format("woff2"); }
+@font-face { font-family: "Public Sans"; font-weight: 500; font-style: normal; font-display: swap; src: url(fonts/public-sans-latin-500-normal.woff2) format("woff2"); }
+@font-face { font-family: "Public Sans"; font-weight: 600; font-style: normal; font-display: swap; src: url(fonts/public-sans-latin-600-normal.woff2) format("woff2"); }
+@font-face { font-family: "Public Sans"; font-weight: 700; font-style: normal; font-display: swap; src: url(fonts/public-sans-latin-700-normal.woff2) format("woff2"); }
+/* The look of the cattle auction and drought dashboards: MSU maroon masthead,
+   Bitter headings, Public Sans text, pill tabs, light and dark. */
+:root {
+  --bg: #f7f5f5; --surface: #ffffff; --ink: #1c1c1c; --ink-2: #4a4446; --muted: #6f686a; --rule: #e4dfe0;
+  --accent: #5d1725; --accent-ink: #ffffff; --accent-soft: #f3e9eb; --link: #8a2236; --focus: #c99700;
+  --line-1: #9b3047; --line-2: #1c1c1c; --line-3: #777777;
+  --up: #2e6b3f; --down: #b3261e; --warn-bg: #fff3d6; --warn-ink: #7a4600;
+  --none: #e9e6e7; --area: #cfc9cb; --land-line: #ffffff;
+  --g1: #5f595b; --g2: #827c7e; --g3: #a6a0a2; --g4: #c7c2c4;
+  --c1: #9b3047; --c2: #c99700; --c3: #4f6d8a; --c4: #2f7d6b; --c5: #a9a1a4; --c6: #d48aa0; --c7: #7c5a2e; --c8: #6b4e8f; --c9: #3d8eb0;
+  --display: "Bitter", Georgia, "Times New Roman", serif;
+  --body: "Public Sans", Arial, Helvetica, sans-serif;
+  --r: 10px;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #151112; --surface: #1f191b; --ink: #f1ecee; --ink-2: #cfc6c9; --muted: #a59a9e; --rule: #3a3134;
+    --accent: #6e1d2e; --accent-ink: #ffffff; --accent-soft: #33212a; --link: #f0a3b3; --focus: #e2b93b;
+    --line-1: #e07a90; --line-2: #f1ecee; --line-3: #9a9194; --up: #86c995; --down: #f2958c;
+    --warn-bg: #3b2c0e; --warn-ink: #f6c56a; --none: #2c2527; --area: #4e474a; --land-line: #1f191b;
+    --c1: #e07a90; --c5: #7d7477; --c3: #7fa3c4; --c4: #5fb39e; color-scheme: dark;
+    --g1: #d3cacd; --g2: #a89da1; --g3: #7f7579; --g4: #5c5356;
+  }
+}
+:root[data-theme="dark"] {
+    --bg: #151112; --surface: #1f191b; --ink: #f1ecee; --ink-2: #cfc6c9; --muted: #a59a9e; --rule: #3a3134;
+    --accent: #6e1d2e; --accent-ink: #ffffff; --accent-soft: #33212a; --link: #f0a3b3; --focus: #e2b93b;
+    --line-1: #e07a90; --line-2: #f1ecee; --line-3: #9a9194; --up: #86c995; --down: #f2958c;
+    --warn-bg: #3b2c0e; --warn-ink: #f6c56a; --none: #2c2527; --area: #4e474a; --land-line: #1f191b;
+    --c1: #e07a90; --c5: #7d7477; --c3: #7fa3c4; --c4: #5fb39e; color-scheme: dark;
+    --g1: #d3cacd; --g2: #a89da1; --g3: #7f7579; --g4: #5c5356;
+}
+* { box-sizing: border-box; }
+html { scroll-padding-top: 70px; }
+body::before { content: ""; position: fixed; inset: 0 0 auto; height: env(safe-area-inset-top, 0px); z-index: 10; background: var(--bg); }
+body { margin: 0; background: var(--bg); color: var(--ink); font: 400 16px/1.5 var(--body); -webkit-font-smoothing: antialiased; }
+.wrap { max-width: 1120px; margin: 0 auto; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); }
+button, input, select { font: inherit; color: inherit; }
+:focus-visible { outline: 3px solid var(--focus); outline-offset: 2px; }
+a { color: var(--link); }
+/* "Skip to content": off screen until the keyboard reaches it */
+.skip { position: absolute; left: 16px; top: -200px; z-index: 30; background: var(--surface); color: var(--ink); border: 1px solid var(--rule); padding: 8px 14px; border-radius: 8px; font-weight: 600; }
+.skip:focus { top: calc(8px + env(safe-area-inset-top, 0px)); }
+main:focus { outline: none; }
+.num { font-variant-numeric: tabular-nums; }
+
+/* masthead */
+.mast { background: var(--accent); color: var(--accent-ink); }
+.mast .wrap { padding-block: 22px 20px; }
+h1 { font: 700 clamp(28px, 5vw, 40px)/1.08 var(--display); margin: 0; text-wrap: balance; }
+footer .legal { display: grid; grid-template-columns: minmax(0, 1fr); gap: 8px; }   /* the logo never widens the text column */
+/* MSU brand minimum for the horizontal logo: 300 px wide (about 56 px tall), never smaller, with the
+   artwork's own margin plus 14 px below as clear space (more than the height of "UNIVERSITY") */
+.legal .home { display: block; width: fit-content; line-height: 0; }
+.legal .logo { width: 300px; min-width: 300px; height: auto; display: block; margin: 0 0 14px; color: var(--ink); }
+.asof { margin: 6px 0 0; font-size: 14px; opacity: .9; }
+.asof.edu { margin-top: 2px; font-size: 13px; }
+.asof a { color: inherit; }
+.stale-row { padding-block: 14px 0; }
+.warn { margin: 0; border-left: 4px solid var(--warn-ink); background: var(--warn-bg); color: var(--ink); padding: 10px 14px; border-radius: 6px; font-size: 14.5px; }
+
+/* tabs */
+.tabs { position: sticky; top: env(safe-area-inset-top, 0px); z-index: 5; background: var(--bg); border-bottom: 1px solid var(--rule); }
+.tabs .wrap { display: flex; gap: 4px; overflow-x: auto; scrollbar-width: none; padding-block: 8px; }
+.tab { flex: 0 0 auto; border: 0; background: transparent; padding: 9px 14px; border-radius: 999px; font-weight: 600; font-size: 15px; color: var(--ink-2); cursor: pointer; white-space: nowrap; }
+.tab:hover { background: var(--accent-soft); color: var(--ink); }
+.tab[aria-selected="true"] { background: var(--accent); color: var(--accent-ink); }
+.tab .s { display: none; }
+@media (max-width: 560px) {   /* short labels, all four on one row, so no tab hides off screen */
+  .tabs .wrap { display: grid; grid-template-columns: repeat(4, auto); justify-content: space-between; padding-block: 6px; gap: 2px; }
+  .tab { padding: 6px 6px; font-size: 14px; } .tab .l { display: none; } .tab .s { display: inline; }
+}
+
+/* panels */
+main { padding-block: 26px 40px; }
+.panel { display: grid; gap: 22px; }
+.panel[hidden] { display: none; }
+.panel > * { min-width: 0; }
+h2 { font: 700 clamp(22px, 3.4vw, 28px)/1.2 var(--display); margin: 0; text-wrap: balance; }
+h3 { font: 700 18px/1.3 var(--body); margin: 0; }
+.sec { padding-top: 22px; border-top: 1px solid var(--rule); }
+.cardbar { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 8px 14px; }
+.sub { margin: 4px 0 0; color: var(--ink-2); font-size: 15px; max-width: 74ch; }
+.note { margin: 0; color: var(--muted); font-size: 13.5px; max-width: 78ch; }
+.card { background: var(--surface); border: 1px solid var(--rule); border-radius: var(--r); padding: 18px; min-width: 0; }
+.cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 14px; }
+.k { font-size: 12px; font-weight: 600; letter-spacing: .06em; text-transform: uppercase; color: var(--muted); margin: 0; }
+.big { font: 700 32px/1.1 var(--body); margin: 6px 0 4px; font-variant-numeric: tabular-nums; color: var(--accent); }
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .big { color: var(--line-1); } }
+:root[data-theme="dark"] .big { color: var(--line-1); }
+.lines { margin: 0; padding: 0; list-style: none; display: grid; gap: 3px; font-size: 14.5px; color: var(--ink-2); }
+.lines b { color: var(--ink); font-variant-numeric: tabular-nums; }
+.up { color: var(--up); font-weight: 600; } .down { color: var(--down); font-weight: 600; } .flat { color: var(--muted); font-weight: 600; }
+.two { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; }
+@media (max-width: 760px) { .two { grid-template-columns: minmax(0, 1fr); } }
+
+/* controls */
+.ctrls { display: flex; flex-wrap: wrap; gap: 12px 18px; align-items: end; }
+.field { display: grid; gap: 4px; min-width: 0; }
+.field > span { font-size: 12px; font-weight: 600; letter-spacing: .06em; text-transform: uppercase; color: var(--muted); }
+.field select { padding: 7px 10px; border: 1px solid var(--rule); border-radius: 8px; background: var(--surface); max-width: 100%; }
+.pair { display: contents; }   /* Product and Species: side by side on a phone */
+@media (max-width: 640px) {
+  .pair { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; width: 100%; }
+  .pair select { width: 100%; }
+  .pair > :only-child { grid-column: 1 / -1; }
+}
+.seg { display: inline-flex; flex-wrap: nowrap; border: 1px solid var(--rule); border-radius: 999px; overflow: hidden; max-width: 100%; }
+.seg button { border: 0; background: var(--surface); padding: 6px 12px; cursor: pointer; font-size: 13.5px; color: var(--ink-2); white-space: nowrap; }
+.seg button + button { border-left: 1px solid var(--rule); }
+.seg button[aria-pressed="true"] { background: var(--accent); color: var(--accent-ink); }
+@media (max-width: 640px) { .seg button { padding: 6px 9px; font-size: 13px; } }
+@media (max-width: 420px) { .seg button { padding: 6px 7px; font-size: 12.5px; } }
+@media (max-width: 340px) { .seg button { padding: 6px 5px; font-size: 12px; } }
+.seg.chips { flex-wrap: wrap; border: 0; border-radius: 0; gap: 6px; overflow: visible; }   /* seven regions: separate pills that wrap */
+.seg.chips button { border: 1px solid var(--rule); border-radius: 999px; }
+.btn { border: 0; background: var(--accent); color: var(--accent-ink); font-weight: 600; padding: 9px 16px; border-radius: 999px; cursor: pointer; }
+.btn.alt { background: var(--surface); color: var(--ink); border: 1px solid var(--rule); }
+.btn:hover { filter: brightness(1.1); }
+
+/* map */
+.mapcard { padding: 12px; position: relative; }
+.mapsvg { display: block; width: 100%; height: auto; max-height: 62vh; }
+.mapsvg .land { fill: var(--none); stroke: var(--land-line); stroke-width: .5; vector-effect: non-scaling-stroke; }
+.mapsvg .land.has { fill: var(--area); cursor: pointer; }
+.mapsvg .land.sel { fill: var(--accent-soft); stroke: var(--ink); stroke-width: 1.5; }
+.mapsvg .bub { fill: var(--line-1); fill-opacity: .5; stroke: var(--accent); stroke-width: 1; vector-effect: non-scaling-stroke; cursor: pointer; }
+.mapsvg .bub:hover, .mapsvg .bub:focus-visible { fill-opacity: .8; }
+.mapsvg .bub.sel { fill-opacity: .85; stroke: var(--ink); stroke-width: 2.2; }
+.mapbar { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 8px 14px; align-items: center; margin: 2px 4px 8px; }
+.legend { margin: 0; font-size: 13.5px; color: var(--ink-2); }
+.tip { position: fixed; z-index: 20; pointer-events: none; background: var(--surface); color: var(--ink); border: 1px solid var(--rule); border-radius: 8px; padding: 9px 11px; font-size: 13.5px; box-shadow: 0 6px 24px rgba(0,0,0,.18); max-width: 270px; }
+.tip b { display: block; font-size: 14px; margin-bottom: 2px; }
+.tip .row { display: flex; justify-content: space-between; gap: 14px; font-variant-numeric: tabular-nums; }
+
+/* list + detail */
+.split { display: grid; grid-template-columns: minmax(0, 1.15fr) minmax(0, 1fr); gap: 16px; align-items: start; }
+@media (max-width: 860px) { .split { grid-template-columns: minmax(0, 1fr); } }
+.tablewrap { overflow-x: auto; max-height: 640px; overflow-y: auto; }
+table.rank { width: 100%; border-collapse: collapse; font-size: 14.5px; font-variant-numeric: tabular-nums; }
+table.rank th { position: sticky; top: 0; background: var(--surface); text-align: left; font-size: 12px; letter-spacing: .05em; text-transform: uppercase; color: var(--muted); font-weight: 600; padding: 8px 8px; border-bottom: 2px solid var(--rule); white-space: nowrap; }
+table.rank td { padding: 8px; border-bottom: 1px solid var(--rule); }
+table.rank .n { text-align: right; white-space: nowrap; }
+table.rank tbody tr { cursor: pointer; }
+table.rank tbody tr:hover { background: var(--accent-soft); }
+table.rank tfoot tr.pick { cursor: pointer; }
+table.rank tfoot tr.pick:hover { background: var(--accent-soft); }
+table.rank tr[aria-current="true"] { background: var(--accent-soft); box-shadow: inset 4px 0 0 var(--accent); }
+table.rank tfoot td { font-weight: 700; border-bottom: 0; border-top: 2px solid var(--rule); }
+table.rank tfoot tr.zone + tr td { font-weight: 500; color: var(--ink-2); border-top: 1px solid var(--rule); }
+.rb { display: inline-block; width: 60px; height: 9px; background: var(--none); border-radius: 3px; vertical-align: middle; margin-left: 6px; overflow: hidden; }
+.rb i { display: block; height: 100%; background: var(--accent); }
+/* The list shares its row with the country detail: show only the chosen
+   measure's column until there's room for pounds, dollars and price together. */
+@media (max-width: 1120px) { table.rank .opt:not(.on) { display: none; } }
+/* the page tops out at 1120px, so with all three the list box stays about 535px wide:
+   tighter cells and a shorter share bar keep the change column in view */
+@media (min-width: 1121px) { table.rank td, table.rank th { padding: 8px 6px; } table.rank .rb { width: 44px; } }
+@media (max-width: 640px) { .rb { display: none; } }
+@media (max-width: 420px) {   /* after the base table rules, so these win */
+  table.rank { font-size: 13.5px; }
+  table.rank td, table.rank th { padding: 7px 4px; }
+  table.rank th, table.rank th.n { font-size: 11px; letter-spacing: .02em; white-space: normal; vertical-align: bottom; }
+}
+@media (max-width: 340px) {   /* one-word names like "Philippines" can't wrap */
+  table.rank { font-size: 12.5px; }
+  table.rank td, table.rank th { padding: 7px 3px; }
+}
+.few { background: var(--warn-bg); color: var(--warn-ink); font-weight: 600; padding: 0 5px; border-radius: 4px; font-size: 12px; margin-left: 4px; }
+table.rank td .few { display: block; width: fit-content; margin: 2px 0 0 auto; }   /* under the price, so it doesn't widen the column */
+.detail { display: grid; gap: 14px; }
+.detail h3 { font: 700 22px/1.2 var(--display); }
+.stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 10px; }
+.stats div { min-width: 0; }
+.stats b { display: block; font: 700 19px/1.2 var(--body); font-variant-numeric: tabular-nums; }
+.stats span { font-size: 12.5px; color: var(--muted); }
+.mix { display: flex; height: 16px; border-radius: 5px; overflow: hidden; background: var(--none); }
+.mix span { display: block; height: 100%; }
+.keys { list-style: none; margin: 6px 0 0; padding: 0; display: flex; flex-wrap: wrap; gap: 4px 14px; font-size: 13.5px; color: var(--ink-2); }
+.keys li { display: inline-flex; align-items: center; gap: 6px; }
+.sw { width: 12px; height: 12px; border-radius: 3px; display: inline-block; flex: 0 0 auto; }
+.sw.dash { height: 0; border-top: 2px dashed var(--line-2); border-radius: 0; width: 16px; }
+.sw.ln { height: 3px; border-radius: 2px; width: 16px; }
+
+/* charts */
+.chart { width: 100%; height: auto; display: block; touch-action: pan-y; overflow: visible; }
+.chart .grid { stroke: var(--rule); stroke-width: 1; }
+.chart .ax { fill: var(--muted); font: 12px var(--body); }
+.chart .s-now { fill: none; stroke: var(--line-1); stroke-width: 2.6; stroke-linejoin: round; }
+.chart .s-last { fill: none; stroke: var(--line-3); stroke-width: 2; stroke-linejoin: round; }
+.chart .s-avg { fill: none; stroke: var(--line-2); stroke-width: 1.4; stroke-dasharray: 5 4; }
+.chart .s-dash { fill: none; stroke-width: 2.4; stroke-dasharray: 7 4; stroke-linejoin: round; }
+.chart .s-yr { fill: none; stroke-width: 1.6; stroke-linejoin: round; }
+.chart .cross { stroke: var(--ink); stroke-width: 1; stroke-dasharray: 3 3; }
+.chart .hl { fill: none; stroke: var(--ink); stroke-width: 1.5; }
+.chart .cur { fill: none; stroke: var(--ink); stroke-width: 1; stroke-dasharray: 3 3; }
+.chart:focus:not(:focus-visible) { outline: none; }   /* a mouse click or tap focuses the chart too; the ring is for the keyboard */
+.readout { font-size: 13.5px; min-height: 21px; font-variant-numeric: tabular-nums; color: var(--ink-2); margin: 4px 0 0; }
+.about h3 { margin-top: 6px; }
+.about p, .about li { max-width: 78ch; }
+table.codes { border-collapse: collapse; font-size: 14px; }
+table.codes th, table.codes td { text-align: left; padding: 6px 10px; border-bottom: 1px solid var(--rule); vertical-align: top; }
+table.codes th { font-size: 12px; letter-spacing: .05em; text-transform: uppercase; color: var(--muted); }
+details.method summary { cursor: pointer; font-weight: 600; }
+
+/* footer */
+footer { border-top: 1px solid var(--rule); background: var(--surface); }
+footer .wrap { padding-block: 26px 36px; display: grid; gap: 14px; }
+footer h2 { font-size: 20px; }
+footer p { margin: 0; font-size: 14px; color: var(--ink-2); max-width: 80ch; }
+/* the country column stays in view when a table scrolls sideways on a phone */
+table.rank tr > :first-child { position: sticky; left: 0; z-index: 1; background: var(--surface); }
+table.rank thead tr > :first-child { z-index: 2; }
+table.rank tbody tr:hover > :first-child, table.rank tfoot tr.pick:hover > :first-child, table.rank tr[aria-current="true"] > :first-child { background: var(--accent-soft); }
+table.rank tr[aria-current="true"] > :first-child { box-shadow: inset 4px 0 0 var(--accent); }
+.sortb { all: unset; cursor: pointer; display: inline-flex; align-items: center; gap: 3px; font: inherit; letter-spacing: inherit; text-transform: inherit; color: inherit; }
+.sortb:hover { color: var(--ink); }
+.sortb:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; border-radius: 2px; }
+th[aria-sort="ascending"] .sortb, th[aria-sort="descending"] .sortb { color: var(--ink); }
+.sortb .arr { font-size: 9px; width: 9px; display: inline-block; }
+th.n .sortb { flex-direction: row-reverse; }
+.sr-only { position: absolute; width: 1px; height: 1px; margin: -1px; padding: 0; border: 0; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+.vh { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+/* beef: six tabs */
+@media (max-width: 560px) {
+  .tabs .wrap { grid-template-columns: repeat(6, auto); }
+  .tab { padding: 6px 4px; font-size: 13px; }
+}
+.field[hidden] { display: none; }
+.prog { height: 14px; border-radius: 5px; background: var(--none); overflow: hidden; }
+.prog i { display: block; height: 100%; background: var(--accent); }
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .prog i { background: var(--line-1); } }
+:root[data-theme="dark"] .prog i { background: var(--line-1); }
+.tranche { display: grid; gap: 6px; padding: 10px 0; border-bottom: 1px solid var(--rule); }
+.tranche:last-child { border-bottom: 0; }
+.tranche .row { display: flex; justify-content: space-between; gap: 12px; flex-wrap: wrap; font-size: 14.5px; }
+table.qt { width: 100%; border-collapse: collapse; font-size: 14.5px; font-variant-numeric: tabular-nums; }
+table.qt th { text-align: left; font-size: 12px; letter-spacing: .05em; text-transform: uppercase; color: var(--muted); font-weight: 600; padding: 8px; border-bottom: 2px solid var(--rule); white-space: nowrap; }
+table.qt td { padding: 8px; border-bottom: 1px solid var(--rule); }
+table.qt .n { text-align: right; white-space: nowrap; }
+@media (max-width: 420px) { table.qt { font-size: 13.5px; } table.qt td, table.qt th { padding: 7px 4px; } table.qt th { white-space: normal; font-size: 11px; } }
+</style>
+</head>
+<body>
+<a class="skip" href="#main">Skip to content</a>
+<header class="mast">
+  <div class="wrap">
+    <h1>U.S. Beef Trade</h1>
+    <p class="asof" id="asof">Loading the latest trade data…</p>
+    <p class="asof edu">For educational use only. <a href="#disclaimer">Read the disclaimer</a>.</p>
+  </div>
+</header>
+
+<nav class="tabs" aria-label="Dashboard sections">
+  <div class="wrap" role="tablist">
+    <button class="tab" role="tab" id="t-month" aria-controls="month" data-tab="month"><span class="l">This month</span><span class="s">Month</span></button>
+    <button class="tab" role="tab" id="t-imp" aria-controls="imp" data-tab="imp"><span class="l">Imports</span><span class="s">Imports</span></button>
+    <button class="tab" role="tab" id="t-exp" aria-controls="exp" data-tab="exp"><span class="l">Exports</span><span class="s">Exports</span></button>
+    <button class="tab" role="tab" id="t-quota" aria-controls="quota" data-tab="quota"><span class="l">Quota and tariffs</span><span class="s">Quota</span></button>
+    <button class="tab" role="tab" id="t-cattle" aria-controls="cattle" data-tab="cattle"><span class="l">Live cattle</span><span class="s">Cattle</span></button>
+    <button class="tab" role="tab" id="t-about" aria-controls="about" data-tab="about"><span class="l">About the data</span><span class="s">About</span></button>
+  </div>
+</nav>
+
+<main class="wrap" id="main" tabindex="-1">
+  <noscript><p class="warn">This page needs JavaScript to show the trade data.</p></noscript>
+  <!-- This month -->
+  <section class="panel" id="month" role="tabpanel" aria-labelledby="t-month">
+    <div><h2 id="month-h">This month</h2><p class="sub" id="month-sub"></p></div>
+    <div class="cards" id="month-cards"></div>
+    <p class="note">Beef here is fresh, frozen and processed beef; variety meats (offal) and live cattle are counted
+      separately. Pounds are product weight, as shipped, not carcass weight.</p>
+    <div class="two">
+      <div class="card"><h3>U.S. beef imports by month</h3><p class="note">Million pounds.</p><div id="month-imp-chart"></div></div>
+      <div class="card"><h3>U.S. beef exports by month</h3><p class="note">Million pounds.</p><div id="month-exp-chart"></div></div>
+    </div>
+  </section>
+
+  <!-- Imports / Exports share one layout, built by the script -->
+  <section class="panel" id="imp" role="tabpanel" aria-labelledby="t-imp" hidden></section>
+  <section class="panel" id="exp" role="tabpanel" aria-labelledby="t-exp" hidden></section>
+
+  <!-- Quota and tariffs -->
+  <section class="panel" id="quota" role="tabpanel" aria-labelledby="t-quota" hidden>
+    <div><h2>The beef import quota and tariffs</h2>
+      <p class="sub">Each year a set amount of beef can enter the United States at a low tariff. Beef past that amount pays
+        26.4%. Canada and Mexico trade beef duty-free under USMCA and are outside the quota.</p></div>
+    <div class="card"><h3 id="q-wto-h">Quota fill</h3><p class="note" id="q-wto-note" style="margin:4px 0 8px"></p>
+      <div class="tablewrap" style="max-height:none" id="q-wto"></div></div>
+    <div class="two">
+      <div class="card"><h3>Affordable Beef quota, 2026</h3><p class="note" id="q-tr-note" style="margin:4px 0 4px"></p><div id="q-tr"></div></div>
+      <div class="card"><h3>When the other-countries quota filled</h3><p class="note" style="margin:4px 0 8px">The shared quota for
+        countries without their own allocation, by year.</p><div class="tablewrap" style="max-height:none" id="q-others"></div>
+        <h3 style="margin-top:16px">Argentina's separate 2026 quota</h3><p class="note" id="q-ar-note" style="margin:4px 0 4px"></p><div id="q-ar"></div></div>
+    </div>
+    <div class="card"><div class="cardbar"><h3>How beef imports entered, by month</h3><div id="q-ch-seg"></div></div>
+      <p class="note" id="q-ch-note" style="margin:4px 0 8px"></p><div id="q-ch"></div></div>
+    <div class="sec"><h2>Tariffs</h2><p class="sub">Duties on beef imports, as Census calculates them from each shipment's
+      tariff line and value.</p></div>
+    <div class="two">
+      <div class="card"><h3>Duties paid on beef imports, by year</h3><p class="note" id="q-duty-note" style="margin:4px 0 8px"></p><div id="q-duty"></div></div>
+      <div class="card"><h3>Average tariff on over-quota beef, by month</h3><p class="note" id="q-rate-note" style="margin:4px 0 8px"></p><div id="q-rate"></div></div>
+    </div>
+    <div class="card"><h3 id="q-ctry-h">Duties by country</h3><p class="note" id="q-ctry-note" style="margin:4px 0 8px"></p>
+      <div class="tablewrap" id="q-ctry"></div></div>
+    <p class="note" id="q-tariff-notes"></p>
+  </section>
+
+  <!-- Live cattle -->
+  <section class="panel" id="cattle" role="tabpanel" aria-labelledby="t-cattle" hidden></section>
+
+  <!-- About -->
+  <section class="panel about" id="about" role="tabpanel" aria-labelledby="t-about" hidden>
+    <div><h2>About the data</h2><p class="sub">What's counted, how it's measured, and where it comes from.</p></div>
+    <div class="card">
+      <h3>What's counted</h3>
+      <div class="tablewrap" style="max-height:none"><table class="codes"><thead><tr><th>HS code</th><th>Product</th><th>On this page</th></tr></thead><tbody>
+        <tr><td>0201</td><td>Beef, fresh or chilled</td><td>Fresh or chilled beef</td></tr>
+        <tr><td>0202</td><td>Beef, frozen</td><td>Frozen beef</td></tr>
+        <tr><td>1602.50, 0210.20</td><td>Beef prepared or preserved (cooked, canned, seasoned), or salted, dried or smoked</td><td>Processed beef</td></tr>
+        <tr><td>0206.10, 0206.21, 0206.22, 0206.29</td><td>Edible offal of cattle: tongues, livers and other organs</td><td>Variety meats</td></tr>
+        <tr><td>0102.29</td><td>Live cattle other than purebred breeding cattle (dairy and breeding lines, buffalo and bison are left out)</td><td>Live cattle</td></tr>
+      </tbody></table></div>
+      <p>"Beef" on this page means fresh, frozen and processed beef together. Variety meats are counted on their own, chosen
+        with the Product menu, and never added into beef totals. Veal is part of beef in these codes.</p>
+      <h3>How it's measured</h3>
+      <ul>
+        <li><b>Imports</b> count beef entered for use in the United States, including beef taken out of bonded warehouses
+          (Census calls these imports for consumption). That is the basis the quota is charged on.</li>
+        <li><b>Exports</b> are domestic exports only: beef and cattle of U.S. origin. Re-exports of imported beef are left out.</li>
+        <li><b>Pounds</b> are product weight as shipped, converted from Census's kilograms (1 kg = 2.20462 lb). A pound of
+          boneless beef is a pound of boneless beef. USDA's supply and use tables convert trade to carcass weight, so their
+          totals run higher than this page's.</li>
+        <li><b>Dollars</b> for imports are customs value: the price paid, not counting freight and insurance to the United
+          States or duties. For exports, dollars are the value at the U.S. port (free alongside ship). <b>Price per pound</b>
+          is dollars divided by pounds: an average declared value, not a market price. Prices based on under 10,000 lb are
+          marked <span class="few">few lb</span>.</li>
+        <li><b>Duties</b> are Census's calculated duty: the tariff owed on each shipment by its tariff line and value,
+          including the extra tariffs of 2025. The <b>average tariff</b> is duties divided by customs value.</li>
+      </ul>
+      <h3 id="channels">How beef enters</h3>
+      <p>Each import is grouped by how it entered:</p>
+      <ul>
+        <li><b>Canada and Mexico (USMCA)</b>: duty-free, outside the quota.</li>
+        <li><b>Country quotas</b>: within a country's own allocation under the WTO beef quota (Australia, New Zealand,
+          Argentina, Uruguay, and the United Kingdom from 2026), at the low in-quota tariff.</li>
+        <li><b>Other-countries quota</b>: within the shared quota for all other countries, including the 2026 Affordable
+          Beef tranches, at the low in-quota tariff.</li>
+        <li><b>Over quota (26.4%)</b>: beef entered on the over-quota tariff lines, after a quota filled.</li>
+        <li><b>Other trade agreements</b>: duty-free under other U.S. trade agreements (CAFTA-DR countries and Chile), not
+          charged to the quota.</li>
+        <li><b>Outside the beef quota</b>: processed beef and variety meats, which the quota doesn't cover, plus a little
+          beef on other tariff lines.</li>
+      </ul>
+      <h3>The quota</h3>
+      <p>The U.S. beef tariff-rate quota sets yearly amounts, in metric tons of product, for Australia (378,214 t), New Zealand
+        (213,402 t), Argentina (20,000 t), Uruguay (20,000 t), the United Kingdom (13,000 t, from 2026) and all other
+        countries together (65,005 t through 2025; 52,005 t in 2026, after the United Kingdom's share was split off). A
+        2026 proclamation (Proclamation 11059) added 300,000 t for lean beef trimmings from other countries, in three
+        monthly tranches of 100,000 t from September 1 to November 30. U.S. Customs and Border Protection reports how full
+        each quota is every week; this page shows its newest report. 1 metric ton (t) = 2,204.6 lb.</p>
+      <h3>Tariffs in 2025</h3>
+      <p>Over-quota beef pays 26.4%. In 2025 extra tariffs applied on top: a 10% tariff on most countries from April 5, and
+        an extra 40% on Brazil from August 6. Beef was exempted from both on November 13, 2025. Census shows almost no duty
+        on over-quota beef in December 2025 and January 2026; the reason isn't known, so treat those two months with caution.</p>
+      <h3>Live cattle</h3>
+      <p>Head counts of feeder and slaughter cattle crossing the border, mostly with Mexico and Canada. Breeding and dairy
+        cattle are left out. Imports from Mexico were halted at times from late 2024 to keep New World screwworm out of the
+        United States, and those months show few or none.</p>
+      <p>Imports are split by their tariff lines into <b>feeder cattle</b> (calves and feeders under 705 lb, or 320 kg, plus
+        heavier cattle not entered for slaughter or breeding) and <b>slaughter cattle</b> (steers, heifers, cows and bulls
+        entered for immediate slaughter). USDA's weekly reports of cattle imports from Canada count the same classes, and
+        their yearly totals agree with these within about 3%. Exports can't be split: Census export records put feeder
+        and slaughter cattle under one code, along with breeding stock that isn't purebred. Exports count only Canada and
+        Mexico, the two markets for U.S. feeder and slaughter cattle; the few hundred head a year sent anywhere else are
+        breeding and dairy animals.</p>
+      <h3>When it updates</h3>
+      <p>The U.S. Census Bureau releases each month's trade about five weeks after the month ends, and revises recent months
+        in later releases. U.S. Customs and Border Protection updates its quota reports weekly.</p>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <div class="wrap">
+    <section id="disclaimer" aria-labelledby="disc-h">
+      <h2 id="disc-h">Disclaimer</h2>
+      <p>For educational use only. This page summarizes U.S. Census Bureau trade statistics and U.S. Customs and Border
+        Protection quota reports. It is not a forecast or financial, legal or marketing advice, and you use it at your own risk.</p>
+      <details class="method"><summary>Full disclaimer</summary>
+        <p style="margin-top:8px">Trade statistics are revised after release and can contain errors. Prices per pound are
+          averages of declared trade values, not market prices, and duties are Census's calculation, not customs bills. The
+          information is provided as is, without warranty of any kind; its authors are not liable for decisions made with
+          it. This page is not affiliated with or endorsed by the U.S. Census Bureau or U.S. Customs and Border Protection.</p>
+      </details>
+    </section>
+    <p>Sources: U.S. Census Bureau, International Trade data; U.S. Customs and Border Protection, Commodity Status
+      Reports. Compiled by Mississippi State University Extension.</p>
+    <div class="legal">
+      <a class="home" href="https://extension.msstate.edu" aria-label="Mississippi State University Extension"><svg class="logo" viewBox="0 0 617 116" fill="currentColor" role="img" aria-label="Mississippi State University Extension" focusable="false"><g><path d="M32.8,53.7v20c12-6,26.1-9.4,39.3-9.4s27.3,3.4,39.3,9.4v-20c-12-6.2-26.1-9.7-39.3-9.7 C59,44,44.8,47.5,32.8,53.7z M49.4,53.4c-1,0.3-2,0.6-3.1,0.9v-1.1L42,54.8v3.3c0,0,4-1.5,5.7-2l1.8,1.2V62l-2.5,3.2 c-1.9,0.6-3.8,1.3-5.7,2c-0.7-0.5-1.5-0.9-2.2-1.4V64c1-0.4,2-0.8,3-1.2v1.7l0.4-0.2c1.2-0.5,4-1.4,4-1.4v-4.2c0,0-4.1,1.4-5.8,2 L39,59.7v-3.9l2.4-3.3c1.9-0.7,3.8-1.4,5.7-2c0.8,0.5,1.6,1,2.3,1.5V53.4z M59.6,50.2v9.6c0,0,1.2-0.2,1.2-0.2v2.5 c-1.9,0.2-3.7,0.6-5.6,0.9v-2.5l1.2-0.2c0,0,0-9.6,0-9.6l-2.6,0.5v1.7c-0.8,0.2-1.6,0.4-2.4,0.6v-4.2c4.4-1.1,8.8-1.8,13.3-2.2v4.2 c-0.8,0.1-1.6,0.2-2.5,0.2v-1.7L59.6,50.2z M93,61.6l1.2,0.3c0,0,0-9.6,0-9.6c0,0-1.2-0.3-1.2-0.3v-2.5c3.9,1,7.9,2.4,11.6,4v3.4 c-1-0.4-2-0.8-3-1.2v-0.9c0,0-4.4-1.5-4.4-1.5v3.5c0,0,2.8,0.9,4.1,1.4v2.2c-1.2-0.5-4.1-1.4-4.1-1.4v3.8l4.4,1.5v-1.1 c1,0.4,2,0.8,3,1.2V68c-3.8-1.6-7.7-2.9-11.6-3.9V61.6z M77.5,47c4.5,0.3,8.9,1,13.3,2v4.2c-0.8-0.2-1.6-0.4-2.4-0.5V51l-2.7-0.5 V60c0,0,1.2,0.2,1.2,0.2v2.5c-1.9-0.3-3.7-0.6-5.6-0.8v-2.5l1.2,0.1c0,0,0-9.6,0-9.6L80,49.7v1.7c-0.8-0.1-1.6-0.1-2.5-0.2V47z M77,59c0,0,0.9,0.1,1.3,0.1v2.5c-1.8-0.1-3.6-0.2-5.4-0.2v-2.5l1.2,0c0,0-0.8-2.3-0.8-2.3l-4.8,0.1L67.7,59c0,0,1.2,0,1.2,0v2.5 c-1.7,0.1-3.4,0.2-5.1,0.3v-2.5l1.2-0.1c0,0,4.4-12.3,4.4-12.3c1.1,0,2.3,0,3.5,0L77,59z"/><path d="M122.1,60.6l4.3-9.5c-7.1-5.3-17.8-9.6-17.8-9.6l3.7-6V24.9H85.1l-9.3,14.5c-1.2,0-2.4-0.1-3.7-0.1 c-1.2,0-2.4,0-3.7,0.1l-9.3-14.5H31.9v10.5l3.7,6c0,0-10.7,4.3-17.8,9.6l4.3,9.5l-6.3,20.2c0,0,5.5-3.8,12.2-7.8v8.9 c0,0,3.6-2.3,7-4L32,82.6v10.8h29.9V71.1l10.3,16.3l10.3-16.3v22.3h29.9V82.6l-3.2-4.8c3.5,1.7,7,4,7,4v-8.9 c6.7,4,12.2,7.8,12.2,7.8L122.1,60.6z M114.2,69.6l0,8.5c-2.5-1.5-5.1-2.8-7.9-4v3.6l3.7,5.7v7.8H84.8V68c-0.9-0.1-1.8-0.2-2.8-0.3 l-9.8,15.5l-9.8-15.5c-0.9,0.1-1.8,0.2-2.8,0.3v23.2H34.2v-7.8l3.7-5.7V74c-2.7,1.2-5.4,2.5-7.9,4v-8.5c-3.3,1.7-7,3.8-10.6,6.2 l4.8-15.4l-4-8.7c5.4-3.5,11.4-6.6,17.6-9v-1.9l-3.7-6v-7.6H58l9.2,14.3c1.7-0.1,3.3-0.2,5-0.2c1.7,0,3.3,0.1,5,0.2l9.2-14.3h23.7 v7.6l-3.7,6v1.9c6.2,2.4,12.2,5.4,17.6,9l-4,8.7l4.8,15.4C121.2,73.4,117.5,71.2,114.2,69.6z"/><path d="M38,45.4c-5.2,2-9.9,4.4-14.4,7.2l3.4,7.5L23.9,70c2-1.2,4.1-2.2,6.2-3.3V52.1c2.4-1.2,5.9-2.9,7.9-3.7V45.4z" /><polygon points="69.3,54.4 72.6,54.4 71,49.9 "/><path d="M117.3,60.1l3.4-7.5c-4.5-2.8-9.2-5.2-14.4-7.2v2.9c2,0.8,5.5,2.5,7.9,3.7v14.7c2.1,1,4.2,2.1,6.2,3.3 L117.3,60.1z"/></g><g><path d="M177,61.8h-7.6v4.7h7.3V70h-7.3v5.7h7.6v3.6h-11.7V58.2H177V61.8z"/><path d="M186.7,68.1l-6.3-10h4.9l3.7,6.5l3.9-6.5h4.9l-6.5,10l7.2,11.2h-4.8l-4.7-7.7l-4.9,7.7h-4.9L186.7,68.1z"/><path d="M208.3,79.3h-4.1V61.8h-4.7v-3.6H213v3.6h-4.7V79.3z"/><path d="M227.8,61.8h-7.6v4.7h7.3V70h-7.3v5.7h7.6v3.6h-11.7V58.2h11.7V61.8z"/><path d="M232.3,79.3V57.7h2.8L248,72.4V58.2h4.1v21.5h-2.8L236.4,65v14.3H232.3z"/><path d="M269.9,60.2l-2.1,2.8c-1-1.1-2.2-1.7-3.4-1.7c-0.8,0-1.5,0.2-2.1,0.7c-0.6,0.5-0.9,1-0.9,1.7 c0,0.6,0.2,1,0.7,1.4c0.4,0.4,1.3,0.8,2.5,1.2c2.3,0.8,3.8,1.7,4.6,2.5c1,1,1.5,2.4,1.5,4.1c0,2.1-0.7,3.7-2.1,5 c-1.4,1.3-3.1,1.9-5.3,1.9c-3,0-5.4-1.3-7.3-4l2.7-2.6c1,1.9,2.5,2.8,4.4,2.8c1,0,1.7-0.3,2.4-0.8c0.6-0.6,0.9-1.3,0.9-2.1 c0-0.8-0.3-1.4-0.8-1.8c-0.3-0.2-0.7-0.4-1.2-0.7c-0.6-0.3-1.3-0.6-2.1-0.9c-1.9-0.7-3.3-1.5-4-2.3c-0.8-0.9-1.2-2-1.2-3.4 c0-1.8,0.6-3.2,1.9-4.4c1.2-1.2,2.8-1.8,4.7-1.8C266,57.8,268.1,58.6,269.9,60.2z"/><path d="M278.8,58.2v21.1h-4.1V58.2H278.8z"/><path d="M283.1,68.6c0-3,1.1-5.6,3.3-7.7c2.2-2.1,4.9-3.2,8-3.2c3.2,0,5.8,1.1,8,3.2c2.2,2.1,3.3,4.7,3.3,7.8 c0,3.1-1.1,5.7-3.3,7.9c-2.2,2.1-4.9,3.2-8.1,3.2c-2.8,0-5.3-0.9-7.4-2.7C284.3,74.9,283.1,72.1,283.1,68.6z M287.3,68.6 c0,2.1,0.7,3.8,2.1,5.2c1.4,1.4,3,2.1,5,2.1c1.9,0,3.6-0.7,5-2.1c1.4-1.4,2.1-3.2,2.1-5.2c0-2-0.7-3.7-2.1-5.1 c-1.4-1.4-3-2.1-5-2.1c-1.9,0-3.6,0.7-5,2.1C288,65,287.3,66.7,287.3,68.6z"/><path d="M309.9,79.3V57.7h2.8l12.9,14.7V58.2h4.1v21.5h-2.8L314,65v14.3H309.9z"/></g><g><path d="M178.8,48.6v-8.8l-4.2,7.7l-4.2-7.7v8.8l1.3,0.9v2.6h-6.7v-2.6l1.3-0.9V36.1l-1.3-0.9v-2.6h5.8l3.7,6.9 l3.9-6.9h5.7v2.6l-1.3,0.9v12.5l1.3,0.9v2.6h-6.7v-2.6L178.8,48.6z"/><path d="M194.4,52.1h-7.2v-2.6l1.4-0.9V36.2l-1.4-0.9v-2.6h7.2v2.6l-1.4,0.9v12.5l1.4,0.9V52.1z"/><path d="M210.1,35.5l0.3,0.3V38H206v-0.9l-0.5-0.5h-3l-0.5,0.5v2.8L202,40h6.1l2.1,2.2l0.3,0.3v6.3l-3,3.3h-6.9 l-2.7-3.1l-0.2-0.3v-2.7h4.4v1.5l0.6,0.7h2.9l0.6-0.7v-3.8l-0.1-0.1h-6.2l-2.2-2.6v-5.3l2.6-2.9l0.3-0.3h7L210.1,35.5z"/><path d="M226,35.5l0.3,0.3V38h-4.4v-0.9l-0.5-0.5h-3l-0.5,0.5v2.8l0.1,0.1h6.1l2.1,2.2l0.3,0.3v6.3l-3,3.3h-6.9 l-2.7-3.1l-0.2-0.3v-2.7h4.4v1.5l0.6,0.7h2.9l0.6-0.7v-3.8l-0.1-0.1h-6.2l-2.2-2.6v-5.3l2.6-2.9l0.3-0.3h7L226,35.5z"/><path d="M236.5,52.1h-7.2v-2.6l1.4-0.9V36.2l-1.4-0.9v-2.6h7.2v2.6l-1.4,0.9v12.5l1.4,0.9V52.1z"/><path d="M252.2,35.5l0.3,0.3V38H248v-0.9l-0.5-0.5h-3l-0.5,0.5v2.8L244,40h6.1l2.1,2.2l0.3,0.3v6.3l-3,3.3h-6.9 l-2.7-3.1l-0.2-0.3v-2.7h4.4v1.5l0.6,0.7h2.9l0.6-0.7v-3.8l-0.1-0.1h-6.2l-2.2-2.6v-5.3l2.6-2.9l0.3-0.3h7L252.2,35.5z"/><path d="M268.1,35.5l0.3,0.3V38H264v-0.9l-0.5-0.5h-3l-0.5,0.5v2.8L260,40h6.1l2.1,2.2l0.3,0.3v6.3l-3,3.3h-6.9 l-2.7-3.1l-0.2-0.3v-2.7h4.4v1.5l0.6,0.7h2.9l0.6-0.7v-3.8l-0.1-0.1h-6.2l-2.2-2.6v-5.3l2.6-2.9l0.3-0.3h7L268.1,35.5z"/><path d="M278.6,52.1h-7.2v-2.6l1.4-0.9V36.2l-1.4-0.9v-2.6h7.2v2.6l-1.4,0.9v12.5l1.4,0.9V52.1z"/><path d="M295.4,35.6l0.3,0.3v6.3l-2.7,2.9l-0.3,0.3h-5.3v3.2l1.5,0.9v2.6h-7.2v-2.6l1.4-0.9V36.2l-1.4-0.9v-2.6h11.1 L295.4,35.6z M291.3,37.1l-0.5-0.5h-3.4v4.8h3.4l0.5-0.5V37.1z"/><path d="M312,35.6l0.3,0.3v6.3l-2.7,2.9l-0.3,0.3H304v3.2l1.5,0.9v2.6h-7.2v-2.6l1.4-0.9V36.2l-1.4-0.9v-2.6h11.1 L312,35.6z M307.9,37.1l-0.5-0.5H304v4.8h3.4l0.5-0.5V37.1z"/><path d="M321.9,52.1h-7.2v-2.6l1.4-0.9V36.2l-1.4-0.9v-2.6h7.2v2.6l-1.4,0.9v12.5l1.4,0.9V52.1z"/><path d="M348,35.5l0.3,0.3V38h-4.4v-0.9l-0.5-0.5h-3l-0.5,0.5v2.8l0.1,0.1h6.1l2.1,2.2l0.3,0.3v6.3l-3,3.3h-6.9 l-2.7-3.1l-0.2-0.3v-2.7h4.4v1.5l0.6,0.7h2.9l0.6-0.7v-3.8l-0.1-0.1h-6.2l-2.2-2.6v-5.3l2.6-2.9l0.3-0.3h7L348,35.5z"/><path d="M350.4,32.6h15.7v6.2h-3.6v-2.1h-2v12l1.4,0.9v2.6h-7.1v-2.6l1.4-0.9v-12h-2v2.1h-3.6V32.6z"/><path d="M381.4,49.6v2.6h-6.8v-2.6l1.3-0.8l-0.8-2.7h-4.5l-0.9,2.7l1.3,0.8v2.6h-6.5v-2.5l1.3-1l4.7-15.3l0.2-0.7h4.5 l4.7,15.9L381.4,49.6z M374,42.4l-1.1-3.9l-1.2,3.9H374z"/><path d="M379.7,32.6h15.7v6.2h-3.6v-2.1h-2v12l1.4,0.9v2.6H384v-2.6l1.4-0.9v-12h-2v2.1h-3.6V32.6z"/><path d="M397.6,32.6h14.2v6.1h-4.4v-2.1h-4.1v3.7h4.7v3.7h-4.7v4.1h4.1v-1.4h4.4v5.4h-14.2v-2.6l1.4-0.9V36.2l-1.4-0.9 V32.6z"/><path d="M434.1,32.6h6.9v2.7l-1.6,0.9v12.7l-2.7,2.9l-0.3,0.3h-6.9l-3-3.2V36.2l-1.4-0.9v-2.6h6.6v2.5L431,36v11.6 l0.5,0.5h3l0.5-0.5V36l-0.9-0.9V32.6z"/><path d="M450.7,49.5v2.6h-6.6v-2.6l1.4-0.9V36.2l-1.4-0.9v-2.6h5.9l5.7,10.8v-7.3l-1.2-0.9v-2.6h6.4v2.6l-1.3,0.9v16 h-4.1l-6.2-11.9v8.3L450.7,49.5z"/><path d="M471.2,52.1H464v-2.6l1.4-0.9V36.2l-1.4-0.9v-2.6h7.2v2.6l-1.4,0.9v12.5l1.4,0.9V52.1z"/><path d="M483.3,32.6h7.4v2.7l-2,1L484,52.1h-3.8l-4.9-15.9l-1.8-1v-2.7h7.1v2.6l-1.2,0.8l2.6,8.5l2.6-8.5l-1.3-0.8 V32.6z"/><path d="M492.8,32.6h14.2v6.1h-4.4v-2.1h-4.1v3.7h4.7v3.7h-4.7v4.1h4.1v-1.4h4.4v5.4h-14.2v-2.6l1.4-0.9V36.2l-1.4-0.9 V32.6z"/><path d="M525.7,49.6v2.5h-6.5v-2.6l0.9-0.7l-2-4.5h-2.2v4.3l1,0.9v2.5h-6.7v-2.6l1.3-0.9V36.1l-1.3-0.9v-2.6h11l3,3.2 v5.4l-2,2.1l2.3,5.2L525.7,49.6z M519.8,37.1l-0.6-0.5h-3.3v3.8h3.2l0.6-0.7V37.1z"/><path d="M540.8,35.5l0.3,0.3V38h-4.4v-0.9l-0.5-0.5h-3l-0.5,0.5v2.8l0.1,0.1h6.1l2.1,2.2l0.3,0.3v6.3l-3,3.3h-6.9 l-2.7-3.1l-0.2-0.3v-2.7h4.4v1.5l0.6,0.7h2.9l0.6-0.7v-3.8l-0.1-0.1h-6.2l-2.2-2.6v-5.3l2.6-2.9l0.3-0.3h7L540.8,35.5z"/><path d="M551.3,52.1h-7.2v-2.6l1.4-0.9V36.2l-1.4-0.9v-2.6h7.2v2.6l-1.4,0.9v12.5l1.4,0.9V52.1z"/><path d="M553.5,32.6h15.7v6.2h-3.6v-2.1h-2v12l1.4,0.9v2.6h-7.1v-2.6l1.4-0.9v-12h-2v2.1h-3.6V32.6z"/><path d="M580.4,32.6h6.4v2.5l-1.3,1.1l-4.3,8.5v3.9l1.4,0.9v2.6h-7.1v-2.6l1.3-0.9v-3.9l-4.3-8.5l-1.2-1.1v-2.5h6.3 v2.5l-0.8,0.7l2.2,4.2l2.1-4.2l-0.8-0.7V32.6z"/></g><g><polyline points="144.4,17.7 144.4,98.6 147.1,98.6 147.1,17.7 "/></g><g><path d="M593.8,45.3v1.1h-2.2v5.7h-1.4v-5.7h-2.2v-1.1H593.8z M601.1,52.1l-0.3-4c0-0.5,0-1.2,0-1.9h-0.1 c-0.2,0.6-0.4,1.4-0.6,2L599,52h-1.4l-1.2-3.9c-0.1-0.5-0.3-1.3-0.5-1.9h-0.1c0,0.6,0,1.3-0.1,1.9l-0.2,4h-1.3l0.5-6.8h2l1.2,3.3 c0.1,0.5,0.3,1,0.5,1.7h0c0.2-0.6,0.3-1.2,0.5-1.7l1.2-3.4h2l0.5,6.8H601.1z"/></g></svg></a>
+      <p class="note">Josh Maples, Department of Agricultural Economics, MSU Extension.
+        <a href="mailto:josh.maples@msstate.edu">josh.maples@msstate.edu</a>. <span id="foot-gen"></span></p>
+      <p class="note">Mississippi State University is an equal opportunity institution. Discrimination is prohibited in
+        university employment, programs, or activities based on race, color, ethnicity, sex, pregnancy, religion, national
+        origin, disability, age, sexual orientation, genetic information, status as a U.S. veteran, or any other status to
+        the extent protected by applicable law. Questions about equal opportunity programs or compliance should be directed
+        to the <a href="https://www.civilrights.msstate.edu/">Office of Civil Rights Compliance</a>, 231 Famous Maroon Band
+        Street, P.O. Box 6044, Mississippi State, MS 39762.</p>
+      <p class="note">Copyright <span id="foot-year"></span> by Mississippi State University. All rights reserved.
+        <a href="https://www.msstate.edu">www.msstate.edu</a></p>
+    </div>
+  </div>
+</footer>
+<div class="tip" id="tip" role="status" hidden></div>
+
+<script>
+(() => {
+"use strict";
+const $ = (q, r = document) => r.querySelector(q);
+const SVGNS = "http://www.w3.org/2000/svg";
+function mk(ns, tag, props, kids) {
+  const n = ns ? document.createElementNS(ns, tag) : document.createElement(tag);
+  for (const [k, v] of Object.entries(props || {})) {
+    if (v == null || v === false) continue;
+    if (k === "text") n.textContent = v;
+    else if (k === "class") n.setAttribute("class", v);
+    else if (k.startsWith("on")) n.addEventListener(k.slice(2), v);
+    else n.setAttribute(k, v === true ? "" : v);
+  }
+  for (const c of [].concat(kids ?? [])) if (c != null && c !== false) n.append(c);
+  return n;
+}
+const el = (t, p, k) => mk(null, t, p, k);
+const sv = (t, p, k) => mk(SVGNS, t, p, k);
+
+let D, G, R, N, IDX;            // data, map, rows, number of months, "YYYY-MM" -> index
+const MON = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+const MONTH = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+const yr = (i) => +D.months[i].slice(0, 4);
+const mo = (i) => +D.months[i].slice(5, 7) - 1;
+const mName = (i) => `${MONTH[mo(i)]} ${yr(i)}`;
+const mShort = (i) => `${MON[mo(i)]} ${yr(i)}`;
+const janTo = (m) => (m ? `January–${MONTH[m]}` : "January"), janToShort = (m) => (m ? `Jan–${MON[m]}` : "Jan");
+const dateTxt = (s) => { const [y, m, d] = s.split("-").map(Number); return `${MONTH[m - 1]} ${d}, ${y}`; };
+const dateShort = (s) => { const [, m, d] = s.split("-").map(Number); return `${MON[m - 1]} ${d}`; };
+const SMALL = 10000;           // prices resting on fewer pounds get a "few lb" flag
+const COLORS = ["var(--c1)", "var(--c2)", "var(--c3)", "var(--c4)", "var(--c6)", "var(--c7)", "var(--c8)", "var(--c9)", "var(--c5)"];
+const PCOL = ["var(--c3)", "var(--c1)", "var(--c2)", "var(--c4)"];                                   // products
+const CCOL = ["var(--c3)", "var(--c4)", "var(--c1)", "var(--c2)", "var(--c6)", "var(--c5)"];         // how imports entered
+
+// ---- numbers ----
+const nf = new Intl.NumberFormat("en-US");
+const lbTxt = (n) => (n >= 1e9 ? `${(n / 1e9).toFixed(2)} billion lb` : n >= 1e6 ? `${(n / 1e6).toFixed(1)} million lb` : `${nf.format(Math.round(n))} lb`);
+const usdTxt = (n) => (n >= 1e9 ? `$${(n / 1e9).toFixed(2)} billion` : n >= 1e6 ? `$${(n / 1e6).toFixed(1)} million` : `$${nf.format(Math.round(n))}`);
+const priceTxt = (o) => (o.lb > 0 ? `$${(o.usd / o.lb).toFixed(2)}/lb` : "–");
+const compact = (n) => (n >= 1e9 ? `${+(n / 1e9).toFixed(1)}B` : n >= 1e6 ? `${+(n / 1e6).toFixed(1)}M` : n >= 1e3 ? `${+(n / 1e3).toFixed(1)}K` : `${+n.toFixed(2)}`);
+const val = (o, m) => (!o ? null : m === "lb" ? o.lb : m === "usd" ? o.usd : o.lb > 0 ? o.usd / o.lb : null);
+const tblLb = (n) => (n >= 1e6 ? `${(n / 1e6).toFixed(1)}M` : nf.format(Math.round(n)));
+const tblUsd = (n) => (n >= 1e6 ? `${(n / 1e6).toFixed(1)}M` : `${nf.format(Math.round(n))}`);
+const axTxt = (m) => (m === "usd" ? (v) => `$${compact(v)}` : m === "price" ? (v) => `$${v.toFixed(2)}` : compact);
+const pctTxt = (v) => (v == null ? "–" : `${v < 10 ? v.toFixed(1) : Math.round(v)}%`);
+const mtTxt = (v) => (v == null ? "–" : `${nf.format(Math.round(v))} t`);
+function change(cur, prev) {
+  if (cur == null || prev == null) return { t: "–", c: "flat" };
+  if (!prev) return cur ? { t: "new", c: "up" } : { t: "–", c: "flat" };
+  const p = (cur / prev - 1) * 100;
+  if (Math.abs(p) < 0.5) return { t: "same", c: "flat" };
+  if (p >= 900) return { t: `${nf.format(Math.round(cur / prev))}x`, c: "up" };
+  return { t: `${p > 0 ? "+" : "−"}${Math.abs(p) >= 10 ? Math.round(Math.abs(p)) : Math.abs(p).toFixed(1)}%`, c: p > 0 ? "up" : "down" };
+}
+
+// numeric change for sorting: "new" sorts above any percent, no comparison sorts last
+const chk = (cur, prev) => (cur == null || prev == null ? null : !prev ? (cur ? Infinity : null) : cur / prev - 1);
+
+// ---- sortable tables ----
+// Body rows carry their sort keys in tr._k, one per column (the name first,
+// then numbers; null for no value). Tapping a heading sorts: numbers largest
+// first, names A to Z; tapping it again reverses. Rows with no value stay at
+// the bottom. A table keeps the order a viewer picked until the page reloads.
+const SORT = {};
+const keyed = (tr, k) => { tr._k = k; return tr; };
+function sortable(table, id, def, ok = () => true) {
+  const ths = [...table.tHead.rows[0].cells], tb = table.tBodies[0];
+  let st = SORT[id] && ok(SORT[id].col) ? SORT[id] : { col: def, desc: def !== 0 };
+  const apply = () => {
+    const i = st.col, rows = [...tb.rows];
+    rows.sort((a, b) => {
+      const x = a._k[i], y = b._k[i];
+      if (x == null || y == null) return x == null ? (y == null ? 0 : 1) : -1;
+      const d = i === 0 ? String(x).localeCompare(String(y)) : x === y ? 0 : x < y ? -1 : 1;
+      return st.desc ? -d : d;
+    });
+    tb.append(...rows);
+    ths.forEach((th, j) => {
+      th.setAttribute("aria-sort", j === i ? (st.desc ? "descending" : "ascending") : "none");
+      th.querySelector(".arr").textContent = j === i ? (st.desc ? "▼" : "▲") : "";
+    });
+  };
+  ths.forEach((th, j) => {
+    const label = th.textContent;
+    th.replaceChildren(el("button", { type: "button", class: "sortb", title: j === 0 ? "Sort by name" : `Sort by ${label.toLowerCase()}`, onclick: () => {
+      st = st.col === j ? { col: j, desc: !st.desc } : { col: j, desc: j !== 0 };
+      SORT[id] = st; apply();
+    } }, [label, el("span", { class: "arr", "aria-hidden": "true" })]));
+  });
+  apply();
+  return table;
+}
+
+// ---- state ----
+const S = {
+  imp: { period: "12m", year: null, measure: "lb", form: "beef", chan: "all", country: null, zoom: "World", by: "country", sea: "all", seaView: "pattern" },
+  exp: { period: "12m", year: null, measure: "lb", form: "beef", country: null, zoom: "World", by: "country", sea: "all", seaView: "pattern" },
+  cat: { dir: "imp", measure: "head", country: "all", cls: "all", by: "country" },
+  q: { chBy: "lb" },
+};
+// "beef" = fresh, frozen and processed; variety meats only when chosen
+const pass = (dir, st, r) => (st.form === "beef" ? r.f <= 2 : r.f === +st.form) && !(dir === "imp" && st.chan !== "all" && r.s !== +st.chan);
+const formTxt = (st) => (st.form === "beef" ? null : D.products[st.form].toLowerCase());
+const selTxt = (dir, st) => [formTxt(st), dir === "imp" && st.chan !== "all" ? D.channels[st.chan] : null].filter(Boolean).join(", ");
+const unitTxt = (m) => (m === "lb" ? "pounds" : m === "usd" ? "dollars" : "dollars per pound");
+const range = (a, b) => Array.from({ length: b - a + 1 }, (_, k) => a + k);
+function period(st) {
+  const L = N - 1, ly = yr(L), lm = mo(L);
+  let cur, label;
+  if (st.period === "latest") { cur = [L]; label = mName(L); }
+  else if (st.period === "ytd") { cur = range(L - lm, L); label = `${janTo(lm)} ${ly}`; }
+  else if (st.period === "12m") { cur = range(L - 11, L); label = `12 months through ${mName(L)}`; }
+  else {
+    const y = st.year;
+    cur = range(0, L).filter((i) => yr(i) === y);
+    label = y === ly && lm < 11 ? `${y} (${janTo(lm)})` : String(y);
+  }
+  const prevIdx = cur.map((i) => i - 12);
+  const prev = prevIdx[0] >= 0 ? prevIdx : null;
+  const prevLabel = !prev ? null : st.period === "latest" ? mName(prev[0])
+    : st.period === "12m" ? `the 12 months before` : st.period === "ytd" ? (lm ? `the same months of ${ly - 1}` : `January ${ly - 1}`) : `${yr(prev[0])}${cur.length < 12 ? " (same months)" : ""}`;
+  return { cur: new Set(cur), prev: prev && new Set(prev), label, prevLabel, focusYear: yr(cur.at(-1)), n: cur.length };
+}
+function tally(dir, st, set, country = null) {
+  const by = new Map(), tot = { lb: 0, usd: 0 };
+  if (!set) return { by, tot: null };
+  for (const r of R[dir]) {
+    if (!set.has(r.m) || !pass(dir, st, r) || (country != null && r.c !== country)) continue;
+    const o = by.get(r.c) ?? { lb: 0, usd: 0 };
+    o.lb += r.lb; o.usd += r.usd; by.set(r.c, o);
+    tot.lb += r.lb; tot.usd += r.usd;
+  }
+  return { by, tot };
+}
+function monthly(dir, st, country = null, extra = null) {
+  const lb = new Array(N).fill(0), usd = new Array(N).fill(0);
+  for (const r of R[dir]) {
+    if (!pass(dir, st, r) || (country != null && r.c !== country) || (extra && !extra(r))) continue;
+    lb[r.m] += r.lb; usd[r.m] += r.usd;
+  }
+  return { lb, usd };
+}
+const at = (ms, i) => (i == null ? null : { lb: ms.lb[i], usd: ms.usd[i] });
+const yearLine = (ms, y, m) => MON.map((_, k) => { const i = IDX.get(`${y}-${String(k + 1).padStart(2, "0")}`); return i == null ? null : val(at(ms, i), m); });
+function avg3Line(ms, y, m) {
+  return MON.map((_, k) => {
+    const o = { lb: 0, usd: 0 };
+    for (let d = 1; d <= 3; d++) {
+      const i = IDX.get(`${y - d}-${String(k + 1).padStart(2, "0")}`);
+      if (i == null) return null;
+      o.lb += ms.lb[i]; o.usd += ms.usd[i];
+    }
+    return m === "price" ? val(o, m) : val(o, m) / 3;
+  });
+}
+function annual(ms) {
+  const ys = [...new Set(D.months.map((s) => +s.slice(0, 4)))];
+  return ys.map((y) => { const o = { lb: 0, usd: 0 }; D.months.forEach((s, i) => { if (+s.slice(0, 4) === y) { o.lb += ms.lb[i]; o.usd += ms.usd[i]; } }); return { y, ...o }; });
+}
+
+// ---- charts ----
+const niceMax = (v) => { if (!(v > 0)) return 1; const p = 10 ** Math.floor(Math.log10(v)); for (const f of [1, 1.2, 1.5, 2, 2.5, 3, 4, 5, 6, 8, 10]) if (f * p >= v) return f * p; return 10 * p; };
+// a chart draws to the width of its box (640 at most), so its 12px labels stay 12px on a phone
+const chartW = (host) => Math.round(Math.min(640, Math.max(300, host.clientWidth || 640)));
+const chartH = (W) => Math.round(Math.min(250, Math.max(190, W * 0.6)));
+// the charts work from the keyboard too (WCAG 2.1.1): tab to a chart, then the arrow keys, Home and End
+function keyNav(svg, n, at, show, hide) {
+  svg.setAttribute("tabindex", "0");
+  svg.addEventListener("focus", () => { let kb = true; try { kb = svg.matches(":focus-visible"); } catch {} if (kb) show(at(), true); });
+  svg.addEventListener("blur", hide);
+  svg.addEventListener("keydown", (e) => {
+    const i = { ArrowLeft: at() - 1, ArrowRight: at() + 1, Home: 0, End: n - 1 }[e.key];
+    if (i == null) return;
+    e.preventDefault(); show(Math.max(0, Math.min(n - 1, i)), true);
+  });
+}
+// and the chart's values as a table for screen readers (WCAG 1.1.1), captioned with the chart's label
+const srTable = (label, head, rows) => el("div", { class: "sr-only" }, el("table", {}, [el("caption", { text: label }),
+  el("thead", {}, el("tr", {}, head.map((h) => el("th", { scope: "col", text: h })))),
+  el("tbody", {}, rows.map(([r, ...cells]) => el("tr", {}, [el("th", { scope: "row", text: r }), ...cells.map((c) => el("td", { text: c }))])))]));
+function lineChart(host, { labels, names, series, fmt, tipFmt, label, first = "Month" }) {   // names: full labels for the readout and table
+  const W = chartW(host), H = chartH(W), L = 52, Rt = 14, T = 12, B = 28;
+  const all = series.flatMap((s) => s.values).filter((v) => v != null);
+  const max = niceMax(Math.max(0, ...all));
+  const x = (i) => L + (i * (W - L - Rt)) / Math.max(1, labels.length - 1);
+  const y = (v) => T + (1 - v / max) * (H - T - B);
+  const svg = sv("svg", { class: "chart", viewBox: `0 0 ${W} ${H}`, role: "img", "aria-label": label });
+  for (let k = 0; k <= 4; k++) {
+    const v = (max * k) / 4;
+    svg.append(sv("line", { class: "grid", x1: L, x2: W - Rt, y1: y(v), y2: y(v) }), sv("text", { class: "ax", x: L - 8, y: y(v) + 4, "text-anchor": "end", text: fmt(v) }));
+  }
+  const lw = Math.max(...labels.map((t) => t.length)) * 6.5 + 8;
+  const step = Math.max(1, Math.ceil(labels.length / Math.floor((W - L - Rt) / Math.max(34, lw))));   // counted back from the last label
+  labels.forEach((t, i) => { if ((labels.length - 1 - i) % step === 0) svg.append(sv("text", { class: "ax", x: x(i), y: H - 8, "text-anchor": "middle", text: t })); });
+  for (const s of series) {
+    let d = "", pen = false;
+    s.values.forEach((v, i) => { if (v == null) { pen = false; return; } d += `${pen ? "L" : "M"}${x(i).toFixed(1)},${y(v).toFixed(1)}`; pen = true; });
+    if (d) svg.append(sv("path", { class: s.cls, d, style: s.color ? `stroke:${s.color}` : null }));
+    if (s.dots) s.values.forEach((v, i) => { if (v != null && (i === 0 || s.values[i - 1] == null) && (i === s.values.length - 1 || s.values[i + 1] == null)) svg.append(sv("circle", { cx: x(i), cy: y(v), r: 3, style: `fill:${s.color || "var(--line-1)"}` })); });
+  }
+  const cross = sv("line", { class: "cross", y1: T, y2: H - B, visibility: "hidden" });
+  svg.append(cross);
+  const out = el("p", { class: "readout", "aria-live": "polite" });
+  const keys = el("ul", { class: "keys" }, series.map((s) => el("li", {}, [el("span", { class: `sw ${s.cls === "s-avg" || s.cls === "s-dash" ? "dash" : "ln"}`,
+    style: s.cls === "s-avg" ? null : s.cls === "s-dash" ? `border-top-color:${s.color}` : `background:${s.color || (s.cls === "s-now" ? "var(--line-1)" : "var(--line-3)")}` }), s.name])));
+  const val = (s, i) => (s.values[i] == null ? "–" : (tipFmt || fmt)(s.values[i]));
+  let cur = labels.length - 1;
+  const show = (i) => {
+    cur = i;
+    cross.setAttribute("x1", x(i)); cross.setAttribute("x2", x(i)); cross.setAttribute("visibility", "visible");
+    out.textContent = `${(names || labels)[i]}: ` + series.map((s) => `${s.name} ${val(s, i)}`).join(" · ");
+  };
+  const hide = () => { cross.setAttribute("visibility", "hidden"); out.textContent = ""; };
+  svg.addEventListener("pointermove", (e) => { const r = svg.getBoundingClientRect(); const px = ((e.clientX - r.left) / r.width) * W; show(Math.max(0, Math.min(labels.length - 1, Math.round(((px - L) / (W - L - Rt)) * (labels.length - 1))))); });
+  svg.addEventListener("pointerleave", hide);
+  keyNav(svg, labels.length, () => cur, show, hide);
+  host.replaceChildren(svg, keys, out, srTable(label, [first, ...series.map((s) => s.name)],
+    (names || labels).map((t, i) => [t, ...series.map((s) => val(s, i))])));
+}
+// cats: one per bar. labels: axis text (default: years as 'yy past 8 bars); names: readout and table text
+function barChart(host, { cats, labels, names, stacks, fmt, tipFmt, hilite, partial, label, first = "Year" }) {
+  const W = chartW(host), H = chartH(W), L = 52, Rt = 8, T = 12, B = 28;
+  const totals = cats.map((_, i) => stacks.reduce((s, st) => s + (st.values[i] || 0), 0));
+  const max = niceMax(Math.max(0, ...totals));
+  const bw = (W - L - Rt) / cats.length;
+  const axl = labels || cats.map((c, i) => `${cats.length > 8 ? "'" + String(c).slice(2) : c}${partial === i ? "*" : ""}`);
+  const lw = Math.max(...axl.map((t) => String(t).length)) * 6.5 + 6;
+  const every = Math.max(cats.length > 12 ? 2 : 1, Math.ceil(cats.length / Math.floor((W - L - Rt) / Math.max(30, lw))));
+  const y = (v) => T + (1 - v / max) * (H - T - B);
+  const svg = sv("svg", { class: "chart", viewBox: `0 0 ${W} ${H}`, role: "img", "aria-label": label });
+  for (let k = 0; k <= 4; k++) { const v = (max * k) / 4; svg.append(sv("line", { class: "grid", x1: L, x2: W - Rt, y1: y(v), y2: y(v) }), sv("text", { class: "ax", x: L - 8, y: y(v) + 4, "text-anchor": "end", text: fmt(v) })); }
+  cats.forEach((c, i) => {
+    let base = 0;
+    const x0 = L + i * bw + bw * 0.14, w = bw * 0.72;
+    stacks.forEach((st) => {
+      const v = st.values[i] || 0; if (!v) return;
+      svg.append(sv("rect", { x: x0, y: y(base + v), width: w, height: Math.max(0, y(base) - y(base + v)), style: `fill:${st.color}`, opacity: partial === i ? 0.55 : 1 }));
+      base += v;
+    });
+    if (hilite === i && totals[i]) svg.append(sv("rect", { class: "hl", x: x0 - 1.5, y: y(totals[i]) - 1.5, width: w + 3, height: y(0) - y(totals[i]) + 3 }));
+    if ((cats.length - 1 - i) % every === 0) svg.append(sv("text", { class: "ax", x: x0 + w / 2, y: H - 8, "text-anchor": "middle", text: axl[i] }));
+  });
+  const out = el("p", { class: "readout", "aria-live": "polite" });
+  const keys = stacks.length > 1 ? el("ul", { class: "keys" }, stacks.map((s) => el("li", {}, [el("span", { class: "sw", style: `background:${s.color}` }), s.name]))) : null;
+  const tf = tipFmt || fmt, catTxt = (i) => (names ? names[i] : `${cats[i]}${partial === i ? " (part year)" : ""}`);
+  // a dashed box marks the bar the keyboard is on (the pointer is its own marker)
+  const mark = sv("rect", { class: "cur", y: T - 3, width: bw * 0.72 + 6, height: H - B - T + 3, visibility: "hidden" });
+  svg.append(mark);
+  let cur = cats.length - 1;
+  const show = (i, kb) => {
+    cur = i;
+    mark.setAttribute("x", L + i * bw + bw * 0.14 - 3); mark.setAttribute("visibility", kb ? "visible" : "hidden");
+    const parts = stacks.length > 1 ? stacks.filter((s) => s.values[i]).map((s) => `${s.name} ${tf(s.values[i])}`) : [];
+    out.textContent = `${catTxt(i)}: ${tf(totals[i])}${parts.length ? "; " + parts.join(" · ") : ""}`;
+  };
+  const hide = () => { mark.setAttribute("visibility", "hidden"); out.textContent = ""; };
+  svg.addEventListener("pointermove", (e) => {
+    const r = svg.getBoundingClientRect(); const px = ((e.clientX - r.left) / r.width) * W;
+    show(Math.max(0, Math.min(cats.length - 1, Math.floor((px - L) / bw))));
+  });
+  svg.addEventListener("pointerleave", hide);
+  keyNav(svg, cats.length, () => cur, show, hide);
+  const multi = stacks.length > 1;
+  const table = srTable(label, [first, ...(multi ? ["Total"] : []), ...stacks.map((s) => s.name)],
+    cats.map((_, i) => [catTxt(i), ...(multi ? [tf(totals[i])] : []), ...stacks.map((s) => tf(s.values[i] || 0))]));
+  host.replaceChildren(...[svg, keys, out, table].filter(Boolean));
+}
+const mixBar = (parts) => {
+  const tot = parts.reduce((s, p) => s + p.v, 0);
+  if (!tot) return el("p", { class: "note", text: "None in this period." });
+  // whole percents that add up to 100: round down, then give the leftover points to the largest remainders
+  const exact = parts.map((p) => (100 * p.v) / tot), pct = exact.map(Math.floor);
+  exact.map((v, i) => [v - pct[i], i]).sort((a, b) => b[0] - a[0]).slice(0, 100 - pct.reduce((a, b) => a + b, 0)).forEach(([, i]) => pct[i]++);
+  const ptxt = (p) => (pct[parts.indexOf(p)] ? `${pct[parts.indexOf(p)]}%` : "<1%");
+  return el("div", {}, [
+    el("div", { class: "mix", role: "img", "aria-label": parts.filter((p) => p.v).map((p) => `${p.name} ${ptxt(p)}`).join(", ") },
+      parts.filter((p) => p.v).map((p) => el("span", { style: `width:${(100 * p.v) / tot}%;background:${p.color}`, title: `${p.name}: ${((100 * p.v) / tot).toFixed(1)}%` }))),
+    el("ul", { class: "keys" }, parts.filter((p) => p.v).map((p) => el("li", {}, [el("span", { class: "sw", style: `background:${p.color}` }), `${p.name} ${ptxt(p)}`]))),
+  ]);
+};
+const progBar = (v, max, label) => el("div", { class: "prog", role: "img", "aria-label": label }, el("i", { style: `width:${Math.min(100, Math.max(0, (100 * v) / max))}%` }));
+
+// ---- tooltip ----
+const tip = $("#tip");
+function showTip(e, title, rows) {
+  tip.replaceChildren(el("b", { text: title }), ...rows.map(([k, v]) => el("div", { class: "row" }, [el("span", { text: k }), el("span", { text: v })])));
+  tip.hidden = false;
+  const r = e.clientX != null ? { x: e.clientX, y: e.clientY } : (() => { const b = e.target.getBoundingClientRect(); return { x: b.right, y: b.top }; })();
+  const w = tip.offsetWidth, h = tip.offsetHeight;
+  tip.style.left = `${Math.min(innerWidth - w - 8, r.x + 14)}px`;
+  tip.style.top = `${Math.max(8, Math.min(innerHeight - h - 8, r.y - h - 10))}px`;
+}
+const hideTip = () => { tip.hidden = true; };
+
+// ---- Imports / Exports tab ----
+const WORD = { imp: { noun: "imports", from: "supplier", plural: "suppliers", list: "Supplying countries", toFrom: "from" },
+  exp: { noun: "exports", from: "destination", plural: "destinations", list: "Destinations", toFrom: "to" } };
+const segBtns = (id, opts, cur, onPick, cls = "") => el("div", { class: `seg${cls ? " " + cls : ""}`, id, role: "group" }, opts.map(([v, t]) => el("button", { type: "button", "aria-pressed": String(v === cur), "data-v": v, text: t, onclick: () => onPick(v) })));
+const field = (label, ctl) => el("div", { class: "field" }, [el("span", { text: label }), ctl]);
+// the two half-width Imports menus on a phone show these instead (the font stays 16px, or iPhone Safari zooms in)
+const SHORT = { "All beef": "All beef", "Fresh or chilled beef": "Fresh", "Frozen beef": "Frozen", "Processed beef": "Processed",
+  "Variety meats": "Variety meats", "All": "All", "Canada and Mexico (USMCA)": "USMCA", "Country quotas": "Country quotas",
+  "Other-countries quota": "Other quota", "Over quota (26.4%)": "Over quota", "Other trade agreements": "Other FTAs",
+  "Outside the beef quota": "Not in quota", "Feeder and slaughter": "Feeder and slaughter", "Feeder cattle": "Feeders", "Slaughter cattle": "Slaughter" };
+const PHONE = matchMedia("(max-width: 640px)");
+function select(id, opts, cur, onPick, label, short = false) {
+  const s = el("select", { id, "aria-label": label }, opts.map(([v, t]) => el("option", { value: v, text: t, "data-full": t })));
+  const fit = () => s.querySelectorAll("option").forEach((o) => { o.text = (short && PHONE.matches && SHORT[o.dataset.full]) || o.dataset.full; });
+  fit(); PHONE.addEventListener("change", fit);
+  s.value = String(cur); s.addEventListener("change", () => onPick(s.value)); return s;
+}
+const built = { imp: false, exp: false };
+function buildTrade(dir) {
+  const w = WORD[dir], host = $(`#${dir}`), st = S[dir], Noun = w.noun[0].toUpperCase() + w.noun.slice(1);
+  const L = N - 1, years = [...new Set(D.months.map((s) => +s.slice(0, 4)))].reverse();
+  // these apply to both sections
+  const shared = el("div", { class: "ctrls" }, [
+    field("Show", segBtns(`${dir}-measure`, [["lb", "Pounds"], ["usd", "Dollars"], ["price", "$ per lb"]], st.measure, (v) => { st.measure = v; render(dir); })),
+    el("div", { class: "pair" }, [field("Product", select(`${dir}-form`, [["beef", "All beef"], ...D.products.map((f, i) => [i, f])], st.form, (v) => { st.form = v; render(dir); }, "Product", true)),
+      dir === "imp" ? field("How it entered", select("imp-chan", [["all", "All"], ...D.channels.map((s, i) => [i, s])], st.chan, (v) => { st.chan = v; render(dir); }, "How it entered", true)) : null,
+    ].filter(Boolean)),
+  ]);
+  // these apply to the country view only
+  const local = el("div", { class: "ctrls" }, [
+    field("Period", el("div", { style: "display:flex;gap:8px;flex-wrap:wrap" }, [
+      segBtns(`${dir}-period`, [["latest", "Latest month"], ["ytd", "Year to date"], ["12m", "Last 12 months"]], st.period, (v) => { st.period = v; st.year = null; render(dir); }),
+      select(`${dir}-year`, [["", "Pick a year"], ...years.map((y) => [y, y === yr(L) && mo(L) < 11 ? `${y} (${janToShort(mo(L))})` : String(y)])], "", (v) => { st.period = v ? "year" : "12m"; st.year = v ? +v : null; render(dir); }, "Calendar year"),
+    ])),
+    field("Region", segBtns(`${dir}-zoom`, Object.keys(G.views).map((k) => [k, k]), st.zoom, (v) => zoomTo(dir, v), "chips")),
+  ]);
+  const byOpts = dir === "imp" ? [["total", "Total"], ["country", "By country"], ["chan", "How it entered"], ["product", "By product"]] : [["total", "Total"], ["country", "By country"], ["product", "By product"]];
+  host.replaceChildren(...[
+    el("div", {}, [el("h2", { text: `U.S. beef ${w.noun} since ${D.meta.first.slice(0, 4)}` }),
+      el("p", { class: "sub", text: `Annual totals. ${dir === "imp" ? "Show, Product and How it entered" : "Show and Product"} apply here and to ${w.noun} by country below.` })]),
+    shared,
+    el("div", { class: "card" }, [
+      el("div", { class: "cardbar" }, [el("h3", { text: `${Noun} by year` }), segBtns(`${dir}-by`, byOpts, st.by, (v) => { st.by = v; drawOverTime(dir); })]),
+      el("p", { class: "note", id: `${dir}-ot-note`, style: "margin:4px 0 8px" }), el("div", { id: `${dir}-ot` })]),
+    el("div", { class: "card" }, [
+      el("div", { class: "cardbar" }, [el("h3", { id: `${dir}-sea-h`, text: "Seasonal pattern" }),
+        el("div", { style: "display:flex;gap:8px;flex-wrap:wrap;align-items:center" }, [
+          segBtns(`${dir}-sea-view`, [["pattern", "Usual pattern"], ["years", "By year"]], st.seaView, (v) => { st.seaView = v; drawSeasonal(dir); }),
+          el("div", { id: `${dir}-sea-pick` })])]),
+      el("p", { class: "note", id: `${dir}-sea-note`, style: "margin:4px 0 8px" }), el("div", { id: `${dir}-sea` })]),
+    el("div", { class: "card" }, [el("h3", { text: `Average ${dir === "imp" ? "import" : "export"} price by product` }), el("p", { class: "note", id: `${dir}-price-note`, style: "margin:4px 0 8px" }), el("div", { id: `${dir}-price` })]),
+    el("div", { class: "sec" }, [el("h2", { id: `${dir}-h` }), el("p", { class: "sub", id: `${dir}-sub` })]),
+    local,
+    el("div", { class: "card mapcard" }, [
+      el("div", { class: "mapbar" }, [el("p", { class: "legend", id: `${dir}-legend` })]),
+      el("div", { id: `${dir}-map` }),
+    ]),
+    el("div", { class: "split" }, [
+      el("div", { class: "card" }, [el("h3", { id: `${dir}-list-h` }), el("p", { class: "note", id: `${dir}-list-note`, style: "margin:4px 0 8px" }), el("div", { class: "tablewrap", id: `${dir}-table` })]),
+      el("div", { class: "card detail", id: `${dir}-detail`, "aria-live": "polite" }),
+    ]),
+  ].filter(Boolean));
+  built[dir] = true;
+}
+// ---- over time: every year, all countries together (the period doesn't apply) ----
+function drawOverTime(dir) {
+  const st = S[dir], w = WORD[dir], m = st.measure;
+  syncSeg(`${dir}-by`, st.by);
+  const years = [...new Set(D.months.map((s) => +s.slice(0, 4)))];
+  const L = N - 1, part = mo(L) < 11 ? years.length - 1 : null, ly = yr(L);
+  const rows = R[dir].filter((r) => pass(dir, st, r));
+  // the largest partners of the last three years, so a newcomer like Brazil isn't lost in "All others"
+  const biggest = (keyFn, n) => { const t = new Map(); for (const r of rows) if (r.m > L - 36) t.set(keyFn(r), (t.get(keyFn(r)) || 0) + (m === "usd" ? r.usd : r.lb)); return [...t].sort((a, b) => b[1] - a[1]).slice(0, n).map(([k]) => k); };
+  let groups, how = "", fixed = false;
+  if (st.by === "country") {
+    const top = biggest((r) => r.c, 5);
+    groups = top.map((c, i) => ({ name: D.countries[c].name, color: COLORS[i], keep: (r) => r.c === c }));
+    how = ` The ${top.length} largest ${w.plural} of the last three years, the rest together.`;
+  } else if (st.by === "chan") {
+    groups = D.channels.map((n, i) => ({ name: n, color: CCOL[i], keep: (r) => r.s === i })); fixed = true;
+  } else if (st.by === "product") {
+    groups = D.products.map((n, i) => ({ name: n, color: PCOL[i], keep: (r) => r.f === i })); fixed = true;
+  } else groups = [{ name: `All ${w.noun}`, color: "var(--c1)", keep: () => true }];
+  const named = groups.length;
+  if (!fixed) groups.push({ name: "All others", color: "var(--c5)", keep: () => true });
+  const sums = groups.map(() => years.map(() => ({ lb: 0, usd: 0 })));
+  for (const r of rows) { const g = groups.findIndex((x) => x.keep(r)); if (g < 0) continue; const o = sums[g][years.indexOf(yr(r.m))]; o.lb += r.lb; o.usd += r.usd; }
+  const used = groups.map((g, i) => ({ ...g, sum: sums[i] })).filter((g, i) => (i < named && !fixed) || g.sum.some((o) => o.lb || o.usd));
+  const sel = selTxt(dir, st);
+  const host = $(`#${dir}-ot`), label = `U.S. beef ${w.noun} by year${sel ? ", " + sel : ""}, ${unitTxt(m)}`;
+  const ylabels = years.map((y, k) => `'${String(y).slice(2)}${k === part ? "*" : ""}`);
+  const ynames = years.map((y, k) => `${y}${k === part ? " (part year)" : ""}`);
+  if (m === "price") {
+    const pr = (o) => (o.lb > 1000 ? o.usd / o.lb : null);
+    const all = years.map((_, k) => sums.reduce((a, g) => ({ lb: a.lb + g[k].lb, usd: a.usd + g[k].usd }), { lb: 0, usd: 0 }));
+    // price lines tangle past three: the total and the two largest groups by pounds
+    const lbOf = (g) => g.sum.reduce((a, o) => a + o.lb, 0);
+    const lines = st.by === "total" ? [] : used.filter((g) => g.name !== "All others" && lbOf(g) > 0).sort((a, b) => lbOf(b) - lbOf(a)).slice(0, 2);
+    if (lines.length) how = ` All ${w.noun} and the 2 largest groups since ${years[0]} by pounds.`;
+    lineChart(host, { labels: ylabels, names: ynames, label, first: "Year", fmt: (v) => `$${v.toFixed(2)}`, series: [
+      { name: `All ${w.noun}`, cls: "s-avg", values: all.map(pr) },
+      ...lines.map((g) => ({ name: g.name, cls: "s-now", color: g.color, values: g.sum.map(pr) })),
+    ] });
+  } else {
+    const pick = (o) => (m === "usd" ? o.usd : o.lb);
+    barChart(host, { cats: years, partial: part, label, fmt: m === "usd" ? (v) => `$${compact(v)}` : compact, tipFmt: m === "usd" ? usdTxt : lbTxt,
+      stacks: used.map((g) => ({ name: g.name, color: g.color, values: g.sum.map(pick) })) });
+  }
+  const unit = m === "lb" ? "Pounds (product weight)" : m === "usd" ? "Dollars" : "Average price per pound (years under 1,000 lb left out)";
+  const selNote = sel ? ` ${sel[0].toUpperCase() + sel.slice(1)} only.` : " Fresh, frozen and processed beef.";
+  $(`#${dir}-ot-note`).textContent = `${unit}.${selNote}${how}${part != null ? ` * ${ly} is ${janTo(mo(L))} only.` : ""}`;
+  // average price by product (the Product menu doesn't apply; How it entered does)
+  const prow = R[dir].filter((r) => dir !== "imp" || st.chan === "all" || r.s === +st.chan);
+  const pr = (keep) => years.map((y) => { let lb = 0, usd = 0; for (const r of prow) if (yr(r.m) === y && keep(r)) { lb += r.lb; usd += r.usd; } return lb > 1000 ? usd / lb : null; });
+  const chanNote = dir === "imp" && st.chan !== "all" ? ` ${D.channels[st.chan]} only.` : "";
+  $(`#${dir}-price-note`).textContent = `Dollars per pound: ${dir === "imp" ? "customs value (before freight, insurance and duties)" : "value at the U.S. port"} divided by pounds.${chanNote}${part != null ? ` * ${ly} is ${janTo(mo(L))} only.` : ""}`;
+  lineChart($(`#${dir}-price`), { labels: ylabels, names: ynames, first: "Year", label: `Average ${dir === "imp" ? "import" : "export"} price by product, dollars per pound`, fmt: (v) => `$${v.toFixed(2)}`, series: [
+    { name: "All beef", cls: "s-avg", values: pr((r) => r.f <= 2) },
+    ...D.products.map((n, i) => ({ name: n, cls: "s-now", color: PCOL[i], values: pr((r) => r.f === i) })),
+  ] });
+}
+// ---- seasonal: the usual pattern (as on the cattle auction dashboard), or each month of this year
+// against the four years before; all countries or one ----
+const SEA_GREYS = ["var(--g1)", "var(--g2)", "var(--g3)", "var(--g4)"];
+// A month's value against the centered 12-month average around it (the 2x12 moving average: 13 months,
+// the two ends at half weight), so a trend up or down doesn't read as season. Averaged over the last five
+// full years the window covers, with the lowest and highest year for each month.
+function seasonIndex(series, ly) {
+  const idx = new Array(N).fill(null);
+  for (let i = 6; i < N - 6; i++) {
+    let s = (series[i - 6] + series[i + 6]) / 2, ok = series[i - 6] != null && series[i + 6] != null;
+    for (let k = -5; k <= 5; k++) { if (series[i + k] == null) ok = false; s += series[i + k] ?? 0; }
+    const ma = s / 12;
+    if (ok && ma > 0 && series[i] != null) idx[i] = (100 * series[i]) / ma;
+  }
+  const years = [];
+  for (let y = ly - 1; y >= yr(0) && years.length < 5; y--) {
+    if (MON.every((_, k) => idx[IDX.get(`${y}-${String(k + 1).padStart(2, "0")}`)] != null)) years.unshift(y);
+  }
+  return { years, rows: MON.map((_, k) => {
+    const v = years.map((y) => idx[IDX.get(`${y}-${String(k + 1).padStart(2, "0")}`)]);
+    return v.length ? { index: v.reduce((a, b) => a + b, 0) / v.length, low: Math.min(...v), high: Math.max(...v) } : null;
+  }) };
+}
+function seasonBars(host, { rows, label, years }) {
+  const W = chartW(host), H = chartH(W), L = 52, Rt = 8, T = 12, B = 28;
+  const vals = rows.filter(Boolean).flatMap((r) => [r.low, r.high]);
+  const span = Math.max(10, ...vals.map((v) => Math.abs(v - 100)));
+  const step = span <= 12 ? 5 : span <= 25 ? 10 : span <= 60 ? 20 : 50, top = Math.ceil(span / step) * step;
+  const lo = 100 - top, hi = 100 + top, bw = (W - L - Rt) / 12;
+  const y = (v) => T + (1 - (v - lo) / (hi - lo)) * (H - T - B);
+  const pct = (v) => `${v >= 100 ? "+" : "−"}${Math.abs(v - 100) < 9.95 ? Math.abs(v - 100).toFixed(1) : Math.round(Math.abs(v - 100))}%`;
+  const svg = sv("svg", { class: "chart", viewBox: `0 0 ${W} ${H}`, role: "img", "aria-label": label });
+  for (let v = lo; v <= hi + 0.01; v += step) svg.append(sv("line", { class: "grid", x1: L, x2: W - Rt, y1: y(v), y2: y(v) }),
+    sv("text", { class: "ax", x: L - 8, y: y(v) + 4, "text-anchor": "end", text: v === 100 ? "0%" : `${v > 100 ? "+" : "−"}${Math.abs(v - 100)}%` }));
+  rows.forEach((r, i) => {
+    const cx = L + i * bw + bw / 2, w = bw * 0.62;
+    if (r) {
+      svg.append(sv("rect", { x: cx - w / 2, y: Math.min(y(100), y(r.index)), width: w, height: Math.max(1.5, Math.abs(y(r.index) - y(100))), rx: 3,
+        style: `fill:${r.index >= 100 ? "var(--c1)" : "var(--line-3)"}` }));
+      svg.append(sv("line", { x1: cx, x2: cx, y1: y(r.high), y2: y(r.low), style: "stroke:var(--ink);stroke-width:1.2;opacity:.55" }));
+    }
+    svg.append(sv("text", { class: "ax", x: cx, y: H - 8, "text-anchor": "middle", text: W < 420 && i % 2 ? "" : MON[i] }));
+  });
+  svg.append(sv("line", { x1: L, x2: W - Rt, y1: y(100), y2: y(100), style: "stroke:var(--ink);stroke-width:1" }));
+  const out = el("p", { class: "readout", "aria-live": "polite" });
+  const mark = sv("rect", { class: "cur", y: T - 3, width: bw * 0.62 + 6, height: H - B - T + 3, visibility: "hidden" });
+  svg.append(mark);
+  let cur = mo(N - 1);
+  const show = (i, kb) => {
+    cur = i; const r = rows[i];
+    mark.setAttribute("x", L + i * bw + bw * 0.19 - 3); mark.setAttribute("visibility", kb ? "visible" : "hidden");
+    out.textContent = r ? `${MONTH[i]}: ${pct(r.index)} vs. a typical month; range across years ${pct(r.low)} to ${pct(r.high)}` : `${MONTH[i]}: not enough data`;
+  };
+  const hide = () => { mark.setAttribute("visibility", "hidden"); out.textContent = ""; };
+  svg.addEventListener("pointermove", (e) => { const b = svg.getBoundingClientRect(); show(Math.max(0, Math.min(11, Math.floor(((((e.clientX - b.left) / b.width) * W) - L) / bw)))); });
+  svg.addEventListener("pointerleave", hide);
+  keyNav(svg, 12, () => cur, show, hide);
+  host.replaceChildren(svg, out, srTable(label, ["Month", "vs. a typical month", "Lowest year", "Highest year"],
+    rows.map((r, i) => [MONTH[i], r ? pct(r.index) : "–", r ? pct(r.low) : "–", r ? pct(r.high) : "–"])));
+}
+function drawSeasonal(dir) {
+  const st = S[dir], w = WORD[dir], m = st.measure, L = N - 1, ly = yr(L);
+  syncSeg(`${dir}-sea-view`, st.seaView);
+  // the menu: all countries, then the 12 largest partners of the last three years, largest first
+  const big = new Map(); for (const r of R[dir]) if (r.m > L - 36 && pass(dir, st, r)) big.set(r.c, (big.get(r.c) || 0) + r.lb);
+  const top = [...big].sort((a, b) => b[1] - a[1]).slice(0, 12).map(([c]) => c);
+  if (st.sea !== "all" && !top.includes(+st.sea)) top.push(+st.sea);
+  $(`#${dir}-sea-pick`).replaceChildren(select(`${dir}-sea-c`, [["all", "All countries"], ...top.map((c) => [c, D.countries[c].name])], st.sea, (v) => { st.sea = v; drawSeasonal(dir); }, "Country for the seasonal chart"));
+  const c = st.sea === "all" ? null : +st.sea, who = c == null ? "All countries" : D.countries[c].name;
+  const ms = monthly(dir, st, c), sel = selTxt(dir, st);
+  const what = sel ? ` ${sel[0].toUpperCase() + sel.slice(1)} only.` : " Fresh, frozen and processed beef.";
+  const unit = { lb: "pounds (product weight)", usd: "dollars", price: "average price per pound" }[m];
+  $(`#${dir}-sea-h`).textContent = `Seasonal pattern: ${who}`;
+  if (st.seaView === "pattern") {
+    const series = D.months.map((_, i) => (m === "price" ? (ms.lb[i] > 1000 ? ms.usd[i] / ms.lb[i] : null) : val(at(ms, i), m)));
+    const { years, rows } = seasonIndex(series, ly);
+    const yl = years.length ? `${years[0]}–${years.at(-1)}` : "";
+    $(`#${dir}-sea-note`).textContent = years.length < 3 ? `Not enough months of trade for a seasonal pattern.${what}`
+      : `How far each month's ${unit} usually run above or below the average of the 12 months around it, ${yl}.${what} Thin lines show the lowest and highest year.`;
+    if (years.length < 3) { $(`#${dir}-sea`).replaceChildren(); return; }
+    seasonBars($(`#${dir}-sea`), { rows, years, label: `${who}, usual seasonal pattern of beef ${w.noun}${sel ? ", " + sel : ""}, ${unit}, ${yl}` });
+    return;
+  }
+  const fmt = m === "lb" ? (v) => compact(v) : axTxt(m);
+  const tipFmt = m === "lb" ? (v) => lbTxt(v) : m === "usd" ? (v) => usdTxt(v) : (v) => `$${v.toFixed(2)}/lb`;
+  const earlier = [1, 2, 3, 4].map((d) => ly - d).filter((y) => y >= yr(0));
+  // arrivals (general imports) this year, imports in pounds only: beef that has arrived, some of it waiting in a bonded warehouse
+  let arr = null;
+  if (dir === "imp" && m === "lb") {
+    const g = new Array(N).fill(0); for (const r of R.imp) if (pass(dir, st, r) && (c == null || r.c === c)) g[r.m] += r.gen;
+    arr = MON.map((_, k) => { const i = IDX.get(`${ly}-${String(k + 1).padStart(2, "0")}`); return i == null ? null : g[i]; });
+  }
+  $(`#${dir}-sea-note`).textContent = `${unit[0].toUpperCase() + unit.slice(1)} by month, ${ly} against the four years before.${what}`
+    + (arr ? ` The dashed line is ${ly} arrivals (general imports), which count beef when it reaches the United States, including beef held in bonded warehouses. Imports (entries) count it when it enters for use.` : "");
+  lineChart($(`#${dir}-sea`), { labels: MON, label: `${who}, monthly beef ${w.noun}${sel ? ", " + sel : ""}, ${ly} and the four years before, ${unitTxt(m)}`, fmt, tipFmt, series: [
+    ...earlier.slice().reverse().map((y) => ({ name: String(y), cls: "s-yr", color: SEA_GREYS[ly - y - 1], values: yearLine(ms, y, m) })),
+    { name: `${ly}${arr ? " entries" : ""}`, cls: "s-now", values: yearLine(ms, ly, m), dots: true },
+    arr ? { name: `${ly} arrivals`, cls: "s-dash", color: "var(--c2)", values: arr } : null,
+  ].filter(Boolean) });
+}
+function syncSeg(id, v) { for (const b of document.querySelectorAll(`#${id} button`)) b.setAttribute("aria-pressed", String(b.dataset.v === String(v))); }
+function render(dir) {
+  if (!built[dir]) buildTrade(dir);
+  const w = WORD[dir], st = S[dir], P = period(st);
+  syncSeg(`${dir}-period`, st.period === "year" ? "" : st.period);
+  $(`#${dir}-year`).value = st.period === "year" ? String(st.year) : "";
+  syncSeg(`${dir}-measure`, st.measure); syncSeg(`${dir}-zoom`, st.zoom);
+  const cur = tally(dir, st, P.cur), prev = tally(dir, st, P.prev);
+  const zone = st.zoom, zoned = zone !== "World";
+  const rank = [...cur.by].filter(([c, o]) => (o.lb > 0 || o.usd > 0) && inZone(c, zone)).sort((a, b) => (st.measure === "usd" ? b[1].usd - a[1].usd : b[1].lb - a[1].lb));
+  if (st.country != null && !rank.some(([c]) => c === st.country)) st.country = null;
+  const filt = [formTxt(st), dir === "imp" && st.chan !== "all" ? D.channels[st.chan] : null].filter(Boolean);
+  $(`#${dir}-h`).textContent = `${w.noun[0].toUpperCase() + w.noun.slice(1)} by country`;
+  const zsum = rank.reduce((a, [, o]) => ({ lb: a.lb + o.lb, usd: a.usd + o.usd }), { lb: 0, usd: 0 }), T = zoned ? zsum : cur.tot;
+  const usTot = zoned ? ` (U.S. total ${lbTxt(cur.tot.lb)})` : "";
+  $(`#${dir}-sub`).textContent = `${P.label}${filt.length ? " · " + filt.join(" · ") : ""}: ` + (zoned && !rank.length
+    ? `no ${w.noun} ${w.toFrom} ${zone}${usTot}.`
+    : `${zoned ? `${zone}, ` : ""}${lbTxt(T.lb)}, ${usdTxt(T.usd)}, ${priceTxt(T)}, ${w.toFrom} ${rank.length} ${rank.length === 1 ? "country" : "countries"}${usTot}.`);
+  $(`#${dir}-legend`).textContent = !rank.length && zoned ? `No U.S. ${w.noun} ${w.toFrom} ${zone} in ${P.label}.`
+    : `Circle size shows ${st.measure === "usd" ? "dollars" : "pounds (product weight)"}. Click a country for its details, or a total row in the list for the whole ${zoned ? "region" : "selection"}.`;
+  // ranked list
+  const mcls = (m) => `n opt${st.measure === m ? " on" : ""}`;
+  const sbasis = st.measure === "usd" ? "usd" : "lb";
+  const top = rank.length ? (rank[0][1][sbasis] || 1) : 1;
+  const tbody = el("tbody", {}, rank.map(([c, o]) => {
+    const p = prev.by.get(c), ch = change(val(o, st.measure), p ? val(p, st.measure) : (P.prev ? 0 : null));
+    const share = cur.tot[sbasis] ? (100 * o[sbasis]) / cur.tot[sbasis] : 0;
+    const pv = p ? val(p, st.measure) : (P.prev ? 0 : null);
+    return keyed(el("tr", { tabindex: "0", "aria-current": c === st.country ? "true" : null, onclick: () => pick(dir, c), onkeydown: (e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); pick(dir, c); } } }, [
+      el("td", { text: D.countries[c].name }),
+      el("td", { class: mcls("lb") }, [tblLb(o.lb)]),
+      el("td", { class: mcls("usd") }, [tblUsd(o.usd)]),
+      el("td", { class: mcls("price") }, [o.lb > 0 ? `$${(o.usd / o.lb).toFixed(2)}` : "–", o.lb > 0 && o.lb < SMALL ? el("span", { class: "few", text: "few lb" }) : null]),
+      el("td", { class: "n" }, [`${share < 0.1 && share > 0 ? "<0.1" : share.toFixed(1)}%`, el("span", { class: "rb" }, [el("i", { style: `width:${(100 * o[sbasis]) / top}%` })])]),
+      el("td", { class: `n ${ch.c}`, text: ch.t }),
+    ]), [D.countries[c].name, o.lb, o.usd, o.lb > 0 ? o.usd / o.lb : null, share, chk(val(o, st.measure), pv)]);
+  }));
+  const thead = el("thead", {}, [el("tr", {}, [el("th", { text: "Country" }), el("th", { class: mcls("lb"), text: "Pounds" }), el("th", { class: mcls("usd"), text: "Dollars" }), el("th", { class: mcls("price"), text: "$/lb" }), el("th", { class: "n", text: "Share" }), el("th", { class: "n", text: `${{ lb: "Lb", usd: "$", price: "$/lb" }[st.measure]} change` })])]);
+  const zt = { lb: 0, usd: 0 }, zp = { lb: 0, usd: 0 };
+  for (const [, o] of rank) { zt.lb += o.lb; zt.usd += o.usd; }
+  for (const [c, q] of prev.by) if (inZone(c, zone)) { zp.lb += q.lb; zp.usd += q.usd; }   // includes partners that stopped trading
+  const zch = change(val(zt, st.measure), prev.tot ? val(zp, st.measure) : null),
+    tch = change(val(cur.tot, st.measure), prev.tot ? val(prev.tot, st.measure) : null), zsh = cur.tot[sbasis] ? (100 * zt[sbasis]) / cur.tot[sbasis] : 0;
+  const totalProps = (on) => (on ? { tabindex: "0", class: "pick", "aria-current": st.country == null ? "true" : null, onclick: () => pick(dir, null), onkeydown: (e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); pick(dir, null); } } } : {});
+  const zoneRow = zoned && rank.length ? el("tr", { ...totalProps(true), class: "zone pick" }, [el("td", { text: `${zone} total` }), el("td", { class: mcls("lb"), text: tblLb(zt.lb) }), el("td", { class: mcls("usd"), text: tblUsd(zt.usd) }), el("td", { class: mcls("price"), text: zt.lb ? `$${(zt.usd / zt.lb).toFixed(2)}` : "–" }), el("td", { class: "n", text: `${zsh < 0.1 && zsh > 0 ? "<0.1" : zsh.toFixed(1)}%` }), el("td", { class: `n ${zch.c}`, text: zch.t })]) : null;
+  const tfoot = el("tfoot", {}, [zoneRow, el("tr", totalProps(!zoned), [el("td", { text: zoned ? "All countries (U.S. total)" : "All countries" }), el("td", { class: mcls("lb"), text: tblLb(cur.tot.lb) }), el("td", { class: mcls("usd"), text: tblUsd(cur.tot.usd) }), el("td", { class: mcls("price"), text: cur.tot.lb ? `$${(cur.tot.usd / cur.tot.lb).toFixed(2)}` : "–" }), el("td", { class: "n", text: "100%" }), el("td", { class: `n ${tch.c}`, text: tch.t })])]);
+  // on narrow screens only the chosen measure's column shows, so a sort on a hidden one falls back
+  const shown = (j) => j === 0 || j > 3 || !matchMedia("(max-width: 1120px)").matches || ["lb", "usd", "price"][j - 1] === st.measure;
+  $(`#${dir}-table`).replaceChildren(sortable(el("table", { class: "rank" }, [thead, tbody, tfoot]), `${dir}-list`, st.measure === "usd" ? 2 : 1, shown));
+  $(`#${dir}-list-h`).textContent = `${w.list}${zoned ? ` in ${zone}` : ""}, ${P.label}`;
+  $(`#${dir}-list-note`).textContent = rank.length ? `Tap a heading to sort. Share is of all U.S. beef ${w.noun}${filt.length ? " in this selection" : ""}${zoned ? ", from every country" : ""}.${P.prev ? ` Change compares with ${P.prevLabel}.` : ""}` : zoned ? "Choose World or another region." : `No U.S. ${w.noun} in this selection.`;
+  drawMap(dir, cur);
+  drawOverTime(dir);
+  drawSeasonal(dir);
+  drawDetail(dir, P, cur, prev, rank);
+}
+// annual bars for the country or region total the details show
+function drawYears(dir, P, host) {
+  const st = S[dir], w = WORD[dir], c = st.country, zone = st.zoom, m = st.measure;
+  const who = c != null ? D.countries[c].name : zone === "World" ? "All countries" : `All of ${zone}`;
+  const ms = monthly(dir, st, null, c != null ? (r) => r.c === c : (r) => inZone(r.c, zone));
+  const an = annual(ms), part = mo(N - 1) < 11 ? an.length - 1 : null;
+  const fmt = m === "lb" ? (v) => compact(v) : axTxt(m);
+  const tipFmt = m === "lb" ? (v) => `${nf.format(Math.round(v))} lb` : m === "usd" ? (v) => usdTxt(v) : (v) => (v > 0 ? `$${v.toFixed(2)}/lb` : "– (under 1,000 lb)");
+  const sel = selTxt(dir, st);
+  barChart(host, { cats: an.map((a) => a.y), label: `${who}, beef ${w.noun} by year${sel ? ", " + sel : ""}, ${unitTxt(m)}`, fmt, tipFmt, hilite: an.findIndex((a) => a.y === P.focusYear),
+    partial: part, stacks: [{ name: w.noun, color: "var(--c1)", values: an.map((a) => (m === "price" && a.lb < 1000 ? 0 : val(a, m) ?? 0)) }] });
+}
+const mapState = { imp: null, exp: null };
+function drawMap(dir, curArg) {
+  const st = S[dir], host = $(`#${dir}-map`);
+  let ms = mapState[dir];
+  if (!ms) {
+    const svg = sv("svg", { class: "mapsvg", role: "group", "aria-label": `World map of U.S. beef ${WORD[dir].noun} by country` });
+    const land = sv("g"), bubs = sv("g");
+    const paths = new Map();
+    for (const s of G.shapes) { const p = sv("path", { class: "land", d: s.d }); paths.set(s.n, p); land.append(p); }
+    svg.append(land, bubs);
+    host.replaceChildren(svg);
+    ms = mapState[dir] = { svg, bubs, paths };
+  }
+  const cur = curArg ?? tally(dir, st, period(st).cur);
+  const vb = G.views[st.zoom], k = vb[2] / G.w;
+  ms.svg.setAttribute("viewBox", vb.join(" "));
+  const byGeo = new Map();
+  D.countries.forEach((c, i) => byGeo.set(c.geo, [...(byGeo.get(c.geo) || []), i]));
+  for (const [name, p] of ms.paths) {
+    const ids = byGeo.get(name) || [], c = ids.find((i) => cur.by.has(i) && inZone(i, st.zoom)) ?? ids[0];
+    const has = c != null && cur.by.has(c) && inZone(c, st.zoom);
+    p.setAttribute("class", `land${has ? " has" : ""}${c != null && c === st.country ? " sel" : ""}`);
+    p.onclick = has ? () => pick(dir, c) : null;
+  }
+  const basis = st.measure === "usd" ? "usd" : "lb";
+  const items = [...cur.by].filter(([c, o]) => o[basis] > 0 && inZone(c, st.zoom) && D.countries[c].at).sort((a, b) => b[1][basis] - a[1][basis]);
+  const max = items.length ? items[0][1][basis] : 1;
+  const RMAX = 34 * Math.pow(k, 0.55);
+  ms.bubs.replaceChildren(...items.map(([c, o]) => {
+    const [cx, cy] = D.countries[c].at;
+    const r = Math.max(2.2 * Math.pow(k, 0.55), RMAX * Math.sqrt(o[basis] / max));
+    const name = D.countries[c].name;
+    const share = cur.tot[basis] ? ((100 * o[basis]) / cur.tot[basis]).toFixed(1) : "0";
+    const rows = [["Pounds", lbTxt(o.lb)], ["Dollars", usdTxt(o.usd)], ["Price", `${priceTxt(o)}${o.lb > 0 && o.lb < SMALL ? " (few lb)" : ""}`], ["Share", `${share}%`]];
+    return sv("circle", { class: `bub${c === st.country ? " sel" : ""}`, cx, cy, r: r.toFixed(2), tabindex: "0", role: "button", "aria-label": `${name}: ${lbTxt(o.lb)}, ${usdTxt(o.usd)}, ${share}% of the total`,
+      onclick: () => pick(dir, c), onkeydown: (e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); pick(dir, c); } },
+      onpointermove: (e) => showTip(e, name, rows), onpointerleave: hideTip, onfocus: (e) => showTip(e, name, rows), onblur: hideTip });
+  }));
+}
+// the region buttons filter the whole tab: map, list and details (World = every country)
+const ZONES = { Americas: ["Canada and Mexico", "Central America", "Caribbean", "South America"], Europe: ["Europe"],
+  "Middle East and Africa": ["Middle East and North Africa", "Sub-Saharan Africa"], Asia: ["Asia"], Oceania: ["Oceania"] };   // one per map view in the export
+const inZone = (c, zone) => zone === "World" || ZONES[zone].includes(D.countries[c].region);
+function zoomTo(dir, v) { S[dir].zoom = v; S[dir].country = null; hideTip(); render(dir); }
+function pick(dir, c) { S[dir].country = c; hideTip(); render(dir); if (innerWidth < 860) $(`#${dir}-detail`).scrollIntoView({ behavior: "smooth", block: "start" }); }
+function drawDetail(dir, P, cur, prev, rank) {
+  const st = S[dir], host = $(`#${dir}-detail`), c = st.country, w = WORD[dir], zone = st.zoom, zoned = zone !== "World";
+  if (!rank.length) { host.replaceChildren(el("p", { class: "note", text: zoned ? `No ${w.noun} ${w.toFrom} ${zone} in this period. Choose World or another region.` : `No ${w.noun} in this selection.` })); return; }
+  const whole = c == null, keep = whole ? (r) => inZone(r.c, zone) : (r) => r.c === c;
+  const sum = (t) => { const o = { lb: 0, usd: 0 }; for (const [k, v] of t.by) if (whole ? inZone(k, zone) : k === c) { o.lb += v.lb; o.usd += v.usd; } return o; };
+  const o = sum(cur), p = P.prev ? sum(prev) : null;
+  const ct = whole ? { name: zoned ? `All of ${zone}` : "All countries", region: zoned ? "Region total" : "U.S. total" } : D.countries[c];
+  const basis = st.measure === "usd" ? "usd" : "lb";
+  const ch = change(val(o, st.measure), p ? val(p, st.measure) : null);
+  const share = cur.tot[basis] ? (100 * o[basis]) / cur.tot[basis] : 0;
+  const ms = monthly(dir, st, null, keep);
+  const fy = P.focusYear, m = st.measure, sel = selTxt(dir, st);
+  const fmt = m === "lb" ? (v) => compact(v) : axTxt(m);
+  const tipFmt = m === "lb" ? (v) => `${nf.format(Math.round(v))} lb` : m === "usd" ? (v) => usdTxt(v) : (v) => `$${v.toFixed(2)}/lb`;
+  const mchart = el("div");
+  const yearsBox = whole && !zoned ? null : el("div");   // the U.S. total's years are already the chart at the top of the tab
+  const parts = [];
+  const sp = new Array(D.channels.length).fill(0), fm = new Array(D.products.length).fill(0);
+  let duty = 0, dval = 0;
+  for (const r of R[dir]) if (P.cur.has(r.m) && keep(r) && pass(dir, st, r)) { if (dir === "imp") { sp[r.s] += r.lb; duty += r.duty; dval += r.usd; } fm[r.f] += r.lb; }
+  // a mix bar is left out when its one group is already the filter (it would just read 100%)
+  if (dir === "imp" && st.chan === "all") parts.push(el("div", {}, [el("p", { class: "k", text: "How it entered (pounds)" }), mixBar(D.channels.map((n, i) => ({ name: n, v: sp[i], color: CCOL[i] })))]));
+  if (st.form === "beef") parts.push(el("div", {}, [el("p", { class: "k", text: "By product (pounds)" }), mixBar(D.products.slice(0, 3).map((n, i) => ({ name: n, v: fm[i], color: PCOL[i] })))]));
+  host.replaceChildren(...[
+    el("div", {}, [el("p", { class: "k", text: `${ct.region} · ${P.label}` }), el("h3", { text: ct.name }),
+      whole ? null : el("button", { class: "btn alt", type: "button", style: "margin-top:8px", text: `Show ${zoned ? `all of ${zone}` : "all countries"}`, onclick: () => pick(dir, null) })]),
+    el("div", { class: "stats" }, [
+      el("div", {}, [el("b", { text: lbTxt(o.lb) }), el("span", { text: "pounds" })]),
+      el("div", {}, [el("b", { text: usdTxt(o.usd) }), el("span", { text: "value" })]),
+      el("div", {}, [el("b", {}, [priceTxt(o), o.lb > 0 && o.lb < SMALL ? el("span", { class: "few", text: "few lb" }) : null]), el("span", { text: "average price" })]),
+      dir === "imp" ? el("div", {}, [el("b", { text: dval ? pctTxt((100 * duty) / dval) : "–" }), el("span", { text: `average tariff (${usdTxt(duty)} in duties)` })]) : null,
+      whole && !zoned ? el("div", {}, [el("b", { text: String(rank.length) }), el("span", { text: rank.length === 1 ? WORD[dir].from : WORD[dir].plural })])
+        : el("div", {}, [el("b", { text: `${share < 0.1 && share > 0 ? "<0.1" : share.toFixed(1)}%` }), el("span", { text: `of U.S. ${w.noun}${sel ? " in this selection" : ""}` })]),
+      el("div", {}, [el("b", { class: ch.c, text: ch.t }), el("span", { text: !P.prev ? "no earlier year" : `${m === "price" ? "price" : m === "usd" ? "value" : "pounds"} vs. ${P.prevLabel}` })]),
+    ]),
+    yearsBox ? el("div", {}, [el("p", { class: "k", text: `By year since ${D.meta.first.slice(0, 4)}${mo(N - 1) < 11 ? ` (* ${yr(N - 1)} is ${janTo(mo(N - 1))})` : ""}` }), yearsBox]) : null,
+    ...parts,
+    el("div", {}, [el("p", { class: "k", text: `By month: ${fy} vs. ${fy - 1} and the 3-year average` }), mchart]),
+  ].filter(Boolean));
+  // drawn once the boxes are on the page, so the charts know their width
+  if (yearsBox) drawYears(dir, P, yearsBox);
+  lineChart(mchart, { labels: MON, label: `${ct.name}, monthly beef ${w.noun}${sel ? ", " + sel : ""}, ${unitTxt(m)}`, fmt, tipFmt, series: [
+    { name: String(fy), cls: "s-now", values: yearLine(ms, fy, m), dots: true },
+    fy - 1 >= yr(0) ? { name: String(fy - 1), cls: "s-last", values: yearLine(ms, fy - 1, m) } : null,
+    fy - 3 >= yr(0) ? { name: `3-year average (${fy - 3}–${String(fy - 1).slice(2)})`, cls: "s-avg", values: avg3Line(ms, fy, m) } : null,
+  ].filter(Boolean) });
+}
+
+// ---- This month ----
+const BEEF = { form: "beef", chan: "all" };
+function renderMonth() {
+  const L = N - 1, ly = yr(L), lm = mo(L);
+  const one = (dir, set) => tally(dir, BEEF, set);
+  const im = one("imp", new Set([L])), imP = one("imp", new Set([L - 12]));
+  const ytd = new Set(range(L - lm, L)), ytdP = new Set(range(L - lm - 12, L - 12));
+  const iy = one("imp", ytd), iyP = one("imp", ytdP);
+  const ex = one("exp", new Set([L])), exP = one("exp", new Set([L - 12])), ey = one("exp", ytd), eyP = one("exp", ytdP);
+  $("#month-h").textContent = mName(L);
+  $("#month-sub").textContent = `The newest month the U.S. Census Bureau has released. Changes compare with ${mName(L - 12)}; year to date is ${janTo(lm)}. Census revises recent months in later releases.`;
+  const chg = (a, b) => { const c = change(a, b); return el("span", { class: c.c, text: c.t }); };
+  const topList = (t, n) => [...t.by].sort((a, b) => b[1].lb - a[1].lb).slice(0, n);
+  // a country's pounds against the same month a year earlier: "(101.1 million lb, +23% yoy)"
+  const ctry = (t, tp, c, o) => { const p = tp.by.get(c), ch = change(o.lb, p ? p.lb : 0);
+    return el("li", {}, [el("b", { text: `${((100 * o.lb) / t.tot.lb).toFixed(1)}%` }), ` ${D.countries[c].name} (${lbTxt(o.lb)}, `,
+      el("span", { class: ch.c, text: ch.t === "same" ? "same" : ch.t === "new" ? "new" : `${ch.t} yoy` }), ")"]); };
+  const sp = new Array(D.channels.length).fill(0); for (const r of R.imp) if (r.m === L && r.f <= 2) sp[r.s] += r.lb;
+  const fm = [0, 0, 0]; for (const r of R.exp) if (r.m === L && r.f <= 2) fm[r.f] += r.lb;
+  const card = (k, big, lines) => el("div", { class: "card" }, [el("p", { class: "k", text: k }), el("p", { class: "big", text: big }), el("ul", { class: "lines" }, lines.map((l) => el("li", {}, l)))]);
+  // opens the tab at its "by country" section, which is what the button names
+  const go = (dir, label, at) => el("button", { class: "btn alt", type: "button", style: "margin-top:10px", text: label, onclick: () => { show(dir); if (at) $(at).scrollIntoView({ block: "start" }); } });
+  // live cattle and the quota, in brief
+  const head = (rows, set) => rows.reduce((s, r) => s + (set.has(r.m) ? r.head : 0), 0);
+  const ch = head(D.cimp, new Set([L])), chP = head(D.cimp, new Set([L - 12]));
+  const ce = head(D.cexp, new Set([L])), ceP = head(D.cexp, new Set([L - 12]));
+  const Q = D.quota, oth = Q.wto.find((w) => w.name === "Other countries");
+  const trs = Q.tranches.filter((t) => t.weeks.length);
+  $("#month-cards").replaceChildren(
+    card("Beef imports", lbTxt(im.tot.lb), [
+      [chg(im.tot.lb, imP.tot.lb), ` vs. ${mShort(L - 12)}`],
+      [el("b", { text: usdTxt(im.tot.usd) }), ` · ${priceTxt(im.tot)}`],
+      [`Year to date `, el("b", { text: lbTxt(iy.tot.lb) }), " ", chg(iy.tot.lb, iyP.tot.lb)],
+    ]),
+    el("div", { class: "card" }, [el("p", { class: "k", text: "Where imports came from" }),
+      el("ul", { class: "lines", style: "margin-top:8px" }, [
+        ...topList(im, 4).map(([c, o]) => ctry(im, imP, c, o)),
+        el("li", {}, [`${im.by.size} ${im.by.size === 1 ? "supplier" : "suppliers"} in all`]),
+      ]),
+      el("p", { class: "k", text: "How it entered (pounds)", style: "margin-top:12px" }), mixBar(D.channels.map((n, i) => ({ name: n, v: sp[i], color: CCOL[i] }))), go("imp", "Imports by country", "#imp-h")]),
+    card("Beef exports", lbTxt(ex.tot.lb), [
+      [chg(ex.tot.lb, exP.tot.lb), ` vs. ${mShort(L - 12)}`],
+      [el("b", { text: usdTxt(ex.tot.usd) }), ` · ${priceTxt(ex.tot)}`],
+      [`Year to date `, el("b", { text: lbTxt(ey.tot.lb) }), " ", chg(ey.tot.lb, eyP.tot.lb)],
+    ]),
+    el("div", { class: "card" }, [el("p", { class: "k", text: "Where exports went" }),
+      el("ul", { class: "lines", style: "margin-top:8px" }, [
+        ...topList(ex, 4).map(([c, o]) => ctry(ex, exP, c, o)),
+        el("li", {}, [`${ex.by.size} ${ex.by.size === 1 ? "destination" : "destinations"} in all`]),
+      ]),
+      el("p", { class: "k", text: "By product (pounds)", style: "margin-top:12px" }), mixBar(D.products.slice(0, 3).map((n, i) => ({ name: n, v: fm[i], color: PCOL[i] }))), go("exp", "Exports by country", "#exp-h")]),
+    el("div", { class: "card" }, [el("p", { class: "k", text: "Live cattle" }), el("p", { class: "big", text: `${nf.format(ch)} head` }),
+      el("ul", { class: "lines" }, [
+        el("li", {}, ["imported, ", chg(ch, chP), ` vs. ${mShort(L - 12)}`]),
+        el("li", {}, [`Feeders ${nf.format(D.cimp.reduce((s, r) => s + (r.m === L && r.k === 0 ? r.head : 0), 0))} · slaughter ${nf.format(D.cimp.reduce((s, r) => s + (r.m === L && r.k === 1 ? r.head : 0), 0))}`]),
+        el("li", {}, [el("b", { text: `${nf.format(ce)} head` }), " exported, ", chg(ce, ceP)]),
+      ]), go("cattle", "Live cattle")]),
+    el("div", { class: "card" }, [el("p", { class: "k", text: `Beef quota · CBP, ${dateTxt(Q.asOf)}` }),
+      el("ul", { class: "lines", style: "margin-top:8px" }, [
+        oth ? el("li", {}, [`Other-countries quota: `, el("b", { text: oth.status === "FILL" && oth.fillDate ? `filled ${dateShort(oth.fillDate)}` : `${pctTxt((100 * oth.entered) / oth.qty)} full` })]) : null,
+        ...trs.slice(-2).map((t) => el("li", {}, [`Affordable Beef, ${dateShort(t.start)}–${dateShort(t.end)}: `, el("b", { text: `${mtTxt(t.weeks.at(-1)[1])}` }), ` of ${mtTxt(t.qty)}`])),
+      ].filter(Boolean)), go("quota", "Quota and tariffs")]),
+  );
+  const totLines = (dir, name) => {
+    const ms = monthly(dir, BEEF);
+    const f = (v) => +(v / 1e6).toFixed(1);
+    lineChart($(`#month-${dir}-chart`), { labels: MON, label: name, fmt: (v) => nf.format(f(v)), tipFmt: (v) => `${nf.format(f(v))}M lb`, series: [
+      { name: String(ly), cls: "s-now", values: yearLine(ms, ly, "lb"), dots: true },
+      { name: String(ly - 1), cls: "s-last", values: yearLine(ms, ly - 1, "lb") },
+      { name: `3-year average (${ly - 3}–${String(ly - 1).slice(2)})`, cls: "s-avg", values: avg3Line(ms, ly, "lb") },
+    ] });
+  };
+  totLines("imp", "U.S. beef imports by month, million pounds");
+  totLines("exp", "U.S. beef exports by month, million pounds");
+}
+
+// ---- Quota and tariffs ----
+const STATUS = { FILL: "Filled", POTF: "Close to full", OPEN: "Open", "-": "Open" };
+function renderQuota() {
+  const Q = D.quota, L = N - 1;
+  $("#q-wto-h").textContent = `${Q.year} quota fill`;
+  $("#q-ch-seg").replaceChildren(segBtns("q-ch-by", [["lb", "Pounds"], ["usd", "Dollars"]], S.q.chBy, (v) => { S.q.chBy = v; drawChannels(); }));
+  $("#q-wto-note").textContent = `Metric tons of product, from U.S. Customs and Border Protection's report of ${dateTxt(Q.asOf)}. Canada and Mexico are outside the quota.`;
+  $("#q-wto").replaceChildren(el("table", { class: "qt" }, [
+    el("thead", {}, el("tr", {}, [el("th", { text: "Allocation" }), el("th", { class: "n", text: "Quota" }), el("th", { class: "n", text: "Entered" }), el("th", { text: "Filled" }), el("th", { text: "Status" })])),
+    el("tbody", {}, Q.wto.map((w) => {
+      const pct = w.qty ? (100 * (w.entered || 0)) / w.qty : 0;
+      return el("tr", {}, [el("td", { text: w.name }), el("td", { class: "n", text: mtTxt(w.qty) }), el("td", { class: "n", text: mtTxt(w.entered) }),
+        el("td", { style: "min-width:90px" }, [progBar(pct, 100, `${w.name}: ${pctTxt(pct)} full`), el("span", { class: "note", text: pctTxt(pct) })]),
+        el("td", { text: w.status === "FILL" && w.fillDate ? `Filled ${dateShort(w.fillDate)}` : STATUS[w.status] || w.status })]);
+    })),
+  ]));
+  const trs = Q.tranches;
+  $("#q-tr-note").textContent = `Extra in-quota room for lean beef trimmings from other countries (Proclamation 11059): 100,000 t a month. Cumulative entries by CBP's weekly reports. Unused room is not known to carry over.`;
+  $("#q-tr").replaceChildren(...trs.map((t) => {
+    const lastW = t.weeks.at(-1), v = lastW ? lastW[1] : 0;
+    return el("div", { class: "tranche" }, [
+      el("div", { class: "row" }, [el("b", { text: `${dateShort(t.start)} – ${dateShort(t.end)}` }), el("span", { text: lastW ? `${mtTxt(v)} of ${mtTxt(t.qty)} (${pctTxt((100 * v) / t.qty)}), as of ${dateShort(lastW[0])}` : "No report yet" })]),
+      progBar(v, t.qty, `Tranche ${dateShort(t.start)} to ${dateShort(t.end)}: ${mtTxt(v)} of ${mtTxt(t.qty)}`),
+      t.weeks.length ? el("p", { class: "note", text: "Weekly: " + t.weeks.map(([d, x]) => `${dateShort(d)} ${nf.format(Math.round(x))} t`).join(" · ") }) : null,
+    ]);
+  }));
+  $("#q-others").replaceChildren(el("table", { class: "qt" }, [
+    el("thead", {}, el("tr", {}, [el("th", { text: "Year" }), el("th", { class: "n", text: "Quota" }), el("th", { text: "Filled" })])),
+    el("tbody", {}, Q.others.slice().reverse().map((o) => el("tr", {}, [el("td", { text: String(o.year) }), el("td", { class: "n", text: mtTxt(o.qty) }),
+      el("td", { text: o.fillDate ? dateTxt(o.fillDate) : `${pctTxt((100 * (o.entered || 0)) / o.qty)} full, ${dateShort(o.asOf)}` })]))),
+  ]));
+  $("#q-ar-note").textContent = "20,000 t a quarter, tracked by CBP apart from the WTO quota.";
+  $("#q-ar").replaceChildren(...Q.argentina.map((t) => {
+    const lastW = t.weeks.at(-1), v = lastW ? lastW[1] : 0;
+    return el("div", { class: "tranche" }, [
+      el("div", { class: "row" }, [el("b", { text: `${dateShort(t.start)} – ${dateShort(t.end)}` }), el("span", { text: lastW ? `${mtTxt(v)} of ${mtTxt(t.qty)} (${pctTxt((100 * v) / t.qty)})` : "No report yet" })]),
+      progBar(v, t.qty, `Argentina ${dateShort(t.start)} to ${dateShort(t.end)}: ${mtTxt(v)} of ${mtTxt(t.qty)}`),
+    ]);
+  }));
+  drawChannels();
+  // tariffs: duties by year, the over-quota rate by month, and by country
+  const years = [...new Set(D.months.map((s) => +s.slice(0, 4)))], part = mo(L) < 11 ? years.length - 1 : null;
+  const dy = years.map(() => 0); for (const r of R.imp) if (r.f <= 2) dy[years.indexOf(yr(r.m))] += r.duty;
+  $("#q-duty-note").textContent = `Fresh, frozen and processed beef, all countries.${part != null ? ` * ${yr(L)} is ${janTo(mo(L))} only.` : ""}`;
+  barChart($("#q-duty"), { cats: years, partial: part, label: "Duties paid on U.S. beef imports by year, dollars", fmt: (v) => `$${compact(v)}`, tipFmt: usdTxt,
+    stacks: [{ name: "Duties", color: "var(--c1)", values: dy }] });
+  const since = Math.max(0, L - 59), months = range(since, L);
+  const rate = (keep) => months.map((i) => { let d = 0, v = 0; for (const r of R.imp) if (r.m === i && keep(r)) { d += r.duty; v += r.usd; } return v > 1e6 ? (100 * d) / v : null; });
+  $("#q-rate-note").textContent = `Duties divided by customs value on beef entered over quota, the last five years. Months under $1 million of such beef are left out. The 26.4% rate is the base; 2025 added extra tariffs.`;
+  lineChart($("#q-rate"), { labels: months.map((i) => `${MON[mo(i)]} '${String(yr(i)).slice(2)}`), names: months.map(mName), label: "Average tariff on over-quota beef by month, percent", fmt: (v) => `${Math.round(v)}%`, tipFmt: (v) => `${v.toFixed(1)}%`, series: [
+    { name: "All over-quota beef", cls: "s-now", values: rate((r) => r.s === 3) },
+    { name: "Brazil", cls: "s-last", color: "var(--c2)", values: rate((r) => r.s === 3 && D.countries[r.c].name === "Brazil") },
+  ] });
+  // by country, last 12 months
+  const P = new Set(range(L - 11, L)), by = new Map();
+  for (const r of R.imp) if (P.has(r.m) && r.f <= 2) { const o = by.get(r.c) ?? { lb: 0, usd: 0, duty: 0 }; o.lb += r.lb; o.usd += r.usd; o.duty += r.duty; by.set(r.c, o); }
+  const rows = [...by].filter(([, o]) => o.duty > 0).sort((a, b) => b[1].duty - a[1].duty);
+  const tot = [...by.values()].reduce((a, o) => ({ lb: a.lb + o.lb, usd: a.usd + o.usd, duty: a.duty + o.duty }), { lb: 0, usd: 0, duty: 0 });
+  $("#q-ctry-h").textContent = `Duties by country, 12 months through ${mName(L)}`;
+  $("#q-ctry-note").textContent = "Fresh, frozen and processed beef. Countries that paid any duty, largest first; tap a heading to sort. The average tariff is duties divided by customs value, across everything the country shipped, including beef that paid none.";
+  const tr = (name, o, cls) => keyed(el("tr", { class: cls }, [el("td", { text: name }), el("td", { class: "n", text: tblLb(o.lb) }), el("td", { class: "n", text: tblUsd(o.usd) }), el("td", { class: "n", text: tblUsd(o.duty) }), el("td", { class: "n", text: o.usd ? pctTxt((100 * o.duty) / o.usd) : "–" })]), [name, o.lb, o.usd, o.duty, o.usd ? o.duty / o.usd : null]);
+  $("#q-ctry").replaceChildren(sortable(el("table", { class: "rank" }, [
+    el("thead", {}, el("tr", {}, [el("th", { text: "Country" }), el("th", { class: "n", text: "Pounds" }), el("th", { class: "n", text: "Value" }), el("th", { class: "n", text: "Duties" }), el("th", { class: "n", text: "Avg. tariff" })])),
+    el("tbody", {}, rows.map(([c, o]) => tr(D.countries[c].name, o))),
+    el("tfoot", {}, tr("All countries", tot)),
+  ]), "q-ctry", 3));
+  $("#q-tariff-notes").textContent = "Census shows almost no duty on over-quota beef in December 2025 and January 2026; the reason isn't known, so treat those months with caution. The newest month is often revised.";
+}
+function drawChannels() {
+  const L = N - 1, months = range(Math.max(0, L - 35), L), m = S.q.chBy;
+  syncSeg("q-ch-by", m);
+  const sums = D.channels.map(() => months.map(() => 0));
+  for (const r of R.imp) { const k = r.m - months[0]; if (k >= 0 && r.f <= 2) sums[r.s][k] += m === "usd" ? r.usd : r.lb; }
+  $("#q-ch-note").textContent = `Fresh, frozen and processed beef, the last three years, in ${m === "usd" ? "dollars" : "pounds (product weight)"}. `;
+  $("#q-ch-note").append(el("a", { href: "#channels", text: "What each group means", onclick: (e) => { e.preventDefault(); openAnchor("channels"); } }), ".");
+  barChart($("#q-ch"), { cats: months, labels: months.map((i) => `${MON[mo(i)]} '${String(yr(i)).slice(2)}`), names: months.map(mName), first: "Month",
+    label: `U.S. beef imports by how they entered, by month, ${m === "usd" ? "dollars" : "pounds"}`, fmt: m === "usd" ? (v) => `$${compact(v)}` : compact, tipFmt: m === "usd" ? usdTxt : lbTxt,
+    stacks: D.channels.map((n, i) => ({ name: n, color: CCOL[i], values: sums[i] })) });
+}
+
+// ---- Live cattle ----
+// Feeder and slaughter cattle only; breeding and dairy cattle are left out (Josh, 2026-11-06). Import
+// tariff lines separate feeders from slaughter cattle; the export schedule doesn't, so exports are one class.
+const KCOL = ["var(--c3)", "var(--c1)"];
+let cattleBuilt = false;
+function renderCattle() {
+  const host = $("#cattle"), st = S.cat;
+  if (!cattleBuilt) {
+    host.replaceChildren(
+      el("div", {}, [el("h2", { text: "Live cattle trade" }), el("p", { class: "sub", text: "Head of feeder and slaughter cattle crossing the border, mostly with Mexico and Canada. Breeding and dairy cattle, buffalo and bison are left out." })]),
+      el("div", { class: "ctrls" }, [
+        field("Direction", segBtns("cat-dir", [["imp", "Imports"], ["exp", "Exports"]], st.dir, (v) => { st.dir = v; st.country = "all"; st.cls = "all"; renderCattle(); })),
+        field("Show", segBtns("cat-measure", [["head", "Head"], ["usd", "Dollars"], ["each", "$ per head"]], st.measure, (v) => { st.measure = v; renderCattle(); })),
+        el("div", { class: "field", id: "cat-cls-field" }),
+      ]),
+      el("p", { class: "note", id: "cat-cls-note" }),
+      el("div", { class: "cards", id: "cat-cards" }),
+      el("div", { class: "card" }, [el("div", { class: "cardbar" }, [el("h3", { id: "cat-year-h" }), el("div", { id: "cat-by" })]), el("p", { class: "note", id: "cat-year-note", style: "margin:4px 0 8px" }), el("div", { id: "cat-year" })]),
+      el("div", { class: "card" }, [el("div", { class: "cardbar" }, [el("h3", { id: "cat-month-h" }), el("div", { id: "cat-who" })]), el("p", { class: "note", id: "cat-month-note", style: "margin:4px 0 8px" }), el("div", { id: "cat-month" })]),
+      el("div", { class: "card" }, [el("h3", { id: "cat-list-h" }), el("p", { class: "note", id: "cat-list-note", style: "margin:4px 0 8px" }), el("div", { class: "tablewrap", id: "cat-list" })]),
+    );
+    cattleBuilt = true;
+  }
+  syncSeg("cat-dir", st.dir); syncSeg("cat-measure", st.measure);
+  const classes = D.cattleClasses[st.dir];
+  if (st.cls !== "all" && !(+st.cls < classes.length)) st.cls = "all";
+  const split = classes.length > 1;   // imports only
+  $("#cat-cls-field").hidden = !split;
+  if (split) $("#cat-cls-field").replaceChildren(el("span", { text: "Class" }), select("cat-cls", [["all", "Feeder and slaughter"], ...classes.map((n, i) => [i, n])], st.cls, (v) => { st.cls = v; renderCattle(); }, "Class of cattle"));
+  if (!split) st.by = "country";
+  $("#cat-cls-note").textContent = st.dir === "imp"
+    ? "Classes follow the import tariff lines: feeder cattle (calves and feeders, plus heavier cattle not entered for slaughter or breeding), and slaughter cattle (steers, heifers, cows and bulls entered for immediate slaughter)."
+    : "Feeder and slaughter cattle together, to Canada and Mexico only: Census export records put both under one code, so they can't be shown apart, and cattle sent anywhere else are breeding stock.";
+  const all = st.dir === "imp" ? D.cimp : D.cexp, L = N - 1, ly = yr(L), lm = mo(L), m = st.measure;
+  const rows = st.cls === "all" ? all : all.filter((r) => r.k === +st.cls);
+  const clsTxt = st.cls === "all" ? "" : `${classes[st.cls]}. `;
+  const noun = st.dir === "imp" ? "imports" : "exports";
+  const v = (o) => (m === "head" ? o.head : m === "usd" ? o.usd : o.head > 0 ? o.usd / o.head : null);
+  const fmtV = (x) => (x == null ? "–" : m === "head" ? `${nf.format(Math.round(x))} head` : m === "usd" ? usdTxt(x) : `$${nf.format(Math.round(x))}/head`);
+  const sum = (set, keep = () => true) => rows.reduce((o, r) => (set.has(r.m) && keep(r) ? { head: o.head + r.head, usd: o.usd + r.usd } : o), { head: 0, usd: 0 });
+  const chg = (a, b) => { const c = change(a, b); return el("span", { class: c.c, text: c.t }); };
+  const ytd = new Set(range(L - lm, L)), ytdP = new Set(range(L - lm - 12, L - 12));
+  const lmn = sum(new Set([L])), lmP = sum(new Set([L - 12])), y1 = sum(ytd), y0 = sum(ytdP);
+  const card = (k, o, p) => el("div", { class: "card" }, [el("p", { class: "k", text: k }), el("p", { class: "big", text: fmtV(v(o)) }),
+    el("ul", { class: "lines" }, [el("li", {}, [chg(v(o), v(p)), " vs. a year earlier"])])]);
+  // the class mix, in head, for the newest month and the year to date (all classes, whatever the menu says)
+  const mixOf = (set) => classes.map((n, i) => ({ name: n, v: all.reduce((s, r) => s + (set.has(r.m) && r.k === i ? r.head : 0), 0), color: KCOL[i] }));
+  $("#cat-cards").replaceChildren(...[card(`${st.cls === "all" ? "Cattle" : classes[st.cls]} ${noun}, ${mName(L)}`, lmn, lmP), card(`Year to date, ${janTo(lm)} ${ly}`, y1, y0),
+    split ? el("div", { class: "card" }, [el("p", { class: "k", text: `Feeder and slaughter, ${mName(L)} (head)` }), mixBar(mixOf(new Set([L]))),
+      el("p", { class: "k", text: `Year to date (head)`, style: "margin-top:12px" }), mixBar(mixOf(ytd))]) : null].filter(Boolean));
+  // by year: the largest partners or the classes
+  if (!st.by) st.by = "country";
+  $("#cat-by").replaceChildren(...(split ? [segBtns("cat-by-seg", [["country", "By country"], ["class", "By class"]], st.by, (x) => { st.by = x; renderCattle(); })] : []));
+  const years = [...new Set(D.months.map((s) => +s.slice(0, 4)))], part = lm < 11 ? years.length - 1 : null;
+  // Canada and Mexico by name, both directions (Josh, 2026-11-06); everyone else together
+  const top = ["Canada", "Mexico"].map((n) => D.countries.findIndex((c) => c.name === n)).filter((i) => i >= 0);
+  const groups = st.by === "class"
+    ? classes.map((n, i) => ({ name: n, color: KCOL[i], keep: (r) => r.k === i })).filter((g, i) => st.cls === "all" || i === +st.cls)
+    : [...top.map((c, i) => ({ name: D.countries[c].name, color: COLORS[i], keep: (r) => r.c === c })), { name: "All others", color: "var(--c5)", keep: () => true }];
+  const sums = groups.map(() => years.map(() => ({ head: 0, usd: 0 })));
+  for (const r of rows) { const g = groups.findIndex((x) => x.keep(r)); if (g < 0) continue; const o = sums[g][years.indexOf(yr(r.m))]; o.head += r.head; o.usd += r.usd; }
+  $("#cat-year-h").textContent = `Cattle ${noun} by year`;
+  $("#cat-year-note").textContent = `${m === "head" ? "Head" : m === "usd" ? "Dollars" : "Average value per head"}. ${clsTxt}${st.by === "class" ? "" : m === "each" ? "" : `Canada, Mexico and all other countries together.`}${part != null ? ` * ${ly} is ${janTo(lm)} only.` : ""}`;
+  const ylabels = years.map((y, k) => `'${String(y).slice(2)}${k === part ? "*" : ""}`), ynames = years.map((y, k) => `${y}${k === part ? " (part year)" : ""}`);
+  const lblCls = st.cls === "all" ? "" : `, ${classes[st.cls].toLowerCase()}`;
+  if (m === "each") {
+    const allY = years.map((_, k) => sums.reduce((a, g) => ({ head: a.head + g[k].head, usd: a.usd + g[k].usd }), { head: 0, usd: 0 }));
+    const pe = (o) => (o.head >= 100 ? o.usd / o.head : null);
+    const lines = groups.filter((g) => g.name !== "All others").slice(0, 4);
+    lineChart($("#cat-year"), { labels: ylabels, names: ynames, first: "Year", label: `Cattle ${noun} by year${lblCls}, dollars per head`, fmt: (x) => `$${compact(x)}`, tipFmt: fmtV, series: [
+      { name: `All ${noun}`, cls: "s-avg", values: allY.map(pe) }, ...lines.map((g) => ({ name: g.name, cls: "s-now", color: g.color, values: sums[groups.indexOf(g)].map(pe) })) ] });
+  } else {
+    barChart($("#cat-year"), { cats: years, partial: part, label: `Cattle ${noun} by year${lblCls}, ${m === "head" ? "head" : "dollars"}`, fmt: m === "usd" ? (x) => `$${compact(x)}` : compact, tipFmt: fmtV,
+      stacks: groups.map((g, i) => ({ name: g.name, color: g.color, values: sums[i].map((o) => (m === "usd" ? o.usd : o.head)) })) });
+  }
+  // by month: this year vs last and the 3-year average, all countries or one
+  const who = [["all", "All"], ...top.map((c) => [String(c), D.countries[c].name])];
+  if (st.country !== "all" && !top.includes(+st.country)) st.country = "all";
+  $("#cat-who").replaceChildren(segBtns("cat-who-seg", who, st.country, (x) => { st.country = x; renderCattle(); }));
+  const keep = st.country === "all" ? () => true : (r) => r.c === +st.country;
+  const mh = new Array(N).fill(0), mu = new Array(N).fill(0); for (const r of rows) if (keep(r)) { mh[r.m] += r.head; mu[r.m] += r.usd; }
+  const mval = (i) => (i == null ? null : v({ head: mh[i], usd: mu[i] }));
+  const line = (y) => MON.map((_, k) => mval(IDX.get(`${y}-${String(k + 1).padStart(2, "0")}`)));
+  const avg = (y) => MON.map((_, k) => { let h = 0, u = 0; for (let d = 1; d <= 3; d++) { const i = IDX.get(`${y - d}-${String(k + 1).padStart(2, "0")}`); if (i == null) return null; h += mh[i]; u += mu[i]; } return m === "each" ? (h ? u / h : null) : (m === "head" ? h : u) / 3; });
+  const wname = st.country === "all" ? "All countries" : D.countries[+st.country].name;
+  $("#cat-month-h").textContent = `By month: ${ly} vs. ${ly - 1}`;
+  $("#cat-month-note").textContent = `${wname}. ${clsTxt}The dashed line is the ${ly - 3}–${ly - 1} average.`;
+  lineChart($("#cat-month"), { labels: MON, label: `${wname}, monthly cattle ${noun}${lblCls}, ${m === "head" ? "head" : m === "usd" ? "dollars" : "dollars per head"}`, fmt: m === "head" ? compact : (x) => `$${compact(x)}`, tipFmt: fmtV, series: [
+    { name: String(ly), cls: "s-now", values: line(ly), dots: true }, { name: String(ly - 1), cls: "s-last", values: line(ly - 1) },
+    { name: `3-year average (${ly - 3}–${String(ly - 1).slice(2)})`, cls: "s-avg", values: avg(ly) } ] });
+  // countries, last 12 months
+  const P = new Set(range(L - 11, L)), Pp = new Set(range(L - 23, L - 12)), by = new Map(), byP = new Map();
+  for (const r of rows) { const t = P.has(r.m) ? by : Pp.has(r.m) ? byP : null; if (!t) continue; const o = t.get(r.c) ?? { head: 0, usd: 0 }; o.head += r.head; o.usd += r.usd; t.set(r.c, o); }
+  const list = [...by].filter(([, o]) => o.head > 0).sort((a, b) => b[1].head - a[1].head);
+  const T = sum(P), Tp = sum(Pp);
+  $("#cat-list-h").textContent = `${st.dir === "imp" ? "Supplying countries" : "Destinations"}, 12 months through ${mName(L)}`;
+  $("#cat-list-note").textContent = `${clsTxt}Change compares head with the 12 months before. Tap a heading to sort.`;
+  const row = (name, o, p, cls) => { const c = change(o.head, p ? p.head : 0); return keyed(el("tr", { class: cls }, [el("td", { text: name }), el("td", { class: "n", text: nf.format(o.head) }), el("td", { class: "n", text: tblUsd(o.usd) }), el("td", { class: "n", text: o.head ? `$${nf.format(Math.round(o.usd / o.head))}` : "–" }), el("td", { class: "n", text: T.head ? `${((100 * o.head) / T.head).toFixed(1)}%` : "–" }), el("td", { class: `n ${c.c}`, text: c.t })]), [name, o.head, o.usd, o.head ? o.usd / o.head : null, T.head ? o.head / T.head : null, chk(o.head, p ? p.head : 0)]); };
+  $("#cat-list").replaceChildren(sortable(el("table", { class: "rank" }, [
+    el("thead", {}, el("tr", {}, [el("th", { text: "Country" }), el("th", { class: "n", text: "Head" }), el("th", { class: "n", text: "Dollars" }), el("th", { class: "n", text: "$/head" }), el("th", { class: "n", text: "Share" }), el("th", { class: "n", text: "Head change" })])),
+    el("tbody", {}, list.map(([c, o]) => row(D.countries[c].name, o, byP.get(c)))),
+    el("tfoot", {}, row("All countries", T, Tp)),
+  ]), `cat-${st.dir}`, 1));
+}
+
+// ---- tabs ----
+const TABS = ["month", "imp", "exp", "quota", "cattle", "about"];
+const ALIAS = { imports: "imp", exports: "exp", tariffs: "quota" };
+const tabOf = (h) => ALIAS[h] || (TABS.includes(h) ? h : null);
+function show(tab, keepHash = false) {
+  tab = tabOf(tab) || "month";
+  for (const t of TABS) { $(`#${t}`).hidden = t !== tab; $(`#t-${t}`).setAttribute("aria-selected", String(t === tab)); $(`#t-${t}`).tabIndex = t === tab ? 0 : -1; }
+  redraw(tab);
+  if (!keepHash && location.hash.slice(1) !== tab) history.replaceState(null, "", `#${tab}`);
+  hideTip();
+}
+function redraw(tab) {
+  if (tab === "imp" || tab === "exp") render(tab);
+  else if (tab === "month") renderMonth();
+  else if (tab === "quota") renderQuota();
+  else if (tab === "cattle") renderCattle();
+}
+for (const b of document.querySelectorAll(".tab")) b.addEventListener("click", () => { show(b.dataset.tab); window.scrollTo({ top: 0 }); });
+$("[role=tablist]").addEventListener("keydown", (e) => {
+  const i = TABS.indexOf(document.activeElement?.dataset?.tab); if (i < 0) return;
+  const j = e.key === "ArrowRight" ? (i + 1) % TABS.length : e.key === "ArrowLeft" ? (i + TABS.length - 1) % TABS.length : null;
+  if (j != null) { e.preventDefault(); show(TABS[j]); $(`#t-${TABS[j]}`).focus(); }
+});
+addEventListener("scroll", hideTip, { passive: true });
+let lastW = innerWidth, rz;   // charts are drawn to their box, so redraw the open tab when the width changes (not on a phone's toolbar scroll)
+addEventListener("resize", () => {
+  if (!D || innerWidth === lastW) return;
+  lastW = innerWidth; clearTimeout(rz);
+  rz = setTimeout(() => redraw(TABS.find((x) => !$(`#${x}`).hidden)), 200);
+});
+// a link to a heading inside a tab (#channels) opens that tab there; other anchors (#disclaimer) just scroll
+function openAnchor(id) {
+  const a = document.getElementById(id); if (!a) return false;
+  const p = a.closest(".panel"); if (p) show(p.id, true);
+  a.scrollIntoView(); return true;
+}
+addEventListener("hashchange", () => { if (!D) return; const h = location.hash.slice(1), t = tabOf(h); if (t) show(t); else openAnchor(h); });
+
+// ---- start ----
+Promise.all(["data/beef.json", "data/world.json"].map((u) => fetch(u, { cache: "no-cache" }).then((r) => { if (!r.ok) throw new Error(u); return r.json(); })))
+  .then(([d, g]) => {
+    D = d; G = g; N = D.months.length; IDX = new Map(D.months.map((s, i) => [s, i]));
+    R = { imp: D.imp.map(([m, c, f, s, lb, usd, duty, gen]) => ({ m, c, f, s, lb, usd, duty, gen })), exp: D.exp.map(([m, c, f, lb, usd]) => ({ m, c, f, s: -1, lb, usd })) };
+    D.cimp = D.cimp.map(([m, c, k, head, usd]) => ({ m, c, k, head, usd })); D.cexp = D.cexp.map(([m, c, k, head, usd]) => ({ m, c, k, head, usd }));
+    const L = N - 1;
+    $("#asof").textContent = `U.S. beef and cattle trade by country, through ${mName(L)}. Quota fill from CBP's report of ${dateTxt(D.quota.asOf)}.`;
+    const builtAt = new Date(D.meta.built);
+    // built on a Mac in Mississippi, so the time reads in Central time
+    const ct = (o) => builtAt.toLocaleString("en-US", { timeZone: "America/Chicago", ...o });
+    const hm = ct({ hour: "numeric", minute: "2-digit" }).replace(/\s?([AP])M$/, (_, x) => ` ${x.toLowerCase()}.m.`);
+    $("#foot-gen").textContent = `Data through ${mName(L)}. Page version ${D.meta.version}, built ${ct({ month: "long", day: "numeric", year: "numeric" })}, ${hm} CT.`;
+    $("#foot-year").textContent = ct({ year: "numeric" });
+    renderMonth();
+    const h = location.hash.slice(1);
+    if (!(h && !tabOf(h) && openAnchor(h))) show(h);
+  })
+  .catch((e) => { $("#asof").textContent = "The trade data didn't load. Please refresh the page."; console.error(e); });
+})();
+</script>
+</body>
+</html>
