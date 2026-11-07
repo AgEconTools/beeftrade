@@ -290,7 +290,7 @@ table.qt .n { text-align: right; white-space: nowrap; }
     <button class="tab" role="tab" id="t-imp" aria-controls="imp" data-tab="imp"><span class="l">Imports</span><span class="s">Imports</span></button>
     <button class="tab" role="tab" id="t-exp" aria-controls="exp" data-tab="exp"><span class="l">Exports</span><span class="s">Exports</span></button>
     <button class="tab" role="tab" id="t-quota" aria-controls="quota" data-tab="quota"><span class="l">Quota and tariffs</span><span class="s">Quota</span></button>
-    <button class="tab" role="tab" id="t-cattle" aria-controls="cattle" data-tab="cattle"><span class="l">Live cattle</span><span class="s">Cattle</span></button>
+    <button class="tab" role="tab" id="t-cattle" aria-controls="cattle" data-tab="cattle"><span class="l">Cattle trade</span><span class="s">Cattle</span></button>
     <button class="tab" role="tab" id="t-about" aria-controls="about" data-tab="about"><span class="l">About the data</span><span class="s">About</span></button>
   </div>
 </nav>
@@ -360,7 +360,7 @@ table.qt .n { text-align: right; white-space: nowrap; }
         <tr><td>0202</td><td>Beef, frozen</td><td>Frozen beef</td></tr>
         <tr><td>1602.50, 0210.20</td><td>Beef prepared or preserved (cooked, canned, seasoned), or salted, dried or smoked</td><td>Processed beef</td></tr>
         <tr><td>0206.10, 0206.21, 0206.22, 0206.29</td><td>Edible offal of cattle: tongues, livers and other organs</td><td>Variety meats</td></tr>
-        <tr><td>0102.29</td><td>Cattle other than purebred breeding cattle; dairy cows, other breeding cattle, buffalo and bison are left out</td><td>Live cattle</td></tr>
+        <tr><td>0102.29</td><td>Cattle other than purebred breeding cattle; dairy cows, other breeding cattle, buffalo and bison are left out</td><td>Cattle trade</td></tr>
       </tbody></table></div>
       <p>"Beef" on this page means fresh, frozen and processed beef together. Variety meats are counted on their own, chosen
         with the Product menu, and never added into beef totals. Veal is part of beef in these codes.</p>
@@ -1296,7 +1296,7 @@ function renderMonth() {
         el("li", {}, ["imported, ", chg(ch, chP), ` vs. ${mShort(L - 12)}`]),
         el("li", {}, [`Feeders ${nf.format(D.cimp.reduce((s, r) => s + (r.m === L && r.k === 0 ? r.head : 0), 0))} · slaughter ${nf.format(D.cimp.reduce((s, r) => s + (r.m === L && r.k === 1 ? r.head : 0), 0))}`]),
         el("li", {}, [el("b", { text: `${nf.format(ce)} head` }), " exported, ", chg(ce, ceP)]),
-      ]), go("cattle", "Live cattle")]),
+      ]), go("cattle", "Cattle trade")]),
     el("div", { class: "card" }, [el("p", { class: "k", text: `Beef quota · CBP, ${dateTxt(Q.asOf)}` }),
       el("ul", { class: "lines", style: "margin-top:8px" }, [
         oth ? el("li", {}, [`Other-countries quota: `, el("b", { text: oth.status === "FILL" && oth.fillDate ? `filled ${dateShort(oth.fillDate)}` : `${pctTxt((100 * oth.entered) / oth.qty)} full` })]) : null,
@@ -1465,7 +1465,7 @@ function renderCattle() {
   const host = $("#cattle"), st = S.cat;
   if (!cattleBuilt) {
     host.replaceChildren(
-      el("div", {}, [el("h2", { text: "Live cattle trade" }), el("p", { class: "sub", text: "Head of feeder and slaughter cattle crossing the border with Canada and Mexico. Breeding and dairy cattle, buffalo and bison are left out." })]),
+      el("div", {}, [el("h2", { text: "Cattle trade" }), el("p", { class: "sub", text: "Head of feeder and slaughter cattle crossing the border with Canada and Mexico. Breeding and dairy cattle, buffalo and bison are left out." })]),
       el("div", { class: "ctrls" }, [
         field("Direction", segBtns("cat-dir", [["imp", "Imports"], ["exp", "Exports"]], st.dir, (v) => { st.dir = v; st.country = "all"; st.cls = "all"; renderCattle(); })),
         field("Show", segBtns("cat-measure", [["head", "Head"], ["usd", "Dollars"], ["each", "$ per head"]], st.measure, (v) => { st.measure = v; renderCattle(); })),
