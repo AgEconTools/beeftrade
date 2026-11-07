@@ -322,7 +322,7 @@ table.qt .n { text-align: right; white-space: nowrap; }
     <div><h2>The beef import quota and tariffs</h2>
       <p class="sub">Each year a set amount of beef can enter the United States at a low tariff. Beef past that amount pays
         26.4%, unless a trade agreement covers it. Canada and Mexico trade beef duty-free under USMCA and are outside the
-        quota. Figures are fresh, frozen and processed beef, in pounds of product weight, unless noted.</p></div>
+        quota. Figures are fresh, frozen and processed beef unless noted.</p></div>
     <div class="card"><h3 id="q-wto-h">Quota fill</h3><p class="note" id="q-wto-note" style="margin:4px 0 8px"></p>
       <div class="tablewrap" style="max-height:none" id="q-wto"></div></div>
     <div class="two">
@@ -412,8 +412,7 @@ table.qt .n { text-align: right; white-space: nowrap; }
         Consumer" (August 2026), added 300,000 t for other countries in three tranches of 100,000 t: September 1 to 30,
         October 1 to 30, and October 31 to November 30. It makes no provision for unused room to carry to the next tranche.</p>
       <p>Australian beef also has a separate quantity under the U.S.-Australia Free Trade Agreement (<span id="ab-ausfta">set each year by USTR</span>), the
-        level used for the agreement's price-based safeguard on beef. CBP counts entries against it, and the quota table
-        shows it.</p>
+        level used for the agreement's price-based safeguard on beef. The quota table shows it.</p>
       <p>CBP's quota counts and Census's monthly trade totals are compiled differently and will not match exactly.
         1 metric ton (t) = 2,204.6 lb.</p>
       <h3>Tariffs in 2025</h3>
@@ -1420,7 +1419,7 @@ function renderQuota() {
     stacks: [{ name: "Duties", color: "var(--c1)", values: dy }] });
   const since = Math.max(0, L - 59), months = range(since, L);
   const rate = (keep) => months.map((i) => { let d = 0, v = 0; for (const r of R.imp) if (r.m === i && keep(r)) { d += r.duty; v += r.usd; } return v > 1e6 ? (100 * d) / v : null; });
-  $("#q-rate-note").textContent = `Duties divided by customs value on beef entered over quota, the last five years. Months under $1 million of such beef are left out. The 26.4% rate is the base; 2025 added extra tariffs.`;
+  $("#q-rate-note").textContent = `Duties divided by customs value on beef entered over quota, the last five years. Months under $1 million of such beef are left out. Spikes above 26.4% are the 2025 extra tariffs.`;
   lineChart($("#q-rate"), { labels: months.map((i) => `${MON[mo(i)]} '${String(yr(i)).slice(2)}`), names: months.map(mName), label: "Average tariff on over-quota beef by month, percent", fmt: (v) => `${Math.round(v)}%`, tipFmt: (v) => `${v.toFixed(1)}%`, series: [
     { name: "All over-quota beef", cls: "s-now", values: rate((r) => r.s === 3) },
     { name: "Brazil", cls: "s-last", color: "var(--c2)", values: rate((r) => r.s === 3 && D.countries[r.c].name === "Brazil") },
