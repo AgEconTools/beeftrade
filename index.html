@@ -1439,7 +1439,7 @@ function renderQuota() {
     el("tfoot", {}, tr("All countries", tot)),
   ]), "q-ctry", 3));
   $("#q-tariff-notes").textContent = (dutyGap()
-    ? "Census reports almost no duty on beef from any country except Australia in December 2025 and January 2026, including the small in-quota duty. Most over-quota beef in those months was declared duty-free under a chapter 99 provision (USITC DataWeb); whether duty was collected later isn't public. Treat duties and average tariffs for those two months with caution. "
+    ? "Census reports almost no duty on beef from any country except Australia in December 2025 and January 2026. Most over-quota beef in those months was declared duty-free under a chapter 99 provision (USITC DataWeb); whether duty was collected later isn't public, and the missing in-quota duty is unexplained. Treat duties and average tariffs for those two months with caution. "
     : "") + "The newest month is often revised.";
 }
 function drawChannels() {
