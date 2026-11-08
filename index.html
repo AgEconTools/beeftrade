@@ -806,7 +806,7 @@ function buildTrade(dir) {
   const L = N - 1, years = [...new Set(D.months.map((s) => +s.slice(0, 4)))].reverse();
   // these apply to both sections
   const shared = el("div", { class: "ctrls" }, [
-    field("Show", segBtns(`${dir}-measure`, [["lb", "Pounds"], ["usd", "Dollars"], ["price", "$ per lb"]], st.measure, (v) => { st.measure = v; render(dir); })),
+    field("Unit", segBtns(`${dir}-measure`, [["lb", "Pounds"], ["usd", "Dollars"], ["price", "$ per lb"]], st.measure, (v) => { st.measure = v; render(dir); })),
     el("div", { class: "pair" }, [field("Product", select(`${dir}-form`, [["beef", "All beef"], ...D.products.map((f, i) => [i, f])], st.form, (v) => { st.form = v; render(dir); }, "Product", true)),
       dir === "imp" ? field("How it entered", select("imp-chan", [["all", "All"], ...D.channels.map((s, i) => [i, s])], st.chan, (v) => { st.chan = v; render(dir); }, "How it entered", true)) : null,
     ].filter(Boolean)),
@@ -822,7 +822,7 @@ function buildTrade(dir) {
   const byOpts = dir === "imp" ? [["total", "Total"], ["country", "By country"], ["chan", "How it entered"], ["product", "By product"]] : [["total", "Total"], ["country", "By country"], ["product", "By product"]];
   host.replaceChildren(...[
     el("div", {}, [el("h2", { text: `U.S. beef ${w.noun} since ${D.meta.first.slice(0, 4)}` }),
-      el("p", { class: "sub" }, [`Annual totals. Pounds are product weight; beef is fresh, frozen and processed unless the Product menu says otherwise. ${dir === "imp" ? "Show, Product and How it entered" : "Show and Product"} apply here and to ${w.noun} by country below. `,
+      el("p", { class: "sub" }, [`Annual totals. Pounds are product weight; beef is fresh, frozen and processed unless the Product menu says otherwise. ${dir === "imp" ? "Unit, Product and How it entered" : "Unit and Product"} apply here and to ${w.noun} by country below. `,
         el("a", { class: "jump", href: `#${dir}-h`, text: `Jump to ${w.noun} by country`, onclick: (e) => { e.preventDefault(); $(`#${dir}-h`).scrollIntoView({ block: "start" }); } })])]),
     shared,
     el("div", { class: "card" }, [
@@ -1468,7 +1468,7 @@ function renderCattle() {
       el("div", {}, [el("h2", { text: "Cattle trade" }), el("p", { class: "sub", text: "Head of feeder and slaughter cattle crossing the border with Canada and Mexico. Breeding and dairy cattle, buffalo and bison are left out." })]),
       el("div", { class: "ctrls" }, [
         field("Direction", segBtns("cat-dir", [["imp", "Imports"], ["exp", "Exports"]], st.dir, (v) => { st.dir = v; st.country = "all"; st.cls = "all"; renderCattle(); })),
-        field("Show", segBtns("cat-measure", [["head", "Head"], ["usd", "Dollars"], ["each", "$ per head"]], st.measure, (v) => { st.measure = v; renderCattle(); })),
+        field("Unit", segBtns("cat-measure", [["head", "Head"], ["usd", "Dollars"], ["each", "$ per head"]], st.measure, (v) => { st.measure = v; renderCattle(); })),
         el("div", { class: "field", id: "cat-cls-field" }),
       ]),
       el("p", { class: "note", id: "cat-cls-note" }),
