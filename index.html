@@ -139,6 +139,8 @@ h3 { font: 700 18px/1.3 var(--body); margin: 0; }
 .cardbar { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 8px 14px; }
 .sub { margin: 4px 0 0; color: var(--ink-2); font-size: 15px; max-width: 74ch; }
 .note { margin: 0; color: var(--muted); font-size: 13.5px; max-width: 78ch; }
+.dnote { display: grid; gap: 6px; margin-top: 6px; }
+.dnote b { color: var(--ink); }
 .card { background: var(--surface); border: 1px solid var(--rule); border-radius: var(--r); padding: 18px; min-width: 0; }
 .cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 14px; }
 .k { font-size: 12px; font-weight: 600; letter-spacing: .06em; text-transform: uppercase; color: var(--muted); margin: 0; }
@@ -359,7 +361,7 @@ table.qt .n { text-align: right; white-space: nowrap; }
     <div class="card"><h3 id="q-wto-h">Quota fill</h3><p class="note" id="q-wto-note" style="margin:4px 0 8px"></p>
       <div class="tablewrap" style="max-height:none" id="q-wto" tabindex="0" role="region" aria-labelledby="q-wto-h"></div></div>
     <div class="two">
-      <div class="card"><h3>Lean trimmings quota, 2026</h3><p class="note" id="q-tr-note" style="margin:4px 0 4px"></p><div id="q-tr"></div></div>
+      <div class="card"><h3>Lean trimmings quota, 2026</h3><p class="note" id="q-tr-note" style="margin:4px 0 4px"></p><div id="q-tr"></div><p class="note" id="q-tr-census" style="margin-top:6px"></p></div>
       <div class="card"><h3>When the other-countries quota filled</h3><p class="note" style="margin:4px 0 8px">The shared quota for
         countries without their own allocation, by year.</p><div class="tablewrap" style="max-height:none" id="q-others"></div>
         <h3 style="margin-top:16px">Argentina's lean trimmings quota, 2026</h3><p class="note" id="q-ar-note" style="margin:4px 0 4px"></p><div id="q-ar"></div></div>
@@ -374,7 +376,7 @@ table.qt .n { text-align: right; white-space: nowrap; }
     </div>
     <div class="card"><h3 id="q-ctry-h">Duties by country</h3><p class="note" id="q-ctry-note" style="margin:4px 0 8px"></p>
       <div class="tablewrap" id="q-ctry"></div></div>
-    <div class="card" id="duty-note"><h3>Reading the duty figures</h3><p class="note" id="q-tariff-notes" style="margin-top:4px"></p></div>
+    <div class="card" id="duty-note"><h3>Reading the duty figures</h3><div id="q-tariff-notes" class="dnote"></div></div>
     <p class="note">Imported lean beef is most similar to beef from cull cows and bulls. This week's cull cow and bull prices
       at auction: <a href="../cattleprices/#cows">Cattle Auction Prices</a>.</p>
   </section>
@@ -422,10 +424,11 @@ table.qt .n { text-align: right; white-space: nowrap; }
         <li><b>Canada and Mexico (USMCA)</b>: duty-free, outside the quota.</li>
         <li><b>Country quotas</b>: within a country's own allocation (<span id="ab-holders">see the quota table</span>),
           including Argentina's added 2026 lean trimmings quota, at the low in-quota tariff.</li>
-        <li><b>Other-countries quota</b>: within the shared quota for all other countries, at the low in-quota tariff.</li>
+        <li><b>Other-countries quota</b>: within the shared quota for all other countries, at the low in-quota tariff.
+          Small amounts can still show in months after it fills, entered at the low in-quota tariff.</li>
         <li><b>Lean trimmings quota</b>: lean beef trimmings from countries without their own allocation, entered in quota
-          on the four lean trimmings tariff lines while the 2026 tranches were open (Proclamation 11059, September to
-          November 2026), at the low in-quota tariff.</li>
+          while the 2026 tranches were open (Proclamation 11059, <span id="ab-tr-months">September to November 2026</span>),
+          at the low in-quota tariff. Argentina's lean trimmings quota is counted under Country quotas.</li>
         <li><b>Over quota</b>: beef entered on the over-quota tariff lines after a quota filled, normally at 26.4%,
           including Australian beef once its own quota fills. See <a href="#duty-note">Reading the duty figures</a> on the
           Quota tab.</li>
@@ -454,6 +457,9 @@ table.qt .n { text-align: right; white-space: nowrap; }
         that qualified under USMCA was exempt. Beef was exempted from both effective November 13, 2025 (the Brazil order was
         signed November 20 and applied from November 13). The temporary 10% import surcharge of February 24 to July 24,
         2026 (Proclamation 11012) excluded beef.</p>
+      <p>How importers declared over-quota beef (dutiable, or duty-free under a special tariff provision), as described in
+        Reading the duty figures on the Quota tab, comes from the U.S. International Trade Commission's DataWeb, which
+        breaks imports out by the tariff provision they were declared under.</p>
       <h3>Live cattle</h3>
       <p>Head counts of feeder and slaughter cattle crossing the border with Canada and Mexico. Breeding and dairy
         cattle are left out. Imports from Mexico were halted at times from late 2024 to keep New World screwworm out of the
@@ -555,11 +561,12 @@ const inExtra = (m) => D.months[m] >= EXTRA_TARIFF[0] && D.months[m] <= EXTRA_TA
 const auOver = (r) => r.s === OVER && D.countries[r.c].name === "Australia" && D.months[r.m] >= AU_FROM;
 const dutyFlag = (rows) => rows.some((r) => r.duty > 0 && (inExtra(r.m) || auOver(r)));
 const fnLink = () => el("a", { class: "fn", href: "#duty-note", title: "See Reading the duty figures", "aria-label": "See Reading the duty figures",
-  text: "†", onclick: (e) => { e.preventDefault(); openAnchor("duty-note"); } });
+  text: "†" });
 const CCOL = ["var(--c3)", "var(--c4)", "var(--c1)", "var(--c8)", "var(--c2)", "var(--c6)", "var(--c5)"];         // how imports entered
 
 // ---- numbers ----
 const nf = new Intl.NumberFormat("en-US");
+const LB_PER_T = 2204.62262185;   // pounds in a metric ton
 const lbTxt = (n) => (n >= 1e9 ? `${(n / 1e9).toFixed(2)} billion lb` : n >= 1e6 ? `${(n / 1e6).toFixed(1)} million lb` : `${nf.format(Math.round(n))} lb`);
 const usdTxt = (n) => (n >= 1e9 ? `$${(n / 1e9).toFixed(2)} billion` : n >= 1e6 ? `$${(n / 1e6).toFixed(1)} million` : `$${nf.format(Math.round(n))}`);
 const priceTxt = (o) => (o.lb > 0 ? `$${(o.usd / o.lb).toFixed(2)}/lb` : "–");
@@ -807,17 +814,18 @@ function barChart(host, { cats, labels, names, stacks, fmt, tipFmt, hilite, part
     cats.map((_, i) => [catTxt(i), ...(multi ? [tf(totals[i])] : []), ...stacks.map((s) => tf(s.values[i] || 0))]));
   host.replaceChildren(...[svg, keys, out, table].filter(Boolean));
 }
-const mixBar = (parts) => {
+const mixBar = (parts, minShare = 0) => {
   const tot = parts.reduce((s, p) => s + p.v, 0);
   if (!tot) return el("p", { class: "note", text: "None in this period." });
   // whole percents that add up to 100: round down, then give the leftover points to the largest remainders
   const exact = parts.map((p) => (100 * p.v) / tot), pct = exact.map(Math.floor);
   exact.map((v, i) => [v - pct[i], i]).sort((a, b) => b[0] - a[0]).slice(0, 100 - pct.reduce((a, b) => a + b, 0)).forEach(([, i]) => pct[i]++);
   const ptxt = (p) => (pct[parts.indexOf(p)] ? `${pct[parts.indexOf(p)]}%` : "<1%");
+  const shown = parts.filter((p) => p.v && p.v / tot >= minShare);
   return el("div", {}, [
-    el("div", { class: "mix", role: "img", "aria-label": parts.filter((p) => p.v).map((p) => `${p.name} ${ptxt(p)}`).join(", ") },
-      parts.filter((p) => p.v).map((p) => el("span", { style: `width:${(100 * p.v) / tot}%;background:${p.color}`, title: `${p.name}: ${((100 * p.v) / tot).toFixed(1)}%` }))),
-    el("ul", { class: "keys" }, parts.filter((p) => p.v).map((p) => el("li", {}, [el("span", { class: "sw", style: `background:${p.color}` }), `${p.name} ${ptxt(p)}`]))),
+    el("div", { class: "mix", role: "img", "aria-label": shown.map((p) => `${p.name} ${ptxt(p)}`).join(", ") },
+      shown.map((p) => el("span", { style: `width:${(100 * p.v) / tot}%;background:${p.color}`, title: `${p.name}: ${((100 * p.v) / tot).toFixed(1)}%` }))),
+    el("ul", { class: "keys" }, shown.map((p) => el("li", {}, [el("span", { class: "sw", style: `background:${p.color}` }), `${p.name} ${ptxt(p)}`]))),
   ]);
 };
 const progBar = (v, max, label) => el("div", { class: "prog", role: "img", "aria-label": label }, el("i", { style: `width:${Math.min(100, Math.max(0, (100 * v) / max))}%` }));
@@ -1311,7 +1319,7 @@ function renderMonth() {
   const fm = [0, 0, 0]; for (const r of R.exp) if (r.m === L && r.f <= 2) fm[r.f] += r.lb;
   const card = (k, big, lines) => el("div", { class: "card" }, [el("p", { class: "k", text: k }), el("p", { class: "big", text: big }), el("ul", { class: "lines" }, lines.map((l) => el("li", {}, l)))]);
   // opens the tab at its "by country" section, which is what the button names
-  const go = (dir, label, at) => el("button", { class: "btn alt", type: "button", style: "margin-top:10px", text: label, onclick: () => { show(dir); if (at) $(at).scrollIntoView({ block: "start" }); } });
+  const go = (dir, label, at) => el("button", { class: "btn alt", type: "button", style: "margin-top:10px", text: label, onclick: () => jumpTo(at ? at.slice(1) : null, dir) });
   // live cattle and the quota, in brief
   const head = (rows, set) => rows.reduce((s, r) => s + (set.has(r.m) ? r.head : 0), 0);
   const ch = head(D.cimp, new Set([L])), chP = head(D.cimp, new Set([L - 12]));
@@ -1330,7 +1338,7 @@ function renderMonth() {
         ...topList(im, 4).map(([c, o]) => ctry(im, imP, c, o)),
         el("li", {}, [`${im.by.size} ${im.by.size === 1 ? "supplier" : "suppliers"} in all`]),
       ]),
-      el("p", { class: "k", text: "How it entered (pounds)", style: "margin-top:12px" }), mixBar(D.channels.map((n, i) => ({ name: n, v: sp[i], color: CCOL[i] }))), go("imp", "Imports by country", "#imp-h")]),
+      el("p", { class: "k", text: "How it entered (pounds)", style: "margin-top:12px" }), mixBar(D.channels.map((n, i) => ({ name: n, v: sp[i], color: CCOL[i] })), 0.001), go("imp", "Imports by country", "#imp-h")]),
     card("Beef exports", lbTxt(ex.tot.lb), [
       [chg(ex.tot.lb, exP.tot.lb), ` vs. ${mShort(L - 12)}`],
       [el("b", { text: usdTxt(ex.tot.usd) }), ` · ${priceTxt(ex.tot)}`],
@@ -1422,6 +1430,9 @@ function fillAbout() {
     $("#ab-alloc").textContent = `In ${Q.year} the U.S. beef tariff-rate quota sets amounts, in metric tons of product, for ${list(own.map((w) => `${the(w.name)} (${nf.format(Math.round(w.qty))} t)`))}${oth && oth.qty ? `, and for all other countries together (${nf.format(Math.round(oth.qty))} t)` : ""}.`;
     $("#ab-holders").textContent = `in ${Q.year}: ${list(own.map((w) => the(w.name)))}`;
   }
+  const tp = Q.tranches.filter((t) => t.start && t.end).sort((a, b) => a.start.localeCompare(b.start));
+  if (tp.length) { const m = (s) => MONTH[+s.slice(5, 7) - 1], a = tp[0].start, b = tp.at(-1).end;
+    $("#ab-tr-months").textContent = a.slice(0, 7) === b.slice(0, 7) ? `${m(a)} ${a.slice(0, 4)}` : a.slice(0, 4) === b.slice(0, 4) ? `${m(a)} to ${m(b)} ${b.slice(0, 4)}` : `${m(a)} ${a.slice(0, 4)} to ${m(b)} ${b.slice(0, 4)}`; }
   if (Q.ausfta && Q.ausfta.qty) $("#ab-ausfta").textContent = `${nf.format(Math.round(Q.ausfta.qty))} t in ${Q.year}`;
 }
 // ---- Quota and tariffs ----
@@ -1450,6 +1461,11 @@ function renderQuota() {
       t.weeks.length ? el("p", { class: "note", text: "Weekly: " + t.weeks.map(([d, x]) => `${dateShort(d)} ${nf.format(Math.round(x))} t`).join(" · ") }) : null,
     ]);
   }));
+  // Census's whole-month count of the lean trimmings group beside CBP's tons (CBP counts to its report date)
+  const LT = D.channels.indexOf("Lean trimmings quota"), ltm = new Map();
+  for (const r of R.imp) if (r.s === LT && r.lb > 0) ltm.set(r.m, (ltm.get(r.m) || 0) + r.lb);
+  const ltTxt = [...ltm].sort((a, b) => a[0] - b[0]).map(([m, lb]) => `${mName(m)}, ${lbTxt(lb)} (${mtTxt(lb / LB_PER_T)})`);
+  $("#q-tr-census").textContent = ltTxt.length ? `Census's monthly count for the Lean trimmings quota group: ${ltTxt.join("; ")}. CBP's figures above are as of its report date; Census's cover the full calendar month.` : "";
   $("#q-others").replaceChildren(el("table", { class: "qt" }, [
     el("thead", {}, el("tr", {}, [el("th", { text: "Year" }), el("th", { class: "n", text: "Quota" }), el("th", { text: "Filled" })])),
     el("tbody", {}, Q.others.slice().reverse().map((o) => el("tr", {}, [el("td", { text: String(o.year) }), el("td", { class: "n", text: mtTxt(o.qty) }),
@@ -1496,13 +1512,14 @@ function renderQuota() {
     el("tfoot", {}, tr("All countries", tot)),
   ]), "q-ctry", 3));
   // Reading the duty figures: the one note every † points to
-  $("#q-tariff-notes").textContent = [
-    "Duties are Census's calculation from each shipment's tariff line and value, not customs bills.",
-    auDuty > 0 ? `In the 12 months shown, ${usdTxt(auDuty)} is duty on Australian beef entered over quota; the U.S.-Australia agreement lets that beef enter duty-free when claimed, but in 2025 it was declared dutiable (USITC DataWeb), so Census counts the duty.` : null,
-    dutyGap() ? "Most over-quota beef from other countries in December 2025 and January 2026 was declared duty-free under chapter 99 provisions, so Census shows almost no duty on it." : null,
-    "The 2025 extra tariffs were ruled unlawful by the Supreme Court in February 2026, and CBP is refunding them to importers; the duties shown are as calculated at entry and do not reflect refunds.",
-    "The newest month is often revised.",
-  ].filter(Boolean).join(" ");
+  const nl = (k, t) => el("p", { class: "note" }, k ? [el("b", { text: k }), " ", t] : t);
+  $("#q-tariff-notes").replaceChildren(...[
+    nl(null, "Duties are Census's calculation from each shipment's tariff line and value, not customs bills."),
+    auDuty > 0 ? nl("Australia:", `In the 12 months shown, ${usdTxt(auDuty)} is duty on Australian beef entered over quota. The U.S.-Australia agreement lets that beef enter duty-free when claimed, but importers declared it dutiable, so Census counts the duty.`) : null,
+    dutyGap() ? nl("December 2025 and January 2026:", "Most over-quota beef from other countries was declared duty-free under a special tariff provision, so Census shows almost no duty on it.") : null,
+    nl("Refunds:", "The 2025 extra tariffs were ruled unlawful by the Supreme Court in February 2026, and CBP is refunding them to importers. The duties shown are as calculated at entry and do not reflect refunds."),
+    nl("Revisions:", "The newest month is often revised."),
+  ].filter(Boolean));
 }
 function drawChannels() {
   const L = N - 1, months = range(Math.max(0, L - 35), L), m = S.q.chBy;
@@ -1510,7 +1527,7 @@ function drawChannels() {
   const sums = D.channels.map(() => months.map(() => 0));
   for (const r of R.imp) { const k = r.m - months[0]; if (k >= 0 && r.f <= 2) sums[r.s][k] += m === "usd" ? r.usd : r.lb; }
   $("#q-ch-note").textContent = `The last three years, in ${m === "usd" ? "dollars" : "pounds"}. `;
-  $("#q-ch-note").append(el("a", { href: "#channels", text: "What each group means", onclick: (e) => { e.preventDefault(); openAnchor("channels"); } }), ".");
+  $("#q-ch-note").append(el("a", { href: "#channels", text: "What each group means" }), ".");
   barChart($("#q-ch"), { cats: months, labels: months.map((i) => `${MON[mo(i)]} '${String(yr(i)).slice(2)}`), names: months.map(mName), first: "Month",
     label: `U.S. beef imports by how they entered, by month, ${m === "usd" ? "dollars" : "pounds"}`, fmt: m === "usd" ? (v) => `$${compact(v)}` : compact, tipFmt: m === "usd" ? usdTxt : lbM,
     stacks: D.channels.map((n, i) => ({ name: n, color: CCOL[i], values: sums[i] })) });
@@ -1628,12 +1645,18 @@ const tabOf = (h) => ALIAS[h] || (TABS.includes(h) ? h : null);
 // The address (Data_Forecasts/ADDRESS_STANDARD.md): ?country=br#imports. It follows the visitor so a copied or
 // shared link opens the same view; never rename a name (old ones keep opening their tab).
 const ADDR = { imp: "imports", exp: "exports" };
-function writeAddr(tab) {
-  let q; try { q = new URLSearchParams(location.search); } catch (e) { return; }
+function addrOf(tab) {
+  let q; try { q = new URLSearchParams(location.search); } catch (e) { return null; }
   const c = !D ? null : tab === "imp" || tab === "exp" ? S[tab].country : tab === "month" && S.month.c !== "all" ? +S.month.c : null;
   if (c != null && D.countries[c]) q.set("country", D.countries[c].iso); else q.delete("country");
-  const qs = q.toString(), url = `${location.pathname}${qs ? "?" + qs : ""}#${ADDR[tab] || tab}`;
-  try { if (location.pathname + location.search + location.hash !== url) history.replaceState(null, "", url); } catch (e) { /* sandboxed */ }
+  const qs = q.toString();
+  return `${location.pathname}${qs ? "?" + qs : ""}#${ADDR[tab] || tab}`;
+}
+function writeAddr(tab) {
+  const url = addrOf(tab); if (!url) return;
+  // keep this history step's saved place (see jumpTo) while it still belongs to the same tab
+  const st = history.state && history.state.tab === tab ? history.state : null;
+  try { if (location.pathname + location.search + location.hash !== url) history.replaceState(st, "", url); } catch (e) { /* sandboxed */ }
 }
 const openTab = () => TABS.find((x) => !$(`#${x}`).hidden) || "month";
 function show(tab, keepHash = false) {
@@ -1668,7 +1691,30 @@ function openAnchor(id) {
   const p = a.closest(".panel"); if (p) show(p.id, true);
   a.scrollIntoView(); return true;
 }
-addEventListener("hashchange", () => { if (!D) return; const h = location.hash.slice(1), t = tabOf(h); if (t) show(t); else openAnchor(h); });
+// Links and buttons inside the tabs (a † to Reading the duty figures, "What each group means", the This month
+// buttons) add a step to the browser's history: the address names the tab they open, and Back returns to the tab
+// and the place the reader left.
+function jumpTo(id, tab) {
+  try { history.replaceState({ tab: openTab(), y: scrollY }, "", location.href); } catch (e) { /* sandboxed */ }
+  const a = id ? document.getElementById(id) : null, t = tabOf(tab || (a && a.closest(".panel") ? a.closest(".panel").id : "")) || openTab();
+  // the new step goes in before anything moves: the browser keeps the reader's place with the step being left
+  try { history.pushState({ tab: t, id }, "", addrOf(t) || location.href); } catch (e) { /* sandboxed */ }
+  if (t !== openTab()) show(t, true);
+  if (a) a.scrollIntoView({ block: "start" }); else window.scrollTo({ top: 0 });
+}
+document.addEventListener("click", (e) => {
+  const a = e.target.closest('a[href^="#"]'); if (!a || !D || e.defaultPrevented || e.button || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
+  const id = a.getAttribute("href").slice(1), t = id && document.getElementById(id);
+  if (!t || !a.closest(".panel") || !t.closest(".panel")) return;   // only links from one place in the tabs to another
+  e.preventDefault(); jumpTo(id);
+});
+addEventListener("popstate", (e) => {
+  const st = e.state; if (!D || !st || !st.tab) return;   // other history steps are plain addresses (hashchange below)
+  if (openTab() !== st.tab) show(st.tab, true);
+  const place = () => { if (st.y != null) window.scrollTo({ top: st.y }); else if (st.id && document.getElementById(st.id)) document.getElementById(st.id).scrollIntoView({ block: "start" }); };
+  place(); requestAnimationFrame(place);
+});
+addEventListener("hashchange", () => { if (!D) return; const h = location.hash.slice(1), t = tabOf(h); if (t) { if (t !== openTab()) show(t); } else openAnchor(h); });
 
 // ---- start ----
 Promise.all(["data/beef.json", "data/world.json"].map((u) => fetch(u, { cache: "no-cache" }).then((r) => { if (!r.ok) throw new Error(u); return r.json(); })))
