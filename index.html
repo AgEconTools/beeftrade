@@ -633,8 +633,9 @@ function sortable(table, id, def, ok = () => true, limit = 0) {
 function moreBtn(table, id, total, limit, noun) {
   if (total <= limit) return null;
   const b = el("button", { type: "button", class: "more", "aria-expanded": String(!!SHOWALL[id]) });
-  const label = () => { b.textContent = SHOWALL[id] ? `Show the top ${limit}` : `Show all ${total} ${noun}`; b.setAttribute("aria-expanded", String(!!SHOWALL[id])); };
-  b.onclick = () => { SHOWALL[id] = !SHOWALL[id]; table._apply(); label(); };
+  const label = () => { b.textContent = SHOWALL[id] ? `Show only the top ${limit}` : `Show all ${total} ${noun}`; b.setAttribute("aria-expanded", String(!!SHOWALL[id])); };
+  // collapsing returns the list's scroll box to the top, where the top rows are
+  b.onclick = () => { SHOWALL[id] = !SHOWALL[id]; table._apply(); label(); if (!SHOWALL[id] && table.parentElement) table.parentElement.scrollTop = 0; };
   label();
   return b;
 }
@@ -650,7 +651,10 @@ const S = {
 // "beef" = fresh, frozen and processed; variety meats only when chosen
 const pass = (dir, st, r) => (st.form === "beef" ? r.f <= 2 : r.f === +st.form) && !(dir === "imp" && st.chan !== "all" && r.s !== +st.chan);
 const formTxt = (st) => (st.form === "beef" ? null : D.products[st.form].toLowerCase());
-const selTxt = (dir, st) => [formTxt(st), dir === "imp" && st.chan !== "all" ? D.channels[st.chan] : null].filter(Boolean).join(", ");
+// what the tab is counting: variety meats are their own product, never "beef" (they aren't added into beef)
+const isVariety = (st) => st.form !== "beef" && D.products[st.form] === "Variety meats";
+const goodsTxt = (st) => (isVariety(st) ? "variety meat" : "beef");
+const selTxt = (dir, st) => [isVariety(st) ? null : formTxt(st), dir === "imp" && st.chan !== "all" ? D.channels[st.chan] : null].filter(Boolean).join(", ");
 const unitTxt = (m) => (m === "lb" ? "pounds" : m === "usd" ? "dollars" : "dollars per pound");
 const range = (a, b) => Array.from({ length: b - a + 1 }, (_, k) => a + k);
 function period(st) {
@@ -670,6 +674,8 @@ function period(st) {
     : st.period === "12m" ? `the 12 months before` : st.period === "ytd" ? (lm ? `the same months of ${ly - 1}` : `January ${ly - 1}`) : `${yr(prev[0])}${cur.length < 12 ? " (same months)" : ""}`;
   return { cur: new Set(cur), prev: prev && new Set(prev), label, prevLabel, focusYear: yr(cur.at(-1)), n: cur.length };
 }
+// a country counts as a partner in a period when it shipped something (Census also lists zero rows)
+const trading = (o) => o.lb > 0 || o.usd > 0;
 function tally(dir, st, set, country = null) {
   const by = new Map(), tot = { lb: 0, usd: 0 };
   if (!set) return { by, tot: null };
@@ -932,7 +938,7 @@ function drawOverTime(dir) {
   for (const r of rows) { const g = groups.findIndex((x) => x.keep(r)); if (g < 0) continue; const o = sums[g][years.indexOf(yr(r.m))]; o.lb += r.lb; o.usd += r.usd; }
   const used = groups.map((g, i) => ({ ...g, sum: sums[i] })).filter((g, i) => (i < named && !fixed) || g.sum.some((o) => o.lb || o.usd));
   const sel = selTxt(dir, st);
-  const host = $(`#${dir}-ot`), label = `U.S. beef ${w.noun} by year${sel ? ", " + sel : ""}, ${unitTxt(m)}`;
+  const host = $(`#${dir}-ot`), label = `U.S. ${goodsTxt(st)} ${w.noun} by year${sel ? ", " + sel : ""}, ${unitTxt(m)}`;
   const ylabels = years.map((y, k) => `'${String(y).slice(2)}${k === part ? "*" : ""}`);
   const ynames = years.map((y, k) => `${y}${k === part ? " (part year)" : ""}`);
   if (m === "price") {
@@ -1113,7 +1119,7 @@ function drawSeasonal(dir) {
     $(`#${dir}-sea-note`).textContent = years.length < 3 ? `Not enough months of trade for a seasonal pattern.${what}`
       : `How much each month usually runs above or below a typical month, averaged over ${yl}${m === "lb" ? "" : `, in ${unit}`}.${what} Thin lines show the lowest and highest year.`;
     if (years.length < 3) { $(`#${dir}-sea`).replaceChildren(); return; }
-    seasonBars($(`#${dir}-sea`), { rows, years, label: `${who}, usual seasonal pattern of beef ${w.noun}${sel ? ", " + sel : ""}, ${unit}, ${yl}` });
+    seasonBars($(`#${dir}-sea`), { rows, years, label: `${who}, usual seasonal pattern of ${goodsTxt(st)} ${w.noun}${sel ? ", " + sel : ""}, ${unit}, ${yl}` });
     return;
   }
   const fmt = m === "lb" ? (v) => compact(v) : axTxt(m);
@@ -1127,7 +1133,7 @@ function drawSeasonal(dir) {
   }
   $(`#${dir}-sea-note`).textContent = `${unit[0].toUpperCase() + unit.slice(1)} by month, ${ly} against the four years before.${what}`
     + (arr ? ` The dashed line is ${ly} arrivals (general imports), which count beef when it reaches the United States, including beef held in bonded warehouses. Imports (entries) count it when it enters for use.` : "");
-  lineChart($(`#${dir}-sea`), { labels: MON, label: `${who}, monthly beef ${w.noun}${sel ? ", " + sel : ""}, ${ly} and the four years before, ${unitTxt(m)}`, fmt, tipFmt, series: [
+  lineChart($(`#${dir}-sea`), { labels: MON, label: `${who}, monthly ${goodsTxt(st)} ${w.noun}${sel ? ", " + sel : ""}, ${ly} and the four years before, ${unitTxt(m)}`, fmt, tipFmt, series: [
     ...earlier.slice().reverse().map((y) => ({ name: String(y), cls: "s-yr", color: SEA_GREYS[ly - y - 1], values: yearLine(ms, y, m) })),
     { name: `${ly}${arr ? " entries" : ""}`, cls: "s-now", values: yearLine(ms, ly, m), dots: true },
     arr ? { name: `${ly} arrivals`, cls: "s-dash", color: "var(--c2)", values: arr } : null,
@@ -1142,14 +1148,14 @@ function render(dir) {
   syncSeg(`${dir}-measure`, st.measure); syncSeg(`${dir}-zoom`, st.zoom);
   const cur = tally(dir, st, P.cur), prev = tally(dir, st, P.prev);
   const zone = st.zoom, zoned = zone !== "World";
-  const rank = [...cur.by].filter(([c, o]) => (o.lb > 0 || o.usd > 0) && inZone(c, zone)).sort((a, b) => (st.measure === "usd" ? b[1].usd - a[1].usd : b[1].lb - a[1].lb));
+  const rank = [...cur.by].filter(([c, o]) => trading(o) && inZone(c, zone)).sort((a, b) => (st.measure === "usd" ? b[1].usd - a[1].usd : b[1].lb - a[1].lb));
   if (st.country != null && !rank.some(([c]) => c === st.country)) st.country = null;
   const filt = [formTxt(st), dir === "imp" && st.chan !== "all" ? D.channels[st.chan] : null].filter(Boolean);
   $(`#${dir}-h`).textContent = `${w.noun[0].toUpperCase() + w.noun.slice(1)} by country`;
   const zsum = rank.reduce((a, [, o]) => ({ lb: a.lb + o.lb, usd: a.usd + o.usd }), { lb: 0, usd: 0 }), T = zoned ? zsum : cur.tot;
   const usTot = zoned ? ` (U.S. total ${lbTxt(cur.tot.lb)})` : "";
-  $(`#${dir}-sub`).textContent = `${P.label}${filt.length ? " · " + filt.join(" · ") : ""}: ` + (zoned && !rank.length
-    ? `no ${w.noun} ${w.toFrom} ${zone}${usTot}.`
+  $(`#${dir}-sub`).textContent = `${P.label}${filt.length ? " · " + filt.join(" · ") : ""}: ` + (!rank.length
+    ? (zoned ? `no ${w.noun} ${w.toFrom} ${zone}${usTot}.` : `no ${w.noun} in this selection.`)
     : `${zoned ? `${zone}, ` : ""}${lbTxt(T.lb)}, ${usdTxt(T.usd)}, ${priceTxt(T)}, ${w.toFrom} ${rank.length} ${rank.length === 1 ? "country" : "countries"}${usTot}.`);
   $(`#${dir}-legend`).textContent = !rank.length && zoned ? `No U.S. ${w.noun} ${w.toFrom} ${zone} in ${P.label}.`
     : `Circle size shows ${st.measure === "usd" ? "dollars" : "pounds"}. Select a country for its details, or a total row in the list for the whole ${zoned ? "region" : "selection"}.`;
@@ -1181,17 +1187,20 @@ function render(dir) {
   const tfoot = el("tfoot", {}, [zoneRow, el("tr", totalProps(!zoned), [el("td", { text: zoned ? "All countries (U.S. total)" : "All countries" }), el("td", { class: mcls("lb"), text: tblLb(cur.tot.lb) }), el("td", { class: mcls("usd"), text: tblUsd(cur.tot.usd) }), el("td", { class: mcls("price"), text: cur.tot.lb ? `$${(cur.tot.usd / cur.tot.lb).toFixed(2)}` : "–" }), el("td", { class: "n", text: "100%" }), el("td", { class: `n ${tch.c}`, text: tch.t })])]);
   // on narrow screens only the chosen measure's column shows, so a sort on a hidden one falls back
   const shown = (j) => j === 0 || j > 3 || !matchMedia("(max-width: 1120px)").matches || ["lb", "usd", "price"][j - 1] === st.measure;
-  const rtab = sortable(el("table", { class: "rank" }, [thead, tbody, tfoot]), `${dir}-list`, st.measure === "usd" ? 2 : 1, shown, 25);
-  $(`#${dir}-table`).replaceChildren(rtab);
   $(`#${dir}-table`).parentElement.querySelectorAll(".more").forEach((x) => x.remove());
-  const mb = moreBtn(rtab, `${dir}-list`, rank.length, 25, "countries");
-  if (mb) $(`#${dir}-table`).after(mb);
+  if (rank.length) {
+    const rtab = sortable(el("table", { class: "rank" }, [thead, tbody, tfoot]), `${dir}-list`, st.measure === "usd" ? 2 : 1, shown, 25);
+    $(`#${dir}-table`).replaceChildren(rtab);
+    const mb = moreBtn(rtab, `${dir}-list`, rank.length, 25, "countries");
+    if (mb) $(`#${dir}-table`).after(mb);
+  } else $(`#${dir}-table`).replaceChildren();
   $(`#${dir}-list-h`).textContent = `${w.list}${zoned ? ` in ${zone}` : ""}, ${P.label}`;
-  $(`#${dir}-list-note`).textContent = rank.length ? `Sort by any column. Share is of all U.S. beef ${w.noun}${filt.length ? " in this selection" : ""}${zoned ? ", from every country" : ""}.${P.prev ? ` Change compares with ${P.prevLabel}.` : ""}` : zoned ? "Choose World or another region." : `No U.S. ${w.noun} in this selection.`;
+  $(`#${dir}-list-note`).textContent = rank.length ? `Sort by any column. Share is of all U.S. ${goodsTxt(st)} ${w.noun}${filt.length ? " in this selection" : ""}${zoned ? ", from every country" : ""}.${P.prev ? ` Change compares with ${P.prevLabel}.` : ""}` : zoned ? "Choose World or another region." : `No U.S. ${w.noun} in this selection.`;
   drawMap(dir, cur);
   drawOverTime(dir);
   drawSeasonal(dir);
   drawDetail(dir, P, cur, prev, rank);
+  settingChanged(dir);
 }
 // annual bars for the country or region total the details show
 function drawYears(dir, P, host) {
@@ -1202,7 +1211,7 @@ function drawYears(dir, P, host) {
   const fmt = m === "lb" ? (v) => compact(v) : axTxt(m);
   const tipFmt = m === "lb" ? (v) => `${nf.format(Math.round(v))} lb` : m === "usd" ? (v) => usdTxt(v) : (v) => (v > 0 ? `$${v.toFixed(2)}/lb` : "– (under 1,000 lb)");
   const sel = selTxt(dir, st);
-  barChart(host, { cats: an.map((a) => a.y), label: `${who}, beef ${w.noun} by year${sel ? ", " + sel : ""}, ${unitTxt(m)}`, fmt, tipFmt, hilite: an.findIndex((a) => a.y === P.focusYear),
+  barChart(host, { cats: an.map((a) => a.y), label: `${who}, ${goodsTxt(st)} ${w.noun} by year${sel ? ", " + sel : ""}, ${unitTxt(m)}`, fmt, tipFmt, hilite: an.findIndex((a) => a.y === P.focusYear),
     partial: part, stacks: [{ name: w.noun, color: "var(--c1)", values: an.map((a) => (m === "price" && a.lb < 1000 ? 0 : val(a, m) ?? 0)) }] });
 }
 const mapState = { imp: null, exp: null };
@@ -1291,7 +1300,7 @@ function drawDetail(dir, P, cur, prev, rank) {
   ].filter(Boolean));
   // drawn once the boxes are on the page, so the charts know their width
   if (yearsBox) drawYears(dir, P, yearsBox);
-  lineChart(mchart, { labels: MON, label: `${ct.name}, monthly beef ${w.noun}${sel ? ", " + sel : ""}, ${unitTxt(m)}`, fmt, tipFmt, series: [
+  lineChart(mchart, { labels: MON, label: `${ct.name}, monthly ${goodsTxt(st)} ${w.noun}${sel ? ", " + sel : ""}, ${unitTxt(m)}`, fmt, tipFmt, series: [
     { name: String(fy), cls: "s-now", values: yearLine(ms, fy, m), dots: true },
     fy - 1 >= yr(0) ? { name: String(fy - 1), cls: "s-last", values: yearLine(ms, fy - 1, m) } : null,
     fy - 3 >= yr(0) ? { name: `3-year average (${fy - 3}–${String(fy - 1).slice(2)})`, cls: "s-avg", values: avg3Line(ms, fy, m) } : null,
@@ -1310,11 +1319,12 @@ function renderMonth() {
   $("#month-h").textContent = mName(L);
   $("#month-sub").textContent = `The newest month the U.S. Census Bureau has released. Changes compare with ${mName(L - 12)}; year to date is ${janTo(lm)}. Census revises recent months in later releases.`;
   const chg = (a, b) => { const c = change(a, b); return el("span", { class: c.c, text: c.t }); };
-  const topList = (t, n) => [...t.by].sort((a, b) => b[1].lb - a[1].lb).slice(0, n);
+  const topList = (t, n) => [...t.by].filter(([, o]) => trading(o)).sort((a, b) => b[1].lb - a[1].lb).slice(0, n);
+  const nIm = [...im.by.values()].filter(trading).length, nEx = [...ex.by.values()].filter(trading).length;
   // a country's pounds against the same month a year earlier: "(101.1 million lb, +23% vs. Sep 2025)"
   const ctry = (t, tp, c, o) => { const p = tp.by.get(c), ch = change(o.lb, p ? p.lb : 0);
     return el("li", {}, [el("b", { text: `${((100 * o.lb) / t.tot.lb).toFixed(1)}%` }), ` ${D.countries[c].name} (${lbTxt(o.lb)}, `,
-      el("span", { class: ch.c, text: ch.t === "unchanged" ? "unchanged" : ch.t === "new" ? "new" : `${ch.t} vs. ${mShort(L - 12)}` }), ")"]); };
+      el("span", { class: ch.c, text: ch.t }), ")"]); };
   const sp = new Array(D.channels.length).fill(0); for (const r of R.imp) if (r.m === L && r.f <= 2) sp[r.s] += r.lb;
   const fm = [0, 0, 0]; for (const r of R.exp) if (r.m === L && r.f <= 2) fm[r.f] += r.lb;
   const card = (k, big, lines) => el("div", { class: "card" }, [el("p", { class: "k", text: k }), el("p", { class: "big", text: big }), el("ul", { class: "lines" }, lines.map((l) => el("li", {}, l)))]);
@@ -1336,7 +1346,7 @@ function renderMonth() {
     el("div", { class: "card" }, [el("p", { class: "k", text: "Where imports came from" }),
       el("ul", { class: "lines", style: "margin-top:8px" }, [
         ...topList(im, 4).map(([c, o]) => ctry(im, imP, c, o)),
-        el("li", {}, [`${im.by.size} ${im.by.size === 1 ? "supplier" : "suppliers"} in all`]),
+        el("li", {}, [`${nIm} ${nIm === 1 ? "supplier" : "suppliers"} in all`]),
       ]),
       el("p", { class: "k", text: "How it entered (pounds)", style: "margin-top:12px" }), mixBar(D.channels.map((n, i) => ({ name: n, v: sp[i], color: CCOL[i] })), 0.001), go("imp", "Imports by country", "#imp-h")]),
     card("Beef exports", lbTxt(ex.tot.lb), [
@@ -1347,7 +1357,7 @@ function renderMonth() {
     el("div", { class: "card" }, [el("p", { class: "k", text: "Where exports went" }),
       el("ul", { class: "lines", style: "margin-top:8px" }, [
         ...topList(ex, 4).map(([c, o]) => ctry(ex, exP, c, o)),
-        el("li", {}, [`${ex.by.size} ${ex.by.size === 1 ? "destination" : "destinations"} in all`]),
+        el("li", {}, [`${nEx} ${nEx === 1 ? "destination" : "destinations"} in all`]),
       ]),
       el("p", { class: "k", text: "By product (pounds)", style: "margin-top:12px" }), mixBar(D.products.slice(0, 3).map((n, i) => ({ name: n, v: fm[i], color: PCOL[i] }))), go("exp", "Exports by country", "#exp-h")]),
     el("div", { class: "card" }, [el("p", { class: "k", text: "Live cattle" }), el("p", { class: "big", text: `${nf.format(ch)} head` }),
@@ -1399,7 +1409,7 @@ function drawMonthCmp() {
     $(`#month-${dir}-unit`).hidden = false;
     const f = (v) => +(v / 1e6).toFixed(1);
     lineChart($(`#month-${dir}-chart`), { labels: MON, label: `${c == null ? "U.S. beef" : `Beef`} ${noun}${c == null ? "" : ` ${prep} ${name}`} by month, million pounds`,
-      fmt: (v) => nf.format(f(v)), tipFmt: (v) => `${nf.format(f(v))}M lb`, series: [
+      fmt: (v) => nf.format(f(v)), tipFmt: (v) => `${nf1.format(v / 1e6)}M lb`, series: [
       { name: String(ly), cls: "s-now", values: yearLine(ms, ly, "lb"), dots: true },
       { name: String(ly - 1), cls: "s-last", values: yearLine(ms, ly - 1, "lb") },
       { name: `3-year average (${ly - 3}–${String(ly - 1).slice(2)})`, cls: "s-avg", values: avg3Line(ms, ly, "lb") },
@@ -1563,6 +1573,7 @@ function renderCattle() {
   $("#cat-cls-field").hidden = !split;
   if (split) $("#cat-cls-field").replaceChildren(el("span", { text: "Class" }), select("cat-cls", [["all", "Feeder and slaughter"], ...classes.map((n, i) => [i, n])], st.cls, (v) => { st.cls = v; renderCattle(); }, "Class of cattle"));
   if (!split) st.by = "country";
+  settingChanged("cattle");
   $("#cat-cls-note").textContent = st.dir === "imp"
     ? "Feeder and slaughter classes follow the import tariff lines. See About the data."
     : "Feeder and slaughter cattle together, to Canada and Mexico only: Census export records put both under one code, so they can't be shown apart, and cattle sent anywhere else are breeding stock.";
@@ -1645,10 +1656,54 @@ const tabOf = (h) => ALIAS[h] || (TABS.includes(h) ? h : null);
 // The address (Data_Forecasts/ADDRESS_STANDARD.md): ?country=br#imports. It follows the visitor so a copied or
 // shared link opens the same view; never rename a name (old ones keep opening their tab).
 const ADDR = { imp: "imports", exp: "exports" };
+// The open tab's other settings follow the country (ADDRESS_STANDARD.md, beef trade choices). Only settings that
+// differ from the tab's starting view are written; a value the page doesn't know opens the starting view.
+const CODE = { "Fresh or chilled beef": "fresh", "Frozen beef": "frozen", "Processed beef": "processed", "Variety meats": "variety",
+  "Canada and Mexico (USMCA)": "usmca", "Country quotas": "countryquota", "Other-countries quota": "otherquota", "Lean trimmings quota": "trimquota",
+  "Over quota": "overquota", "Other trade agreements": "fta", "Outside the beef quota": "outside", "Feeder cattle": "feeder", "Slaughter cattle": "slaughter" };
+const code = (name) => CODE[name] || name.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
+const VIEW_KEYS = ["unit", "product", "entry", "period", "year", "region", "direction", "class"];
+function viewParams(tab) {
+  const p = [];
+  if (tab === "imp" || tab === "exp") {
+    const st = S[tab];
+    if (st.measure !== "lb") p.push(["unit", st.measure]);
+    if (st.form !== "beef") p.push(["product", code(D.products[+st.form])]);
+    if (tab === "imp" && st.chan !== "all") p.push(["entry", code(D.channels[+st.chan])]);
+    if (st.period === "year") p.push(["year", String(st.year)]); else if (st.period !== "12m") p.push(["period", st.period]);
+    if (st.zoom !== "World") p.push(["region", code(st.zoom)]);
+  } else if (tab === "cattle") {
+    const st = S.cat;
+    if (st.dir !== "imp") p.push(["direction", "exports"]);
+    if (st.measure !== "head") p.push(["unit", st.measure === "each" ? "perhead" : st.measure]);
+    if (st.cls !== "all") p.push(["class", code(D.cattleClasses[st.dir][+st.cls])]);
+  }
+  return p;
+}
+function readView(tab, q) {
+  const get = (k) => (q.get(k) || "").trim().toLowerCase();
+  const find = (names, v) => (v ? names.findIndex((n) => code(n) === v) : -1);
+  if (tab === "imp" || tab === "exp") {
+    const st = S[tab], u = get("unit"), f = find(D.products, get("product")), y = +get("year"), pr = get("period");
+    if (["lb", "usd", "price"].includes(u)) st.measure = u;
+    if (f >= 0) st.form = String(f);
+    if (tab === "imp") { const c = find(D.channels, get("entry")); if (c >= 0) st.chan = String(c); }
+    if (y && D.months.some((m) => +m.slice(0, 4) === y)) { st.period = "year"; st.year = y; }
+    else if (["latest", "ytd", "12m"].includes(pr)) st.period = pr;
+    const z = find(Object.keys(G.views), get("region")); if (z >= 0) st.zoom = Object.keys(G.views)[z];
+  } else if (tab === "cattle") {
+    const st = S.cat, u = get("unit");
+    if (get("direction") === "exports") st.dir = "exp";
+    if (["head", "usd", "perhead"].includes(u)) st.measure = u === "perhead" ? "each" : u;
+    const k = find(D.cattleClasses[st.dir], get("class")); if (k >= 0) st.cls = String(k);
+  }
+}
 function addrOf(tab) {
   let q; try { q = new URLSearchParams(location.search); } catch (e) { return null; }
   const c = !D ? null : tab === "imp" || tab === "exp" ? S[tab].country : tab === "month" && S.month.c !== "all" ? +S.month.c : null;
   if (c != null && D.countries[c]) q.set("country", D.countries[c].iso); else q.delete("country");
+  for (const k of VIEW_KEYS) q.delete(k);
+  if (D) for (const [k, v] of viewParams(tab)) q.set(k, v);
   const qs = q.toString();
   return `${location.pathname}${qs ? "?" + qs : ""}#${ADDR[tab] || tab}`;
 }
@@ -1659,10 +1714,13 @@ function writeAddr(tab) {
   try { if (location.pathname + location.search + location.hash !== url) history.replaceState(st, "", url); } catch (e) { /* sandboxed */ }
 }
 const openTab = () => TABS.find((x) => !$(`#${x}`).hidden) || "month";
+let holdAddr = false;   // set while show() opens a tab at an anchor, whose address stays as it is
+const settingChanged = (tab) => { if (!holdAddr && D && openTab() === tab) writeAddr(tab); };
 function show(tab, keepHash = false) {
   tab = tabOf(tab) || "month";
   for (const t of TABS) { $(`#${t}`).hidden = t !== tab; $(`#t-${t}`).setAttribute("aria-selected", String(t === tab)); $(`#t-${t}`).tabIndex = t === tab ? 0 : -1; }
-  redraw(tab);
+  holdAddr = keepHash;
+  try { redraw(tab); } finally { holdAddr = false; }
   if (!keepHash) writeAddr(tab);
   hideTip();
 }
@@ -1738,6 +1796,8 @@ Promise.all(["data/beef.json", "data/world.json"].map((u) => fetch(u, { cache: "
     let cq = ""; try { cq = (new URLSearchParams(location.search).get("country") || "").trim().toLowerCase(); } catch (e) { /* no query */ }
     const ci = cq ? D.countries.findIndex((x) => x.iso === cq) : -1;
     if (ci >= 0) { S.imp.country = S.exp.country = ci; S.month.c = String(ci); }
+    { const h0 = location.hash.slice(1), a0 = h0 && !tabOf(h0) && document.getElementById(h0), t0 = tabOf(h0) || (a0 && a0.closest(".panel") ? a0.closest(".panel").id : null);
+      try { if (t0) readView(t0, new URLSearchParams(location.search)); } catch (e) { /* no query */ } }
     renderMonth();
     const h = location.hash.slice(1), at = h && !tabOf(h) && document.getElementById(h);
     if (at && !at.closest(".panel")) show("month", true);   // #disclaimer and other anchors outside the tabs: the first tab is open
