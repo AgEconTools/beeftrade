@@ -309,7 +309,10 @@ table.qt { width: 100%; border-collapse: collapse; font-size: 14.5px; font-varia
 table.qt th { text-align: left; font-size: 12px; letter-spacing: .05em; text-transform: uppercase; color: var(--muted); font-weight: 600; padding: 8px; border-bottom: 2px solid var(--rule); white-space: nowrap; }
 table.qt td { padding: 8px; border-bottom: 1px solid var(--rule); }
 table.qt .n { text-align: right; white-space: nowrap; }
-@media (max-width: 420px) { table.qt { font-size: 13.5px; } table.qt td, table.qt th { padding: 7px 4px; } table.qt th { white-space: normal; font-size: 11px; } }
+table.qt .qf { min-width: 90px; }
+table.qt .qs-in { display: none; }
+@media (max-width: 560px) { table.qt .qs { display: none; } table.qt .qs-in { display: block; line-height: 1.3; } table.qt .qf { min-width: 72px; } }   /* Status under the bar on phones */
+@media (max-width: 420px) { table.qt { font-size: 13.5px; } table.qt td, table.qt th { padding: 7px 4px; } table.qt th { white-space: normal; font-size: 11px; } table.qt .qf { min-width: 60px; } }
 </style>
 </head>
 <body>
@@ -380,7 +383,7 @@ table.qt .n { text-align: right; white-space: nowrap; }
     <div class="sec"><h2>Tariffs</h2><p class="sub">Duties on beef imports, as Census calculates them from each shipment's
       tariff line and value.</p></div>
     <div class="two">
-      <div class="card"><h3>Duties paid on beef imports, by year</h3><p class="note" id="q-duty-note" style="margin:4px 0 8px"></p><div id="q-duty"></div></div>
+      <div class="card"><h3>Calculated duties on beef imports, by year</h3><p class="note" id="q-duty-note" style="margin:4px 0 8px"></p><div id="q-duty"></div></div>
       <div class="card"><h3>Average tariff on over-quota beef, by month</h3><p class="note" id="q-rate-note" style="margin:4px 0 8px"></p><div id="q-rate"></div></div>
     </div>
     <div class="card"><h3 id="q-ctry-h">Duties by country</h3><p class="note" id="q-ctry-note" style="margin:4px 0 8px"></p>
@@ -418,8 +421,8 @@ table.qt .n { text-align: right; white-space: nowrap; }
           States or duties. For exports, dollars are the value at the U.S. port (free alongside ship). <b>Price per pound</b>
           is dollars divided by pounds: an average declared value, not a market price. Prices based on under 10,000 lb are
           marked <span class="few">few lb</span>.</li>
-        <li><b>Duties</b> are Census's calculated duty: the tariff owed on each shipment by its tariff line and value,
-          including the extra tariffs of 2025. The <b>average tariff</b> is duties divided by customs value.</li>
+        <li><b>Duties</b> are Census's calculated duty: the tariff Census calculates for each shipment from its tariff line
+          and value, including the extra tariffs of 2025. The <b>average tariff</b> is duties divided by customs value.</li>
         <li><b>Seasonal pattern</b>: each month's value against the centered 12-month average around it (a 2x12 moving
           average: 13 months, the two ends at half weight), averaged over the last five full years, then scaled so the
           twelve months average zero.</li>
@@ -439,9 +442,9 @@ table.qt .n { text-align: right; white-space: nowrap; }
         <li><b>Lean trimmings quota</b>: lean beef trimmings from countries without their own allocation, entered in quota
           while the 2026 tranches were open (Proclamation 11059, <span id="ab-tr-months">September to November 2026</span>),
           at the low in-quota tariff. Argentina's lean trimmings quota is counted under Country quotas.</li>
-        <li><b>Over quota</b>: beef entered on the over-quota tariff lines after a quota filled, normally at 26.4%,
-          including Australian beef once its own quota fills. See <a href="#duty-note">Reading the duty figures</a> on the
-          Quota tab.</li>
+        <li><b>Over quota</b>: beef entered on the over-quota tariff lines after a quota filled, normally at 26.4%.
+          Australian beef entered after its own quota fills is grouped here too, though the U.S.-Australia agreement lets
+          it enter duty-free. See <a href="#duty-note">Reading the duty figures</a> on the Quota tab.</li>
         <li><b>Other trade agreements</b>: duty-free under other U.S. trade agreements (in practice, CAFTA-DR countries and
           Chile), not charged to the quota.</li>
         <li><b>Outside the beef quota</b>: processed beef, which the quota doesn't cover. Variety meats fall here only when
@@ -1479,12 +1482,23 @@ function dutyDips() {
     for (const r of R.imp) if (r.m === i && r.f <= 2 && r.s === OVER) { v += r.usd; d += r.duty; gap.set(r.c, (gap.get(r.c) || 0) + (OQ_RATE / 100) * r.usd - r.duty); }
     const rate = v > 1e6 ? (100 * d) / v : null;
     if (rate == null || rate >= OQ_RATE - DIP) continue;
-    const short = (OQ_RATE / 100) * v - d;
-    const named = [...gap].filter(([, g]) => g >= 0.25 * short).sort((a, b) => b[1] - a[1]).slice(0, 2).map(([c]) => c);
-    // the named countries' share at a free rate, from their duty against 26.4% of value: "most" or "some"
-    let nv = 0, nd = 0; for (const r of R.imp) if (r.m === i && r.f <= 2 && r.s === OVER && named.includes(r.c)) { nv += r.usd; nd += r.duty; }
-    const free = nv > 0 ? 1 - nd / nv / (OQ_RATE / 100) : 0;
-    out.push({ m: i, rate, who: named.map((c) => D.countries[c].name), most: free >= 0.5, ch99: (D.meta.ch99Months || []).includes(D.months[i]) });
+    out.push({ m: i, rate, gap, ch99: (D.meta.ch99Months || []).includes(D.months[i]) });
+  }
+  return out;
+}
+// One line for all dip months (recheck of version 25, 11/17/2026): months confirmed in DataWeb (chapter 99) in one
+// line, any not yet checked in another, each naming the countries behind most of the group's combined gap
+// (each at least a quarter of it, two at most).
+function dipLines() {
+  const list = (a) => (a.length < 2 ? a.join("") : `${a.slice(0, -1).join(", ")} and ${a.at(-1)}`);
+  const all = dutyDips(), out = [];
+  for (const ch99 of [true, false]) {
+    const g = all.filter((d) => d.ch99 === ch99);
+    if (!g.length) continue;
+    const gap = new Map(); for (const d of g) for (const [c, x] of d.gap) gap.set(c, (gap.get(c) || 0) + x);
+    const short = [...gap.values()].reduce((a, x) => a + Math.max(0, x), 0);
+    const who = [...gap].filter(([, x]) => x >= 0.25 * short).sort((a, b) => b[1] - a[1]).slice(0, 2).map(([c]) => D.countries[c].name);
+    out.push([`${list(g.map((d) => mName(d.m)))}:`, `Census's records show over-quota beef from some countries${who.length ? `, mainly ${list(who)},` : ""} at a free rate${ch99 ? " under chapter 99 of the tariff schedule, the chapter for temporary tariff changes," : ""} so its calculation shows little or no duty on that beef. This is how the entries were recorded and may not match the duty paid.`]);
   }
   return out;
 }
@@ -1520,12 +1534,14 @@ function renderQuota() {
   $("#q-ch-seg").replaceChildren(segBtns("q-ch-by", [["lb", "Pounds"], ["usd", "Dollars"]], S.q.chBy, (v) => { S.q.chBy = v; drawChannels(); }));
   $("#q-wto-note").textContent = `Metric tons of product, from U.S. Customs and Border Protection's report of ${dateTxt(Q.asOf)}.`;
   $("#q-wto").replaceChildren(el("table", { class: "qt" }, [
-    el("thead", {}, el("tr", {}, [el("th", { text: "Allocation" }), el("th", { class: "n", text: "Quota" }), el("th", { class: "n", text: "Entered" }), el("th", { text: "Filled" }), el("th", { text: "Status" })])),
+    el("thead", {}, el("tr", {}, [el("th", { text: "Allocation" }), el("th", { class: "n", text: "Quota" }), el("th", { class: "n", text: "Entered" }), el("th", { text: "Filled" }), el("th", { class: "qs", text: "Status" })])),
     el("tbody", {}, Q.wto.map((w) => {
       const pct = w.qty ? (100 * (w.entered || 0)) / w.qty : 0;
+      const st = w.status === "FILL" && w.fillDate ? `Filled ${dateShort(w.fillDate)}` : STATUS[w.status] || w.status;
+      // on phones the Status column is hidden and its text sits under the bar and percent ("100%", then "Filled Oct 13")
       return el("tr", {}, [el("td", { text: w.name }), el("td", { class: "n", text: mtTxt(w.qty) }), el("td", { class: "n", text: mtTxt(w.entered) }),
-        el("td", { style: "min-width:90px" }, [progBar(pct, 100, `${w.name}: ${pctTxt(pct)} full`), el("span", { class: "note", text: pctTxt(pct) })]),
-        el("td", { text: w.status === "FILL" && w.fillDate ? `Filled ${dateShort(w.fillDate)}` : STATUS[w.status] || w.status })]);
+        el("td", { class: "qf" }, [progBar(pct, 100, `${w.name}: ${pctTxt(pct)} full`), el("span", { class: "note", text: pctTxt(pct) }), el("span", { class: "note qs-in", text: st })]),
+        el("td", { class: "qs", text: st })]);
     })),
   ]));
   // The U.S.-Australia FTA quantity is not a quota that fills, so it sits under the table as a note (review of
@@ -1569,7 +1585,7 @@ function renderQuota() {
   const fy = years.map((y) => R.imp.some((r) => r.f <= 2 && r.duty > 0 && yr(r.m) === y && inExtra(r.m)));
   $("#q-duty-note").replaceChildren(`All countries.${part != null ? ` * ${yr(L)} is ${janTo(mo(L))} only.` : ""}`,
     ...(fy.some(Boolean) ? [" ", fnLink(), " Includes the 2025 extra tariffs; see Reading the duty figures."] : []));
-  barChart($("#q-duty"), { cats: years, partial: part, labels: years.map((y, i) => `${years.length > 8 ? "'" + String(y).slice(2) : y}${part === i ? "*" : ""}${fy[i] ? "†" : ""}`), label: "Duties paid on U.S. beef imports by year, dollars", fmt: (v) => `$${compact(v)}`, tipFmt: usdTxt,
+  barChart($("#q-duty"), { cats: years, partial: part, labels: years.map((y, i) => `${years.length > 8 ? "'" + String(y).slice(2) : y}${part === i ? "*" : ""}${fy[i] ? "†" : ""}`), label: "Calculated duties on beef imports, by year, dollars", fmt: (v) => `$${compact(v)}`, tipFmt: usdTxt,
     stacks: [{ name: "Duties", color: "var(--c1)", values: dy }] });
   const since = Math.max(0, L - 59), months = range(since, L);
   const rate = (keep) => months.map((i) => { let d = 0, v = 0; for (const r of R.imp) if (r.m === i && keep(r)) { d += r.duty; v += r.usd; } return v > 1e6 ? (100 * d) / v : null; });
@@ -1584,7 +1600,7 @@ function renderQuota() {
   const rows = [...by].filter(([, o]) => o.duty > 0).sort((a, b) => b[1].duty - a[1].duty);
   const tot = [...by.values()].reduce((a, o) => ({ lb: a.lb + o.lb, usd: a.usd + o.usd, duty: a.duty + o.duty }), { lb: 0, usd: 0, duty: 0 });
   $("#q-ctry-h").textContent = `Duties by country, 12 months through ${mName(L)}`;
-  $("#q-ctry-note").textContent = "Countries that paid any duty, largest first; sort by any column. The average tariff is duties divided by customs value, across everything the country shipped, including beef that paid none.";
+  $("#q-ctry-note").textContent = "Countries with any calculated duty, largest first; sort by any column. The average tariff is duties divided by customs value, across everything the country shipped, including beef with no duty.";
   const win = R.imp.filter((r) => P.has(r.m) && r.f <= 2), auDuty = win.filter(auOver).reduce((s, r) => s + r.duty, 0);
   const flagged = (name) => (name === "Australia" ? auDuty > 0 : name === "All countries" ? dutyFlag(win) : false);
   const tr = (name, o, cls) => keyed(el("tr", { class: cls }, [el("td", {}, [name, flagged(name) ? fnLink() : null]), el("td", { class: "n", text: tblLb(o.lb) }), el("td", { class: "n", text: tblUsd(o.usd) }), el("td", { class: "n", text: tblUsd(o.duty) }), el("td", { class: "n", text: o.usd ? pctTxt((100 * o.duty) / o.usd) : "–" })]), [name, o.lb, o.usd, o.duty, o.usd ? o.duty / o.usd : null]);
@@ -1598,9 +1614,9 @@ function renderQuota() {
   $("#q-tariff-notes").replaceChildren(...[
     nl(null, "Duties are Census's calculation from each shipment's tariff line and value, not customs bills."),
     auDuty > 0 ? nl("Australia:", auNote(auDuty)) : null,
-    // what Census's records show, not what importers did or paid (review follow-up, 11/16/2026); chapter 99 only
-    // for months checked in DataWeb (meta.ch99Months); "most" or "some" from the named countries' own duty
-    ...dutyDips().map(({ m, who, most, ch99 }) => nl(`${mName(m)}:`, `Census's records show ${most ? "most" : "some"} over-quota beef from ${who.length ? who.join(" and ") : "other countries"} at a free rate${ch99 ? " under chapter 99 of the tariff schedule, the chapter for temporary tariff changes" : ""}, so its calculation shows ${most ? "little duty" : `less than ${OQ_RATE}% duty`}. This is how the entries were recorded and may not match the duty paid.`)),
+    // what Census's records show, not what importers did or paid; chapter 99 only for months checked in DataWeb
+    // (meta.ch99Months); all dip months merged into one line (recheck of version 25, 11/17/2026)
+    ...dipLines().map(([k, t]) => nl(k, t)),
     nl("Refunds:", "The 2025 extra tariffs were ruled unlawful by the Supreme Court in February 2026, and CBP is refunding them to importers. The duties shown are as calculated at entry and do not reflect refunds."),
     nl("Revisions:", "The newest month is often revised."),
   ].filter(Boolean));
