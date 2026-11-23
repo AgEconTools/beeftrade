@@ -62,7 +62,7 @@
     --g1: #d3cacd; --g2: #a89da1; --g3: #7f7579; --g4: #5c5356;
 }
 * { box-sizing: border-box; }
-html { scroll-padding-top: 70px; }
+html { scroll-padding-top: calc(var(--tabs-h, 45px) + 25px); }   /* jumps clear the sticky tab bar; --tabs-h is its real height, set by the page */
 body::before { content: ""; position: fixed; inset: 0 0 auto; height: env(safe-area-inset-top, 0px); z-index: 10; background: var(--bg); }
 body { margin: 0; background: var(--bg); color: var(--ink); font: 400 16px/1.5 var(--body); -webkit-font-smoothing: antialiased; }
 .wrap { max-width: 1120px; margin: 0 auto; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); }
@@ -107,7 +107,7 @@ footer .legal { display: grid; grid-template-columns: minmax(0, 1fr); gap: 8px; 
   border: 1px solid currentColor; background: rgba(255, 255, 255, .12); color: inherit; }
 .share-box input:focus { outline: 2px solid currentColor; outline-offset: 1px; }
 @media print { .share-box { display: none; } }
-.tools-strip { margin: 0 0 24px; scroll-margin-top: 80px; }   /* clears the sticky tab bar */
+.tools-strip { margin: 0 0 24px; }   /* the page's scroll-padding clears the sticky tab bar */
 .tools-strip h2 { margin: 0 0 10px; }
 .tools-strip ul { list-style: none; margin: 0; padding: 0; display: grid; gap: 10px; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); }
 .tools-strip a { display: flex; gap: 12px; align-items: flex-start; height: 100%; box-sizing: border-box; padding: 12px; border: 1px solid var(--rule); border-radius: 10px; background: var(--surface); color: var(--ink); text-decoration: none; }
@@ -311,7 +311,7 @@ table.qt td { padding: 8px; border-bottom: 1px solid var(--rule); }
 table.qt .n { text-align: right; white-space: nowrap; }
 table.qt .qf { min-width: 90px; }
 table.qt .qs-in { display: none; }
-@media (max-width: 560px) { table.qt .qs { display: none; } table.qt .qs-in { display: block; line-height: 1.3; } table.qt .qf { min-width: 72px; } }   /* Status under the bar on phones */
+@media (max-width: 560px) { table.qt .qs { display: none; } table.qt .qs-in { display: block; line-height: 1.3; white-space: nowrap; } table.qt .qf { min-width: 72px; } }   /* Status under the bar on phones */
 @media (max-width: 420px) { table.qt { font-size: 13.5px; } table.qt td, table.qt th { padding: 7px 4px; } table.qt th { white-space: normal; font-size: 11px; } table.qt .qf { min-width: 60px; } }
 </style>
 </head>
@@ -1823,7 +1823,16 @@ function redraw(tab) {
   else if (tab === "quota") renderQuota();
   else if (tab === "cattle") renderCattle();
 }
-for (const b of document.querySelectorAll(".tab")) b.addEventListener("click", () => { show(b.dataset.tab); window.scrollTo({ top: 0 }); });
+// A tab button opens its tab at the top, just under the tab bar, and scrolls only when the reader is below that point,
+// so a tab tapped at the top of the page moves nothing (as drought's page version 45; 11/23/2026).
+for (const b of document.querySelectorAll(".tab")) b.addEventListener("click", () => {
+  show(b.dataset.tab);
+  const top = $("#main").getBoundingClientRect().top + scrollY - $(".tabs").offsetHeight;
+  if (scrollY > top + 1) window.scrollTo({ top });
+});
+// the tab bar's real height, for the page's scroll-padding (jump links land below the bar)
+const tabsH = () => document.documentElement.style.setProperty("--tabs-h", $(".tabs").offsetHeight + "px");
+tabsH(); addEventListener("resize", tabsH);
 $("[role=tablist]").addEventListener("keydown", (e) => {
   const i = TABS.indexOf(document.activeElement?.dataset?.tab); if (i < 0) return;
   const j = e.key === "ArrowRight" ? (i + 1) % TABS.length : e.key === "ArrowLeft" ? (i + TABS.length - 1) % TABS.length : null;
