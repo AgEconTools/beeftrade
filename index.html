@@ -329,19 +329,19 @@ table.qt .qs-in { display: none; }
 
 <nav class="tabs" aria-label="Dashboard sections">
   <div class="wrap" role="tablist">
-    <button class="tab" role="tab" id="t-month" aria-controls="month" data-tab="month"><span class="l">This month</span><span class="s">Month</span></button>
-    <button class="tab" role="tab" id="t-imp" aria-controls="imp" data-tab="imp"><span class="l">Imports</span><span class="s">Imports</span></button>
-    <button class="tab" role="tab" id="t-exp" aria-controls="exp" data-tab="exp"><span class="l">Exports</span><span class="s">Exports</span></button>
-    <button class="tab" role="tab" id="t-quota" aria-controls="quota" data-tab="quota"><span class="l">Quota and tariffs</span><span class="s">Quota</span></button>
-    <button class="tab" role="tab" id="t-cattle" aria-controls="cattle" data-tab="cattle"><span class="l">Cattle trade</span><span class="s">Cattle</span></button>
-    <button class="tab" role="tab" id="t-about" aria-controls="about" data-tab="about"><span class="l">About the data</span><span class="s">About</span></button>
+    <button class="tab" role="tab" id="t-month" aria-controls="tab-month" data-tab="month"><span class="l">This month</span><span class="s">Month</span></button>
+    <button class="tab" role="tab" id="t-imp" aria-controls="tab-imp" data-tab="imp"><span class="l">Imports</span><span class="s">Imports</span></button>
+    <button class="tab" role="tab" id="t-exp" aria-controls="tab-exp" data-tab="exp"><span class="l">Exports</span><span class="s">Exports</span></button>
+    <button class="tab" role="tab" id="t-quota" aria-controls="tab-quota" data-tab="quota"><span class="l">Quota and tariffs</span><span class="s">Quota</span></button>
+    <button class="tab" role="tab" id="t-cattle" aria-controls="tab-cattle" data-tab="cattle"><span class="l">Cattle trade</span><span class="s">Cattle</span></button>
+    <button class="tab" role="tab" id="t-about" aria-controls="tab-about" data-tab="about"><span class="l">About the data</span><span class="s">About</span></button>
   </div>
 </nav>
 
 <main class="wrap" id="main" tabindex="-1">
   <noscript><p class="warn">This page needs JavaScript to show the trade data.</p></noscript>
   <!-- This month -->
-  <section class="panel" id="month" role="tabpanel" aria-labelledby="t-month">
+  <section class="panel" id="tab-month" role="tabpanel" aria-labelledby="t-month">
     <div><h2 id="month-h">This month</h2><p class="sub" id="month-sub"></p></div>
     <div class="cards" id="month-cards"></div>
     <p class="note">Beef here is fresh, frozen and processed beef; variety meats (offal) and live cattle are counted
@@ -360,11 +360,11 @@ table.qt .qs-in { display: none; }
   </section>
 
   <!-- Imports / Exports share one layout, built by the script -->
-  <section class="panel" id="imp" role="tabpanel" aria-labelledby="t-imp" hidden></section>
-  <section class="panel" id="exp" role="tabpanel" aria-labelledby="t-exp" hidden></section>
+  <section class="panel" id="tab-imp" role="tabpanel" aria-labelledby="t-imp" hidden></section>
+  <section class="panel" id="tab-exp" role="tabpanel" aria-labelledby="t-exp" hidden></section>
 
   <!-- Quota and tariffs -->
-  <section class="panel" id="quota" role="tabpanel" aria-labelledby="t-quota" hidden>
+  <section class="panel" id="tab-quota" role="tabpanel" aria-labelledby="t-quota" hidden>
     <div><h2>The beef import quota and tariffs</h2>
       <p class="sub">Each year a set amount of beef can enter the United States at a low tariff. Beef past that amount pays
         26.4%, unless a trade agreement covers it. Canada and Mexico trade beef duty-free under USMCA and are outside the
@@ -394,10 +394,10 @@ table.qt .qs-in { display: none; }
   </section>
 
   <!-- Live cattle -->
-  <section class="panel" id="cattle" role="tabpanel" aria-labelledby="t-cattle" hidden></section>
+  <section class="panel" id="tab-cattle" role="tabpanel" aria-labelledby="t-cattle" hidden></section>
 
   <!-- About -->
-  <section class="panel about" id="about" role="tabpanel" aria-labelledby="t-about" hidden>
+  <section class="panel about" id="tab-about" role="tabpanel" aria-labelledby="t-about" hidden>
     <div><h2>About the data</h2><p class="sub">What's counted, how it's measured, and where it comes from.</p></div>
     <div class="card">
       <h3>What's counted</h3>
@@ -899,7 +899,7 @@ function select(id, opts, cur, onPick, label, short = false) {
 }
 const built = { imp: false, exp: false };
 function buildTrade(dir) {
-  const w = WORD[dir], host = $(`#${dir}`), st = S[dir], Noun = w.noun[0].toUpperCase() + w.noun.slice(1);
+  const w = WORD[dir], host = $(`#tab-${dir}`), st = S[dir], Noun = w.noun[0].toUpperCase() + w.noun.slice(1);
   const L = N - 1, years = [...new Set(D.months.map((s) => +s.slice(0, 4)))].reverse();
   // these apply to both sections
   const shared = el("div", { class: "ctrls" }, [
@@ -1638,7 +1638,7 @@ function drawChannels() {
 const KCOL = ["var(--c3)", "var(--c1)"];
 let cattleBuilt = false;
 function renderCattle() {
-  const host = $("#cattle"), st = S.cat;
+  const host = $("#tab-cattle"), st = S.cat;
   if (!cattleBuilt) {
     host.replaceChildren(
       el("div", {}, [el("h2", { text: "Cattle trade" }), el("p", { class: "sub", text: "Head of feeder and slaughter cattle crossing the border with Canada and Mexico. Breeding and dairy cattle, buffalo and bison are left out." })]),
@@ -1806,12 +1806,12 @@ function writeAddr(tab) {
   const st = history.state && history.state.tab === tab ? history.state : null;
   try { if (location.pathname + location.search + location.hash !== url) history.replaceState(st, "", url); } catch (e) { /* sandboxed */ }
 }
-const openTab = () => TABS.find((x) => !$(`#${x}`).hidden) || "month";
+const openTab = () => TABS.find((x) => !$(`#tab-${x}`).hidden) || "month";
 let holdAddr = false;   // set while show() opens a tab at an anchor, whose address stays as it is
 const settingChanged = (tab) => { if (!holdAddr && D && openTab() === tab) writeAddr(tab); };
 function show(tab, keepHash = false) {
   tab = tabOf(tab) || "month";
-  for (const t of TABS) { $(`#${t}`).hidden = t !== tab; $(`#t-${t}`).setAttribute("aria-selected", String(t === tab)); $(`#t-${t}`).tabIndex = t === tab ? 0 : -1; }
+  for (const t of TABS) { $(`#tab-${t}`).hidden = t !== tab; $(`#t-${t}`).setAttribute("aria-selected", String(t === tab)); $(`#t-${t}`).tabIndex = t === tab ? 0 : -1; }
   holdAddr = keepHash;
   try { redraw(tab); } finally { holdAddr = false; }
   if (!keepHash) writeAddr(tab);
@@ -1843,12 +1843,12 @@ let lastW = innerWidth, rz;   // charts are drawn to their box, so redraw the op
 addEventListener("resize", () => {
   if (!D || innerWidth === lastW) return;
   lastW = innerWidth; clearTimeout(rz);
-  rz = setTimeout(() => redraw(TABS.find((x) => !$(`#${x}`).hidden)), 200);
+  rz = setTimeout(() => redraw(TABS.find((x) => !$(`#tab-${x}`).hidden)), 200);
 });
 // a link to a heading inside a tab (#channels) opens that tab there; other anchors (#disclaimer) just scroll
 function openAnchor(id) {
   const a = document.getElementById(id); if (!a) return false;
-  const p = a.closest(".panel"); if (p) show(p.id, true);
+  const p = a.closest(".panel"); if (p) show(p.id.replace(/^tab-/, ""), true);
   a.scrollIntoView(); return true;
 }
 // Links and buttons inside the tabs (a † to Reading the duty figures, "What each group means", the This month
@@ -1856,7 +1856,7 @@ function openAnchor(id) {
 // and the place the reader left.
 function jumpTo(id, tab) {
   try { history.replaceState({ tab: openTab(), y: scrollY }, "", location.href); } catch (e) { /* sandboxed */ }
-  const a = id ? document.getElementById(id) : null, t = tabOf(tab || (a && a.closest(".panel") ? a.closest(".panel").id : "")) || openTab();
+  const a = id ? document.getElementById(id) : null, t = tabOf(tab || (a && a.closest(".panel") ? a.closest(".panel").id.replace(/^tab-/, "") : "")) || openTab();
   // the new step goes in before anything moves: the browser keeps the reader's place with the step being left
   try { history.pushState({ tab: t, id }, "", addrOf(t) || location.href); } catch (e) { /* sandboxed */ }
   if (t !== openTab()) show(t, true);
@@ -1898,7 +1898,7 @@ Promise.all(["data/beef.json", "data/world.json"].map((u) => fetch(u, { cache: "
     let cq = ""; try { cq = (new URLSearchParams(location.search).get("country") || "").trim().toLowerCase(); } catch (e) { /* no query */ }
     const ci = cq ? D.countries.findIndex((x) => x.iso === cq) : -1;
     if (ci >= 0) { S.imp.country = S.exp.country = ci; S.month.c = String(ci); }
-    { const h0 = location.hash.slice(1), a0 = h0 && !tabOf(h0) && document.getElementById(h0), t0 = tabOf(h0) || (a0 && a0.closest(".panel") ? a0.closest(".panel").id : null);
+    { const h0 = location.hash.slice(1), a0 = h0 && !tabOf(h0) && document.getElementById(h0), t0 = tabOf(h0) || (a0 && a0.closest(".panel") ? a0.closest(".panel").id.replace(/^tab-/, "") : null);
       try { if (t0) readView(t0, new URLSearchParams(location.search)); } catch (e) { /* no query */ } }
     renderMonth();
     const h = location.hash.slice(1), at = h && !tabOf(h) && document.getElementById(h);
