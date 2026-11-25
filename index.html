@@ -263,6 +263,25 @@ table.rank td .few { display: block; width: fit-content; margin: 2px 0 0 auto; }
 .chart .hl { fill: none; stroke: var(--ink); stroke-width: 1.5; }
 .chart .cur { fill: none; stroke: var(--ink); stroke-width: 1; stroke-dasharray: 3 3; }
 .chart:focus:not(:focus-visible) { outline: none; }   /* a mouse click or tap focuses the chart too; the ring is for the keyboard */
+/* Share this chart (Josh, 11/24/2026; the cattle auction dashboard's design): the button under each chart and map
+   and the picture's panel */
+.chart-share { display: grid; justify-items: end; gap: 10px; margin-top: 4px; }
+div:not(:has(> svg)) + .chart-share { display: none; }
+.cs-btn { display: inline-flex; align-items: center; gap: 6px; font: 600 13px/1 var(--body); color: var(--ink-2); background: transparent;
+          border: 1px solid var(--rule); border-radius: 999px; padding: 7px 12px; cursor: pointer; }
+.cs-btn:hover { color: var(--ink); border-color: var(--muted); }
+.cs-btn[disabled] { cursor: progress; }
+.cs-btn svg { width: 14px; height: 14px; flex: none; }
+.cs-btn:focus-visible, .cs-act:focus-visible { outline: 3px solid var(--focus); outline-offset: 2px; }
+.cs-panel { justify-self: stretch; display: grid; gap: 10px; padding: 12px; border: 1px solid var(--rule); border-radius: var(--r); background: var(--bg); }
+.cs-panel[hidden] { display: none; }
+.cs-img { display: block; width: 100%; height: auto; border: 1px solid var(--rule); border-radius: 6px; background: #fff; }
+.cs-acts { display: flex; flex-wrap: wrap; gap: 8px; }
+.cs-act { font: 600 14px/1 var(--body); padding: 10px 16px; border-radius: 999px; border: 1px solid var(--rule); background: var(--surface); color: var(--ink); cursor: pointer; }
+.cs-act:first-child { background: var(--accent); color: var(--accent-ink); border-color: var(--accent); }
+.cs-panel .note { margin: 0; }
+.cs-msg:empty { display: none; }
+@media print { .chart-share { display: none; } }
 .readout { font-size: 13.5px; min-height: 21px; font-variant-numeric: tabular-nums; color: var(--ink-2); margin: 4px 0 0; }
 .about h3 { margin-top: 6px; }
 .about p, .about li { max-width: 78ch; }
@@ -767,8 +786,10 @@ function keyNav(svg, n, at, show, hide) {
 const srTable = (label, head, rows) => el("div", { class: "sr-only" }, el("table", {}, [el("caption", { text: label }),
   el("thead", {}, el("tr", {}, head.map((h) => el("th", { scope: "col", text: h })))),
   el("tbody", {}, rows.map(([r, ...cells]) => el("tr", {}, [el("th", { scope: "row", text: r }), ...cells.map((c) => el("td", { text: c }))])))]));
-function lineChart(host, { labels, names, series, fmt, tipFmt, label, first = "Month" }) {   // names: full labels for the readout and table
-  const W = chartW(host), H = chartH(W), L = 52, Rt = 14, T = 12, B = 28;
+function lineChart(host, cfg) {   // names: full labels for the readout and table
+  const { labels, names, series, fmt, tipFmt, label, first = "Month", height } = cfg;
+  host._redraw = (h, ht) => lineChart(h, { ...cfg, height: ht });   // Share this chart: the same chart at the picture's size
+  const W = chartW(host), H = height || chartH(W), L = 52, Rt = 14, T = 12, B = 28;
   const all = series.flatMap((s) => s.values).filter((v) => v != null);
   const sc = niceScale(0, Math.max(0, ...all)), max = sc.hi;
   const x = (i) => L + (i * (W - L - Rt)) / Math.max(1, labels.length - 1);
@@ -804,10 +825,13 @@ function lineChart(host, { labels, names, series, fmt, tipFmt, label, first = "M
   keyNav(svg, labels.length, () => cur, show, hide);
   host.replaceChildren(svg, keys, out, srTable(label, [first, ...series.map((s) => s.name)],
     (names || labels).map((t, i) => [t, ...series.map((s) => val(s, i))])));
+  ensureShare(host);
 }
 // cats: one per bar. labels: axis text (default: years as 'yy past 8 bars); names: readout and table text
-function barChart(host, { cats, labels, names, stacks, fmt, tipFmt, hilite, partial, label, first = "Year" }) {
-  const W = chartW(host), H = chartH(W), L = 52, Rt = 8, T = 12, B = 28;
+function barChart(host, cfg) {
+  const { cats, labels, names, stacks, fmt, tipFmt, hilite, partial, label, first = "Year", height } = cfg;
+  host._redraw = (h, ht) => barChart(h, { ...cfg, height: ht });
+  const W = chartW(host), H = height || chartH(W), L = 52, Rt = 8, T = 12, B = 28;
   const totals = cats.map((_, i) => stacks.reduce((s, st) => s + (st.values[i] || 0), 0));
   const sc = niceScale(0, Math.max(0, ...totals)), max = sc.hi;
   const bw = (W - L - Rt) / cats.length;
@@ -852,6 +876,7 @@ function barChart(host, { cats, labels, names, stacks, fmt, tipFmt, hilite, part
   const table = srTable(label, [first, ...(multi ? ["Total"] : []), ...stacks.map((s) => s.name)],
     cats.map((_, i) => [catTxt(i), ...(multi ? [tf(totals[i])] : []), ...stacks.map((s) => tf(s.values[i] || 0))]));
   host.replaceChildren(...[svg, keys, out, table].filter(Boolean));
+  ensureShare(host);
 }
 const mixBar = (parts, minShare = 0) => {
   const tot = parts.reduce((s, p) => s + p.v, 0);
@@ -1033,8 +1058,10 @@ function seasonIndex(series, ly) {
   }
   return { years, rows };
 }
-function seasonBars(host, { rows, label, years }) {
-  const W = chartW(host), H = chartH(W), L = 52, Rt = 8, T = 12, B = 28;
+function seasonBars(host, cfg) {
+  const { rows, label, years, height } = cfg;
+  host._redraw = (h, ht) => seasonBars(h, { ...cfg, height: ht });
+  const W = chartW(host), H = height || chartH(W), L = 52, Rt = 8, T = 12, B = 28;
   const vals = rows.filter(Boolean).flatMap((r) => [r.low, r.high]);
   const sc = niceScale(Math.min(-5, ...vals.map((v) => v - 100)), Math.max(5, ...vals.map((v) => v - 100)));
   const lo = 100 + sc.lo, hi = 100 + sc.hi, bw = (W - L - Rt) / 12;
@@ -1068,12 +1095,16 @@ function seasonBars(host, { rows, label, years }) {
   keyNav(svg, 12, () => cur, show, hide);
   host.replaceChildren(svg, out, srTable(label, ["Month", "vs. a typical month", "Lowest year", "Highest year"],
     rows.map((r, i) => [MONTH[i], r ? pct(r.index) : "–", r ? pct(r.low) : "–", r ? pct(r.high) : "–"])));
+  ensureShare(host);
 }
 // The newest month's change from the month before, in every year the data cover: whether this
 // month's move is the usual seasonal one (Josh, 2026-11-07). Earlier years grey, this year maroon,
 // the average of earlier years dashed; on imports a gold dot per year for arrivals (general imports).
-function momBars(host, { years, vals, dots, label, avg, avgName }) {
-  const W = chartW(host), H = chartH(W), L = 46, Rt = 8, T = 18, B = 26, n = years.length;
+function momBars(host, cfg) {
+  const { years, vals, dots, label, avg, avgName, height } = cfg;
+  host._redraw = (h, ht) => momBars(h, { ...cfg, height: ht });
+  host._years = years;
+  const W = chartW(host), H = height || chartH(W), L = 46, Rt = 8, T = 18, B = 26, n = years.length;
   const all = [...vals, ...(dots || []), avg].filter((v) => v != null);
   const sc = niceScale(Math.min(0, ...all), Math.max(0, ...all)), lo = sc.lo, hi = sc.hi;
   const bw = (W - L - Rt) / n, y = (v) => T + (1 - (v - lo) / ((hi - lo) || 1)) * (H - T - B);
@@ -1114,6 +1145,7 @@ function momBars(host, { years, vals, dots, label, avg, avgName }) {
   keyNav(svg, n, () => cur, show, hide);
   host.replaceChildren(keys, svg, out, srTable(label, ["Year", dots ? "Entries" : "Change", ...(dots ? ["Arrivals"] : [])],
     years.map((yy, i) => [String(yy), pct(vals[i]), ...(dots ? [pct(dots[i])] : [])])));
+  ensureShare(host);
 }
 function drawMoM(dir, c = null) {
   const L = N - 1, lm = mo(L), ly = yr(L), pm = (lm + 11) % 12;
@@ -1161,6 +1193,7 @@ function drawSeasonal(dir) {
     const series = D.months.map((_, i) => (m === "price" ? (ms.lb[i] > 1000 ? ms.usd[i] / ms.lb[i] : null) : val(at(ms, i), m)));
     const { years, rows } = seasonIndex(series, ly);
     const yl = years.length ? `${years[0]}–${years.at(-1)}` : "";
+    $(`#${dir}-sea`)._years = yl;
     $(`#${dir}-sea-note`).textContent = years.length < 3 ? `Not enough months of trade for a seasonal pattern.${what}`
       : `How much each month usually runs above or below a typical month, averaged over ${yl}${m === "lb" ? "" : `, in ${unit}`}.${what} Thin lines show the lowest and highest year.`;
     if (years.length < 3) { $(`#${dir}-sea`).replaceChildren(); return; }
@@ -1260,9 +1293,9 @@ function drawYears(dir, P, host) {
     partial: part, stacks: [{ name: w.noun, color: "var(--c1)", values: an.map((a) => (m === "price" && a.lb < 1000 ? 0 : val(a, m) ?? 0)) }] });
 }
 const mapState = { imp: null, exp: null };
-function drawMap(dir, curArg) {
-  const st = S[dir], host = $(`#${dir}-map`);
-  let ms = mapState[dir];
+function drawMap(dir, curArg, into = null) {   // into: Share this chart's off-screen box (no tap-to-pick there)
+  const st = S[dir], host = into || $(`#${dir}-map`);
+  let ms = into ? null : mapState[dir];
   if (!ms) {
     const svg = sv("svg", { class: "mapsvg", role: "group", "aria-label": `World map of U.S. beef ${WORD[dir].noun} by country` });
     const land = sv("g"), bubs = sv("g");
@@ -1270,9 +1303,11 @@ function drawMap(dir, curArg) {
     for (const s of G.shapes) { const p = sv("path", { class: "land", d: s.d }); paths.set(s.n, p); land.append(p); }
     svg.append(land, bubs);
     host.replaceChildren(svg);
-    ms = mapState[dir] = { svg, bubs, paths };
+    ms = { svg, bubs, paths };
+    if (!into) mapState[dir] = ms;
   }
   const cur = curArg ?? tally(dir, st, period(st).cur);
+  if (!into) host._redraw = (h) => drawMap(dir, cur, h);
   const vb = G.views[st.zoom], k = vb[2] / G.w;
   ms.svg.setAttribute("viewBox", vb.join(" "));
   const byGeo = new Map();
@@ -1281,7 +1316,7 @@ function drawMap(dir, curArg) {
     const ids = byGeo.get(name) || [], c = ids.find((i) => cur.by.has(i) && inZone(i, st.zoom)) ?? ids[0];
     const has = c != null && cur.by.has(c) && inZone(c, st.zoom);
     p.setAttribute("class", `land${has ? " has" : ""}${c != null && c === st.country ? " sel" : ""}`);
-    p.onclick = has ? () => pick(dir, c) : null;
+    p.onclick = has && !into ? () => pick(dir, c) : null;
   }
   const basis = st.measure === "usd" ? "usd" : "lb";
   const items = [...cur.by].filter(([c, o]) => o[basis] > 0 && inZone(c, st.zoom) && D.countries[c].at).sort((a, b) => b[1][basis] - a[1][basis]);
@@ -1293,10 +1328,13 @@ function drawMap(dir, curArg) {
     const name = D.countries[c].name;
     const share = cur.tot[basis] ? ((100 * o[basis]) / cur.tot[basis]).toFixed(1) : "0";
     const rows = [["Pounds", lbTxt(o.lb)], ["Dollars", usdTxt(o.usd)], ["Price", `${priceTxt(o)}${o.lb > 0 && o.lb < SMALL ? " (few lb)" : ""}`], ["Share", `${share}%`]];
+    if (into) return sv("circle", { class: `bub${c === st.country ? " sel" : ""}`, cx, cy, r: r.toFixed(2) });
     return sv("circle", { class: `bub${c === st.country ? " sel" : ""}`, cx, cy, r: r.toFixed(2), tabindex: "0", role: "button", "aria-label": `${name}: ${lbTxt(o.lb)}, ${usdTxt(o.usd)}, ${share}% of the total`,
       onclick: () => pick(dir, c), onkeydown: (e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); pick(dir, c); } },
       onpointermove: (e) => showTip(e, name, rows), onpointerleave: hideTip, onfocus: (e) => showTip(e, name, rows), onblur: hideTip });
   }));
+  // the panel closes when the map changes: new circles, or a new region's view
+  if (!into) ensureShare(host, [[ms.bubs, { childList: true }], [ms.svg, { attributes: true, attributeFilter: ["viewBox"] }]]);
 }
 // the region buttons filter the whole tab: map, list and details (World = every country)
 const ZONES = { Americas: ["Canada and Mexico", "Central America", "Caribbean", "South America"], Europe: ["Europe"],
@@ -1318,8 +1356,8 @@ function drawDetail(dir, P, cur, prev, rank) {
   const fy = P.focusYear, m = st.measure, sel = selTxt(dir, st);
   const fmt = m === "lb" ? (v) => compact(v) : axTxt(m);
   const tipFmt = m === "lb" ? (v) => `${nf.format(Math.round(v))} lb` : m === "usd" ? (v) => usdTxt(v) : (v) => `$${v.toFixed(2)}/lb`;
-  const mchart = el("div");
-  const yearsBox = whole && !zoned ? null : el("div");   // the U.S. total's years are already the chart at the top of the tab
+  const mchart = el("div", { id: `${dir}-det-month` });
+  const yearsBox = whole && !zoned ? null : el("div", { id: `${dir}-det-years` });   // the U.S. total's years are already the chart at the top of the tab
   const parts = [];
   const sp = new Array(D.channels.length).fill(0), fm = new Array(D.products.length).fill(0);
   let duty = 0, dval = 0, dflag = false;
@@ -1743,6 +1781,305 @@ function renderCattle() {
   ]), `cat-${st.dir}`, 1));
 }
 
+// ---- Share this chart (Josh, 11/24/2026; the design of the cattle auction dashboard's, so the tools match) ----
+// A button under each chart and map makes a picture of it to paste into a slide, document or text message: the
+// chart drawn again off screen at a fixed width (800 px, saved at 2x: 1600 px wide, so lines run about 3 pt and the
+// type reads on a slide) in the light colors whatever the page's theme, in the page's own fonts, on white, with a
+// title naming what it shows, a subtitle (what's counted, where, how often, the unit; no latest numbers), its
+// legend, the Source line with the data-through month, any footnote, and the page's name and address. The phone's
+// share sheet where it takes files, Copy image where the clipboard takes pictures, Download always; the picture
+// shows in the panel too, to press and hold or right-click where a browser blocks all three.
+const SHOT = { W: 800, PAD: 28, H: 450, SCALE: 2 };
+const SHOT_SITE = "Chart: U.S. Beef Trade Dashboard, Mississippi State University Extension (agecontools.github.io/beeftrade)";   // Josh, 11/24/2026
+const shotSource = () => `Source: U.S. Census Bureau, International Trade data. Data through ${mName(N - 1)}.`;
+const cap = (t) => t.charAt(0).toUpperCase() + t.slice(1);
+const yearsSpan = () => `${D.meta.first.slice(0, 4)}–${yr(N - 1)}`;
+const partNote = () => (mo(N - 1) < 11 ? `* ${yr(N - 1)} is ${janTo(mo(N - 1))} only.` : "");
+const DUTY_CALC = "Duties are Census's calculation from each shipment's tariff line and value, not customs bills.";
+// what a trade chart counts, from the tab's Product and How it entered menus
+const shotGoods = (dir, st) => `${st.form === "beef" ? "fresh, frozen and processed beef" : D.products[+st.form].toLowerCase()} ${dir === "imp" ? "entered for consumption" : "of U.S. origin"}`
+  + (dir === "imp" && st.chan !== "all" ? `, entered as ${D.channels[+st.chan]}` : "");
+const shotUnit = (dir, m) => (m === "lb" ? "pounds (product weight)" : m === "usd" ? (dir === "imp" ? "dollars (customs value)" : "dollars (value at the U.S. port)") : "dollars per pound");
+const shotNoun = (dir, st) => `U.S. ${goodsTxt(st)} ${WORD[dir].noun}`;
+const shotWho = (dir, c) => (c == null ? "" : ` ${WORD[dir].toFrom} ${D.countries[c].name}`);
+const BY_WORD = { total: "", country: " and country", chan: " and how they entered", product: " and product" };
+const tradeShots = (dir) => {
+  const st = () => S[dir], noun = () => shotNoun(dir, st());
+  return {
+    [`${dir}-ot`]: () => {
+      const s = st(), m = s.measure;
+      if (m === "price") return { title: `Average price of ${noun()} by year, ${yearsSpan()}`,
+        sub: `${cap(shotGoods(dir, s))}, all countries, yearly, dollars per pound.${s.by === "total" ? "" : " All countries and the two largest groups by pounds."} Years under 1,000 lb are left out.`, note: partNote() };
+      return { title: `${cap(noun())} by year${BY_WORD[s.by]}, ${yearsSpan()}`,
+        sub: `${cap(shotGoods(dir, s))}, all countries, yearly, ${shotUnit(dir, m)}.${s.by === "country" ? ` The largest ${WORD[dir].plural} of the last three years by name, the rest together.` : ""}`, note: partNote() };
+    },
+    [`${dir}-sea`]: () => {
+      const s = st(), c = s.sea === "all" ? null : +s.sea, where = c == null ? "all countries" : D.countries[c].name;
+      if (s.seaView === "pattern") return { title: `Usual seasonal pattern of ${noun()}${shotWho(dir, c)}, ${$(`#${dir}-sea`)._years}`,
+        sub: `How far each month usually runs above or below a typical month, in ${unitTxt(s.measure)}, averaged over ${$(`#${dir}-sea`)._years}. ${cap(shotGoods(dir, s))}, ${where}.`,
+        note: "Thin lines on each bar show the lowest and highest year." };
+      const ly = yr(N - 1), arr = dir === "imp" && s.measure === "lb";
+      return { title: `${cap(noun())}${shotWho(dir, c)} by month: ${ly} vs. the four years before`,
+        sub: `${cap(shotGoods(dir, s))}, ${where}, monthly, ${shotUnit(dir, s.measure)}.`,
+        note: arr ? `The solid ${ly} line counts beef when it clears customs for sale in the United States; the dashed line counts it when it arrives.` : "" };
+    },
+    [`${dir}-price`]: () => {
+      const s = st();
+      return { title: `Average ${dir === "imp" ? "import" : "export"} price of U.S. beef by product, ${yearsSpan()}`,
+        sub: `${dir === "imp" ? "Customs value (before freight, insurance and duties)" : "Value at the U.S. port"} divided by pounds, all countries, yearly, dollars per pound.${dir === "imp" && s.chan !== "all" ? ` Entered as ${D.channels[+s.chan]} only.` : ""}`,
+        note: `${partNote()} Years under 1,000 lb are left out.`.trim() };
+    },
+    [`${dir}-map`]: () => {
+      const s = st(), zoned = s.zoom !== "World", P = period(s);
+      return { title: `${cap(noun())}${zoned ? ` ${WORD[dir].toFrom} ${s.zoom}` : ""} by country, ${P.label}`,
+        sub: `${cap(shotGoods(dir, s))}, total for the period. Circle size shows ${s.measure === "usd" ? shotUnit(dir, "usd") : "pounds (product weight)"}.` };
+    },
+    [`${dir}-det-years`]: () => {
+      const s = st(), c = s.country, who = c != null ? D.countries[c].name : `all of ${s.zoom}`;
+      return { title: `${cap(noun())} ${WORD[dir].toFrom} ${who} by year, ${yearsSpan()}`,
+        sub: `${cap(shotGoods(dir, s))}, yearly, ${shotUnit(dir, s.measure)}.`, note: `${partNote()} The outlined bar is ${period(s).focusYear}.`.trim() };
+    },
+    [`${dir}-det-month`]: () => {
+      const s = st(), c = s.country, zoned = s.zoom !== "World", fy = period(s).focusYear;
+      const who = c != null ? ` ${WORD[dir].toFrom} ${D.countries[c].name}` : zoned ? ` ${WORD[dir].toFrom} ${s.zoom}` : "";
+      return { title: `${cap(noun())}${who} by month: ${fy} vs. ${fy - 1} and the 3-year average`,
+        sub: `${cap(shotGoods(dir, s))}, ${c != null ? D.countries[c].name : zoned ? `all of ${s.zoom}` : "all countries"}, monthly, ${shotUnit(dir, s.measure)}.` };
+    },
+  };
+};
+const monthShots = (dir) => {
+  const noun = dir === "imp" ? "imports" : "exports", c = () => (S.month.c === "all" ? null : +S.month.c);
+  const where = () => (c() == null ? "all countries" : D.countries[c()].name);
+  return {
+    [`month-${dir}-chart`]: () => { const ly = yr(N - 1);
+      return { title: `U.S. beef ${noun}${shotWho(dir, c())} by month: ${ly} vs. ${ly - 1} and the 3-year average`,
+        sub: `${cap(shotGoods(dir, BEEF))}, ${where()}, monthly, million pounds (product weight).` }; },
+    [`month-${dir}-mom`]: () => {
+      const lm = mo(N - 1), pm = (lm + 11) % 12, ys = $(`#month-${dir}-mom`)._years || [];
+      return { title: `U.S. beef ${noun}${shotWho(dir, c())}: change from ${MONTH[pm]} to ${MONTH[lm]}, each year${ys.length ? `, ${ys[0]}–${ys.at(-1)}` : ""}`,
+        sub: `Percent change in pounds of ${shotGoods(dir, BEEF)}, ${where()}, from ${MONTH[pm]} to ${MONTH[lm]} of each year.`,
+        note: dir === "imp" ? "Bars count beef when it clears customs for sale in the United States; dots count it when it arrives. The two differ when beef waits in, or comes out of, a bonded warehouse." : "" };
+    },
+  };
+};
+const cattleShot = (which) => () => {
+  const st = S.cat, noun = st.dir === "imp" ? "imports" : "exports", classes = D.cattleClasses[st.dir], m = st.measure;
+  const what = st.cls === "all" ? "Feeder and slaughter cattle" : classes[+st.cls];
+  const unit = m === "head" ? "head" : m === "usd" ? "dollars" : "dollars per head", ly = yr(N - 1);
+  if (which === "year") {
+    // as the page: "All others" only when some other country traded these cattle
+    const rows = (st.dir === "imp" ? D.cimp : D.cexp).filter((r) => st.cls === "all" || r.k === +st.cls);
+    const others = rows.some((r) => r.head > 0 && !["Canada", "Mexico"].includes(D.countries[r.c].name));
+    const where = st.by === "class" ? "all countries" : `${st.dir === "imp" ? "from" : "to"} ${others ? "Canada, Mexico and all other countries together" : "Canada and Mexico"}`;
+    return { title: m === "each" ? `Average value per head of U.S. cattle ${noun} by year, ${yearsSpan()}` : `U.S. cattle ${noun} by year and ${st.by === "class" ? "class" : "country"}, ${yearsSpan()}`,
+      sub: `${what}, ${where}, yearly, ${unit}.`, note: partNote() };
+  }
+  const c = st.country === "all" ? null : +st.country;
+  return { title: `U.S. cattle ${noun}${c == null ? "" : ` ${st.dir === "imp" ? "from" : "to"} ${D.countries[c].name}`} by month: ${ly} vs. ${ly - 1} and the 3-year average`,
+    sub: `${what}, ${c == null ? "all countries" : D.countries[c].name}, monthly, ${unit}.` };
+};
+// One title rule per chart, keyed by the chart's id: a new chart needs one (tests/check_share_chart.py checks)
+const SHARE_SPECS = {
+  ...monthShots("imp"), ...monthShots("exp"),
+  ...tradeShots("imp"), ...tradeShots("exp"),
+  "q-ch": () => { const L = N - 1, a = Math.max(0, L - 35);
+    return { title: `U.S. beef imports by how they entered, by month, ${mName(a)}–${mName(L)}`,
+      sub: `Fresh, frozen and processed beef entered for consumption, all countries, grouped by tariff treatment, monthly, ${shotUnit("imp", S.q.chBy)}.` }; },
+  "q-duty": () => { const flag = R.imp.some((r) => r.f <= 2 && r.duty > 0 && inExtra(r.m));
+    return { title: `Calculated duties on U.S. beef imports by year, ${yearsSpan()}`,
+      sub: "Census's calculated duty on fresh, frozen and processed beef entered for consumption, all countries, yearly, dollars.",
+      note: [partNote(), flag ? "† Includes the 2025 extra tariffs, which the Supreme Court ruled unlawful in February 2026; CBP is refunding them." : "", DUTY_CALC].filter(Boolean).join(" ") }; },
+  "q-rate": () => { const L = N - 1, a = Math.max(0, L - 59);
+    return { title: `Average tariff on over-quota U.S. beef imports by month, ${mName(a)}–${mName(L)}`,
+      sub: "Calculated duties divided by customs value on fresh, frozen and processed beef entered over quota, all countries and Brazil, monthly, percent. Months under $1 million of such beef are left out.",
+      note: `Over-quota beef normally pays 26.4%. Spikes above it are the 2025 extra tariffs; dips below are months when Census's records show some over-quota beef at a free rate. ${DUTY_CALC}` }; },
+  "cat-year": cattleShot("year"),
+  "cat-month": cattleShot("month"),
+};
+// the light theme's colors: every plain :root rule, in order (a site wrapper can add its own :root first), never the
+// dark-mode ones; set on the box the chart is drawn again in
+const lightTokens = () => {
+  const t = {};
+  for (const sh of document.styleSheets) {
+    let rules; try { rules = sh.cssRules; } catch (e) { continue; }
+    for (const r of rules) if (r.selectorText === ":root") for (const p of r.style) if (p.startsWith("--")) t[p] = r.style.getPropertyValue(p).trim();
+  }
+  return t;
+};
+// the page's own fonts inside the picture, so it draws in them (a picture can't reach the page's fonts)
+let SHOT_FONTS = null;
+const shotFonts = async () => {
+  if (SHOT_FONTS != null) return SHOT_FONTS;
+  const face = async (fam, file, wt) => {
+    const b = await (await fetch(`fonts/${file}`)).blob();
+    const u = await new Promise((ok, no) => { const f = new FileReader(); f.onload = () => ok(f.result); f.onerror = no; f.readAsDataURL(b); });
+    return `@font-face{font-family:"${fam}";font-weight:${wt};src:url(${u.replace(/^data:[^;,]*/, "data:font/woff2")}) format("woff2")}`;
+  };
+  try { SHOT_FONTS = (await Promise.all([face("Bitter", "bitter-latin-700-normal.woff2", 700), face("Public Sans", "public-sans-latin-400-normal.woff2", 400),
+    face("Public Sans", "public-sans-latin-600-normal.woff2", 600), face("Public Sans", "public-sans-latin-700-normal.woff2", 700)])).join(""); }
+  catch (e) { SHOT_FONTS = ""; }        // Georgia and Arial then
+  return SHOT_FONTS;
+};
+const xesc = (t) => String(t).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
+const SHOT_FONT = { title: ['700 22px Bitter, Georgia, serif', 22, 28], sub: ['400 14px "Public Sans", Arial, sans-serif', 14, 20],
+  leg: ['400 13.5px "Public Sans", Arial, sans-serif', 13.5, 22], src: ['400 11.5px "Public Sans", Arial, sans-serif', 11.5, 16],
+  site: ['600 11.5px "Public Sans", Arial, sans-serif', 11.5, 16] };
+const measure = document.createElement("canvas").getContext("2d");
+const wrapText = (text, font, w) => {
+  measure.font = font; const out = []; let cur = "";
+  for (const wd of String(text).split(/\s+/).filter(Boolean)) {
+    const t = cur ? `${cur} ${wd}` : wd;
+    if (cur && measure.measureText(t).width > w) { out.push(cur); cur = wd; } else cur = t;
+  }
+  if (cur) out.push(cur);
+  return out;
+};
+const SHOT_PROPS = ["fill", "fill-opacity", "stroke", "stroke-width", "stroke-dasharray", "stroke-linecap", "stroke-linejoin", "stroke-opacity",
+  "opacity", "visibility", "vector-effect", "font-family", "font-size", "font-weight", "font-variant-numeric"];
+// the chart's legend, read from the chart as drawn again (its swatches then carry the light colors)
+const shotLegend = (box) => {
+  const ul = box.querySelector("ul.keys"); if (!ul) return [];
+  return [...ul.querySelectorAll(":scope > li")].map((li) => {
+    const sw = li.querySelector(".sw"), cs = sw && getComputedStyle(sw);
+    const kind = !sw ? "box" : sw.classList.contains("dash") ? "dash" : sw.classList.contains("ln") ? "line" : cs.borderRadius === "50%" ? "dot" : "box";
+    return { kind, color: !cs ? "#000" : kind === "dash" ? cs.borderTopColor : cs.backgroundColor, text: li.textContent.trim() };
+  });
+};
+async function chartPicture(host, spec) {
+  const { W, PAD, SCALE } = SHOT, IW = W - 2 * PAD, T = lightTokens();
+  await Promise.all(["700 22px Bitter", '400 14px "Public Sans"', '600 14px "Public Sans"'].map((f) => document.fonts.load(f))).catch(() => {});
+  const parts = [], fam = { title: "Bitter, Georgia, serif", body: '"Public Sans", Arial, sans-serif' };
+  const lines = (key, text, y, color, weight) => {
+    const [font, size, lh] = SHOT_FONT[key];
+    for (const ln of wrapText(text, font, IW)) {
+      parts.push(`<text x="${PAD}" y="${(y + size).toFixed(1)}" font-family="${xesc(key === "title" ? fam.title : fam.body)}" font-size="${size}" font-weight="${weight}" fill="${color}">${xesc(ln)}</text>`);
+      y += lh;
+    }
+    return y;
+  };
+  // the chart, drawn again off screen at the picture's width in the light colors
+  const off = el("div", { "aria-hidden": "true",
+    style: `position:fixed;left:-10000px;top:0;width:${IW}px;` + Object.entries(T).map(([k, v]) => `${k}:${v}`).join(";") });
+  document.body.append(off);
+  let svgXml, ch, H;
+  try {
+    host._redraw(off);                                  // once for the legend and the shape
+    const legend = shotLegend(off);
+    let y = PAD;
+    y = lines("title", spec.title, y, T["--ink"], 700) + 2;
+    y = lines("sub", spec.sub, y, T["--ink-2"], 400) + 8;
+    if (legend.length) {
+      const [font, size, lh] = SHOT_FONT.leg; measure.font = font;
+      let x = PAD;
+      for (const it of legend) {
+        const w = 18 + 7 + measure.measureText(it.text).width;
+        if (x > PAD && x + w > W - PAD) { x = PAD; y += lh; }
+        const cy = y + lh / 2;
+        if (it.kind === "dash") parts.push(`<line x1="${x}" x2="${x + 18}" y1="${cy}" y2="${cy}" stroke="${it.color}" stroke-width="2.4" stroke-dasharray="5 3"/>`);
+        else if (it.kind === "line") parts.push(`<line x1="${x}" x2="${x + 18}" y1="${cy}" y2="${cy}" stroke="${it.color}" stroke-width="3" stroke-linecap="round"/>`);
+        else if (it.kind === "dot") parts.push(`<circle cx="${x + 9}" cy="${cy}" r="5" fill="${it.color}"/>`);
+        else parts.push(`<rect x="${x + 3}" y="${cy - 6}" width="12" height="12" rx="2" fill="${it.color}"/>`);
+        parts.push(`<text x="${x + 25}" y="${(cy + size * 0.36).toFixed(1)}" font-family="${xesc(fam.body)}" font-size="${size}" fill="${T["--ink-2"]}">${xesc(it.text)}</text>`);
+        x += w + 18;
+      }
+      y += lh + 6;
+    }
+    // the footer first, so a chart can take the height left to make about 16:9
+    const foot = [];
+    const fy = (key, text, color, weight) => { foot.push([key, text, color, weight]); return wrapText(text, SHOT_FONT[key][0], IW).length * SHOT_FONT[key][2]; };
+    let fh = 14 + fy("src", spec.source || shotSource(), T["--ink-2"], 400);
+    if (spec.note) fh += fy("src", spec.note, T["--ink-2"], 400);
+    fh += 4 + fy("site", SHOT_SITE, T["--muted"], 600);
+    host._redraw(off, Math.max(230, SHOT.H - y - fh - PAD - (spec.xaxis ? 20 : 0)));   // again at the height left
+    const svg = off.querySelector(":scope > svg");
+    if (!svg) throw new Error("no chart");
+    const vb = svg.viewBox.baseVal;
+    ch = Math.round((IW * vb.height) / vb.width);
+    // the copy carries each element's computed styles, so it draws the same outside the page
+    const copy = svg.cloneNode(true), a = [svg, ...svg.querySelectorAll("*")], b = [copy, ...copy.querySelectorAll("*")];
+    a.forEach((n, i) => { const cs = getComputedStyle(n);
+      b[i].setAttribute("style", SHOT_PROPS.map((p) => `${p}:${cs.getPropertyValue(p)}`).join(";")); b[i].removeAttribute("class"); });
+    for (const k of ["role", "aria-label", "tabindex"]) copy.removeAttribute(k);
+    copy.querySelectorAll("[tabindex],[role],[aria-label]").forEach((n) => { n.removeAttribute("tabindex"); n.removeAttribute("role"); n.removeAttribute("aria-label"); });
+    for (const [k, v] of Object.entries({ x: PAD, y, width: IW, height: ch, overflow: "visible" })) copy.setAttribute(k, v);
+    svgXml = new XMLSerializer().serializeToString(copy);
+    y += ch;
+    if (spec.xaxis) {          // an axis title the page leaves to its controls
+      parts.push(`<text x="${W / 2}" y="${y + 14}" text-anchor="middle" font-family="${xesc(fam.body)}" font-size="12.5" fill="${T["--ink-2"]}">${xesc(spec.xaxis)}</text>`);
+      y += 20;
+    }
+    y += 14;
+    parts.push(`<line x1="${PAD}" x2="${W - PAD}" y1="${y}" y2="${y}" stroke="${T["--rule"]}" stroke-width="1"/>`);
+    y += 10;
+    for (const [key, text, color, weight] of foot) y = lines(key, text, y, color, weight);
+    H = Math.ceil(y + PAD - 8);
+  } finally { off.remove(); }
+  const xml = `<svg xmlns="http://www.w3.org/2000/svg" width="${W * SCALE}" height="${H * SCALE}" viewBox="0 0 ${W} ${H}">` +
+    `<style>${await shotFonts()}</style><rect width="${W}" height="${H}" fill="#ffffff"/>` +   // plain white, no band (as the cattle auction dashboard; Josh, 11/24/2026)
+    parts.join("") + svgXml + "</svg>";
+  const url = URL.createObjectURL(new Blob([xml], { type: "image/svg+xml" }));
+  try {
+    const img = new Image(); img.src = url; await img.decode();
+    const cv = document.createElement("canvas"); cv.width = W * SCALE; cv.height = H * SCALE;
+    const c = cv.getContext("2d");
+    c.drawImage(img, 0, 0, cv.width, cv.height);
+    await new Promise((r) => setTimeout(r, 150));      // Safari can apply a picture's own fonts a moment after it loads: draw again
+    c.clearRect(0, 0, cv.width, cv.height); c.drawImage(img, 0, 0, cv.width, cv.height);
+    return await new Promise((ok, no) => cv.toBlob((bl) => (bl ? ok(bl) : no(new Error("no picture"))), "image/png"));
+  } finally { URL.revokeObjectURL(url); }
+}
+const SHARE_ICON = '<svg aria-hidden="true" focusable="false" viewBox="0 0 16 16"><path fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" d="M8 10V2M5 4.8 8 2l3 2.8M4.5 7H3.5v7h9V7h-1"/></svg>';
+// the button and panel under a chart, once; watch: more [node, options] whose changes make the picture out of date
+function ensureShare(host, watch = []) {
+  if (!host.id || !SHARE_SPECS[host.id]) return;
+  const nx = host.nextElementSibling;
+  if (nx && nx.classList.contains("chart-share")) return;
+  host.after(shareControl(host, watch));
+}
+function shareControl(host, watch) {
+  const btn = el("button", { type: "button", class: "cs-btn", "aria-expanded": "false" });
+  btn.innerHTML = `${SHARE_ICON}<span>Share this chart</span>`;
+  const panel = el("div", { class: "cs-panel", hidden: true });
+  const close = () => { panel.hidden = true; if (panel._url) URL.revokeObjectURL(panel._url); panel._url = null; panel.replaceChildren(); btn.setAttribute("aria-expanded", "false"); };
+  btn.addEventListener("click", () => { if (!panel.hidden) { close(); return; } openShare(host, btn, panel, close); });
+  panel.addEventListener("keydown", (e) => { if (e.key === "Escape") { close(); btn.focus(); } });
+  // the chart changed: the picture is out of date
+  for (const [n, o] of [[host, { childList: true }], ...watch]) new MutationObserver(() => { if (!panel.hidden) close(); }).observe(n, o);
+  return el("div", { class: "chart-share" }, [btn, panel]);
+}
+async function openShare(host, btn, panel, close) {
+  const make = SHARE_SPECS[host.id];
+  if (!make || !host._redraw || !host.querySelector(":scope > svg")) return;
+  const spec = make(), lab = btn.querySelector("span");
+  btn.disabled = true; lab.textContent = "Making the picture…";
+  let blob;
+  try { blob = await chartPicture(host, spec); }
+  catch (e) { console.error(e); panel.replaceChildren(el("p", { class: "note", text: "The picture couldn't be made in this browser." })); panel.hidden = false; return; }
+  finally { btn.disabled = false; lab.textContent = "Share this chart"; }
+  const name = `beef-trade-${spec.title.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "").slice(0, 70).replace(/-$/, "")}-${D.months[N - 1]}.png`;
+  const file = new File([blob], name, { type: "image/png" }), url = URL.createObjectURL(blob);
+  panel._url = url;
+  const msg = el("p", { class: "note cs-msg", role: "status" });
+  const act = (t, f) => el("button", { type: "button", class: "cs-act", text: t, onclick: f });
+  let files = false; try { files = !!(navigator.canShare && navigator.canShare({ files: [file] })); } catch (e) { files = false; }
+  const share = files && act("Share…", async () => {
+    try { await navigator.share({ files: [file], title: spec.title }); }
+    catch (e) { if (!e || e.name !== "AbortError") msg.textContent = "Sharing didn't work here. Use Download, or press and hold the picture."; }
+  });
+  const copy = !!(navigator.clipboard && navigator.clipboard.write && window.ClipboardItem) && act("Copy image", async () => {
+    try { await navigator.clipboard.write([new ClipboardItem({ "image/png": blob })]); msg.textContent = "Copied. Paste it into a slide, document or message."; }
+    catch (e) { msg.textContent = "This browser won't copy pictures. Use Download, or right-click the picture to copy it."; }
+  });
+  const dl = act("Download", () => { const a = el("a", { href: url, download: name }); document.body.append(a); a.click(); a.remove(); });
+  const coarse = matchMedia("(pointer: coarse)").matches;
+  const acts = (coarse ? [share, dl, copy] : [copy, dl, share]).filter(Boolean);
+  panel.replaceChildren(el("img", { class: "cs-img", src: url, alt: `${spec.title}. ${spec.sub}` }),
+    el("div", { class: "cs-acts" }, [...acts, act("Close", () => { close(); btn.focus(); })]),
+    el("p", { class: "note cs-hint", text: coarse ? "Or press and hold the picture to save or copy it." : "Or right-click the picture to copy or save it." }), msg);
+  panel.hidden = false; btn.setAttribute("aria-expanded", "true");
+  acts[0].focus({ preventScroll: true });
+}
+
 // ---- tabs ----
 const TABS = ["month", "imp", "exp", "quota", "cattle", "about"];
 const ALIAS = { imports: "imp", exports: "exp", tariffs: "quota" };
@@ -1957,6 +2294,7 @@ Promise.all(["data/beef.json", "data/world.json"].map((u) => fetch(u, { cache: "
     const t = e.target.closest('[role="tab"]');
     if (t) count(`${tool}: ${(t.querySelector(".l") || t).textContent.trim()}`);   // the long label where a tab has two
     if (e.target.closest("#share-view")) count(`${tool}: share`);
+    if (e.target.closest(".cs-btn")) count(`${tool}: share chart`);
   });
 })();
 </script>
