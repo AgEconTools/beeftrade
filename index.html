@@ -120,7 +120,7 @@ footer .legal { display: grid; grid-template-columns: minmax(0, 1fr); gap: 8px; 
 .tools-strip a > span > span { display: block; font-size: 13px; line-height: 1.4; color: var(--muted); margin-top: 3px; }
 @media print { .tools-line, .tools-strip { display: none; } }
 .asof { margin: 6px 0 0; font-size: 14px; opacity: .9; }
-.asof.edu { margin-top: 2px; font-size: 13px; }
+.asof .nobr { white-space: nowrap; }
 .asof a { color: inherit; }
 .stale-row { padding-block: 14px 0; }
 .warn { margin: 0; border-left: 4px solid var(--warn-ink); background: var(--warn-bg); color: var(--ink); padding: 10px 14px; border-radius: 6px; font-size: 14.5px; }
@@ -235,7 +235,9 @@ table.rank tfoot tr.zone + tr td { font-weight: 500; color: var(--ink-2); border
   table.rank { font-size: 12.5px; }
   table.rank td, table.rank th { padding: 7px 3px; }
 }
-.fn { text-decoration: none; font-weight: 700; margin-left: 2px; }
+/* the † that links to "Reading the duty figures": underlined, so it reads as a link without relying on its color
+   (axe link-in-text-block: the maroon was 1.9:1 against the text around it, 1.7:1 in dark mode; 11/26/2026) */
+.fn { text-decoration: underline; text-underline-offset: 2px; font-weight: 700; margin-left: 2px; }
 .few { background: var(--warn-bg); color: var(--warn-ink); font-weight: 600; padding: 0 5px; border-radius: 4px; font-size: 12px; margin-left: 4px; }
 table.rank td .few { display: block; width: fit-content; margin: 2px 0 0 auto; }   /* under the price, so it doesn't widen the column */
 .detail { display: grid; gap: 14px; }
@@ -342,8 +344,10 @@ table.qt .qs-in { display: none; }
   <div class="wrap">
     <h1>U.S. Beef Trade</h1>
     <p class="asof" id="asof">Loading the latest trade data…</p>
-    <p class="asof edu">For educational use only. <a href="#disclaimer">Read the disclaimer</a>.</p>
-      <p class="asof tools-line"><a href="#more-tools">More cattle tools</a><button type="button" class="share-btn" id="share-view">Share this view</button><span class="sr-only" role="status" id="share-msg"></span></p>
+    <!-- Disclaimer, Share, More cattle tools in one row, as on the cattle auction page (the project lead, 11/26/2026; the "For
+         educational use only" line folded in here; the full text is in the footer). "Share" shares this view; its
+         name for screen readers says so -->
+    <p class="asof tools-line"><a href="#disclaimer">Disclaimer</a><button type="button" class="share-btn" id="share-view" aria-label="Share this view">Share</button><a href="#more-tools">More cattle tools</a><span class="sr-only" role="status" id="share-msg"></span></p>
     <div class="share-box" id="share-box" hidden><label for="share-url">Copy this link:</label><input id="share-url" type="text" readonly spellcheck="false"><button type="button" class="share-btn" id="share-close">Close</button></div>
   </div>
 </header>
@@ -2224,10 +2228,17 @@ Promise.all(["data/beef.json", "data/world.json"].map((u) => fetch(u, { cache: "
     R = { imp: D.imp.map(([m, c, f, s, lb, usd, duty, gen]) => ({ m, c, f, s, lb, usd, duty, gen })), exp: D.exp.map(([m, c, f, lb, usd]) => ({ m, c, f, s: -1, lb, usd })) };
     D.cimp = D.cimp.map(([m, c, k, head, usd]) => ({ m, c, k, head, usd })); D.cexp = D.cexp.map(([m, c, k, head, usd]) => ({ m, c, k, head, usd }));
     const L = N - 1;
+    // dates in the header as on the cattle auction page ("Nov. 25"), so a phone needs two lines, not three
+    const AP_MON = ["Jan.", "Feb.", "March", "April", "May", "June", "July", "Aug.", "Sept.", "Oct.", "Nov.", "Dec."];
     // the next Census release, once it's no more than two days past (after that the page just says monthly)
     const nr = D.meta.nextRelease, nrDay = nr ? new Date(`${nr.date}T12:00:00`) : null;
-    const nextTxt = nr && Date.now() <= nrDay.getTime() + 2 * 864e5 ? `; next update expected ${MONTH[nrDay.getMonth()]} ${nrDay.getDate()}` : "";
-    $("#asof").textContent = `U.S. beef and cattle trade by country, through ${mName(L)}. Trade data update monthly${nextTxt}. Quota fill, from CBP's report of ${dateTxt(D.quota.asOf)}, updates weekly.`;
+    const nextTxt = nr && Date.now() <= nrDay.getTime() + 2 * 864e5 ? `Next update ${AP_MON[nrDay.getMonth()]} ${nrDay.getDate()}.` : "";
+    // "Trade data through September 2026. Next update Dec. 8. Quota fill as of Nov. 23." (the project lead, 11/26/2026:
+    // the title already says what the page covers, and the next-update date shows how often it updates). Each
+    // sentence never splits, so a phone breaks between them
+    const [, qm, qd] = D.quota.asOf.split("-").map(Number);
+    const bit = (t) => t && [el("span", { class: "nobr", text: t }), " "];
+    $("#asof").replaceChildren(...[`Trade data through ${mName(L)}.`, nextTxt, `Quota fill as of ${AP_MON[qm - 1]} ${qd}.`].flatMap((t) => bit(t) || []));
     const builtAt = new Date(D.meta.built);
     // built on a Mac in Mississippi, so the time reads in Central time
     const ct = (o) => builtAt.toLocaleString("en-US", { timeZone: "America/Chicago", ...o });
@@ -2256,7 +2267,7 @@ Promise.all(["data/beef.json", "data/world.json"].map((u) => fetch(u, { cache: "
   const btn = document.getElementById("share-view"), msg = document.getElementById("share-msg");
   if (btn) {
     const say = t => { msg.textContent = t; btn.textContent = t; clearTimeout(btn._t);
-      btn._t = setTimeout(() => { btn.textContent = "Share this view"; msg.textContent = ""; }, 2500); };
+      btn._t = setTimeout(() => { btn.textContent = "Share"; msg.textContent = ""; }, 2500); };
     btn.addEventListener("click", async () => {
       const url = location.href;
       if (navigator.share && matchMedia("(pointer: coarse)").matches) {
@@ -2279,6 +2290,18 @@ Promise.all(["data/beef.json", "data/world.json"].map((u) => fetch(u, { cache: "
     field.addEventListener("focus", () => field.select());
     field.addEventListener("keydown", (e) => { if (e.key === "Escape") { hideBox(); btn.focus(); } });
   }
+  // The header's in-page links (Disclaimer, More cattle tools) and the skip link scroll without touching the address
+  // (the project lead, 11/26/2026, the drought page's fix): following "#disclaimer" replaced "#imports", so Share right after sent
+  // a link that opened This month instead of the view on screen. Focus moves to the target, as following the link
+  // would, for keyboard and screen reader users. The page's scroll-padding clears the sticky tab bar. A typed
+  // address like .../#disclaimer still opens as before (the load code and hashchange handle it).
+  document.querySelectorAll('.tools-line a[href^="#"], a.skip[href^="#"]').forEach(a => a.addEventListener("click", e => {
+    const t = document.querySelector(a.getAttribute("href")); if (!t) return;
+    e.preventDefault();
+    t.scrollIntoView({ behavior: matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth", block: "start" });
+    if (!t.hasAttribute("tabindex")) t.setAttribute("tabindex", "-1");
+    t.focus({ preventScroll: true });
+  }));
   const STATE_TOOLS = ["cattleprices", "drought"];
   const carry = a => {
     let st = ""; try { st = (new URLSearchParams(location.search).get("state") || "").toLowerCase(); } catch (e) { /* no query */ }
