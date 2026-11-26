@@ -335,7 +335,14 @@ table.qt .n { text-align: right; white-space: nowrap; }
 table.qt .qf { min-width: 90px; }
 table.qt .qs-in { display: none; }
 @media (max-width: 560px) { table.qt .qs { display: none; } table.qt .qs-in { display: block; line-height: 1.3; white-space: nowrap; } table.qt .qf { min-width: 72px; } }   /* Status under the bar on phones */
-@media (max-width: 420px) { table.qt { font-size: 13.5px; } table.qt td, table.qt th { padding: 7px 4px; } table.qt th { white-space: normal; font-size: 11px; } table.qt .qf { min-width: 60px; } }
+table.qt .qq-in { display: none; }
+/* phones (pre-release review, 11/26/2026): with the status on one line the table ran 4-78 px wider than its box from
+   320 to 393 px and at 428-430 px, clipping "Filled Oct 13" and the bar ends. The compact rule now starts at 460 px,
+   under 400 px the Quota column folds into Entered as a second line, and under 360 px the two small lines and the
+   padding shrink; fits at every width from 320 px up */
+@media (max-width: 400px) { table.qt .qq { display: none; } table.qt .qq-in { display: block; line-height: 1.3; white-space: nowrap; } }
+@media (max-width: 460px) { table.qt { font-size: 13.5px; } table.qt td, table.qt th { padding: 7px 4px; } table.qt th { white-space: normal; font-size: 11px; } table.qt .qf { min-width: 60px; } }
+@media (max-width: 360px) { table.qt td, table.qt th { padding: 7px 3px; } table.qt .qq-in, table.qt .qs-in { font-size: 12px; } }
 </style>
 </head>
 <body>
@@ -914,6 +921,8 @@ function showTip(e, title, rows) {
 const hideTip = () => { tip.hidden = true; };
 
 // ---- Imports / Exports tab ----
+// a region's name inside a sentence: "from the Americas", "All of the Middle East and Africa" (pre-release review, 11/26/2026)
+const theZ = (z) => (z === "Americas" || z === "Middle East and Africa" ? `the ${z}` : z);
 const WORD = { imp: { noun: "imports", from: "supplier", plural: "suppliers", list: "Supplying countries", toFrom: "from" },
   exp: { noun: "exports", from: "destination", plural: "destinations", list: "Destinations", toFrom: "to" } };
 const segBtns = (id, opts, cur, onPick, cls = "") => el("div", { class: `seg${cls ? " " + cls : ""}`, id, role: "group" }, opts.map(([v, t]) => el("button", { type: "button", "aria-pressed": String(v === cur), "data-v": v, text: t, onclick: () => onPick(v) })));
@@ -1240,9 +1249,9 @@ function render(dir) {
   const zsum = rank.reduce((a, [, o]) => ({ lb: a.lb + o.lb, usd: a.usd + o.usd }), { lb: 0, usd: 0 }), T = zoned ? zsum : cur.tot;
   const usTot = zoned ? ` (U.S. total ${lbTxt(cur.tot.lb)})` : "";
   $(`#${dir}-sub`).textContent = `${P.label}${filt.length ? " · " + filt.join(" · ") : ""}: ` + (!rank.length
-    ? (zoned ? `no ${w.noun} ${w.toFrom} ${zone}${usTot}.` : `no ${w.noun} in this selection.`)
+    ? (zoned ? `no ${w.noun} ${w.toFrom} ${theZ(zone)}${usTot}.` : `no ${w.noun} in this selection.`)
     : `${zoned ? `${zone}, ` : ""}${lbTxt(T.lb)}, ${usdTxt(T.usd)}, ${priceTxt(T)}, ${w.toFrom} ${rank.length} ${rank.length === 1 ? "country" : "countries"}${usTot}.`);
-  $(`#${dir}-legend`).textContent = !rank.length && zoned ? `No U.S. ${w.noun} ${w.toFrom} ${zone} in ${P.label}.`
+  $(`#${dir}-legend`).textContent = !rank.length && zoned ? `No U.S. ${w.noun} ${w.toFrom} ${theZ(zone)} in ${P.label}.`
     : `Circle size shows ${st.measure === "usd" ? "dollars" : "pounds"}. Select a country for its details, or a total row in the list for the whole ${zoned ? "region" : "selection"}.`;
   // ranked list
   const mcls = (m) => `n opt${st.measure === m ? " on" : ""}`;
@@ -1279,7 +1288,7 @@ function render(dir) {
     const mb = moreBtn(rtab, `${dir}-list`, rank.length, 25, "countries");
     if (mb) $(`#${dir}-table`).after(mb);
   } else $(`#${dir}-table`).replaceChildren();
-  $(`#${dir}-list-h`).textContent = `${w.list}${zoned ? ` in ${zone}` : ""}, ${P.label}`;
+  $(`#${dir}-list-h`).textContent = `${w.list}${zoned ? ` in ${theZ(zone)}` : ""}, ${P.label}`;
   $(`#${dir}-list-note`).textContent = rank.length ? `Sort by any column. Share is of all U.S. ${goodsTxt(st)} ${w.noun}${filt.length ? " in this selection" : ""}${zoned ? ", from every country" : ""}.${P.prev ? ` Change compares with ${P.prevLabel}.` : ""}` : zoned ? "Choose World or another region." : `No U.S. ${w.noun} in this selection.`;
   drawMap(dir, cur);
   drawOverTime(dir);
@@ -1290,7 +1299,7 @@ function render(dir) {
 // annual bars for the country or region total the details show
 function drawYears(dir, P, host) {
   const st = S[dir], w = WORD[dir], c = st.country, zone = st.zoom, m = st.measure;
-  const who = c != null ? D.countries[c].name : zone === "World" ? "All countries" : `All of ${zone}`;
+  const who = c != null ? D.countries[c].name : zone === "World" ? "All countries" : `All of ${theZ(zone)}`;
   const ms = monthly(dir, st, null, c != null ? (r) => r.c === c : (r) => inZone(r.c, zone));
   const an = annual(ms), part = mo(N - 1) < 11 ? an.length - 1 : null;
   const fmt = m === "lb" ? (v) => compact(v) : axTxt(m);
@@ -1351,11 +1360,11 @@ function zoomTo(dir, v) { S[dir].zoom = v; S[dir].country = null; hideTip(); ren
 function pick(dir, c) { S[dir].country = c; hideTip(); render(dir); writeAddr(openTab()); if (innerWidth < 860) $(`#${dir}-detail`).scrollIntoView({ behavior: "smooth", block: "start" }); }
 function drawDetail(dir, P, cur, prev, rank) {
   const st = S[dir], host = $(`#${dir}-detail`), c = st.country, w = WORD[dir], zone = st.zoom, zoned = zone !== "World";
-  if (!rank.length) { host.replaceChildren(el("p", { class: "note", text: zoned ? `No ${w.noun} ${w.toFrom} ${zone} in this period. Choose World or another region.` : `No ${w.noun} in this selection.` })); return; }
+  if (!rank.length) { host.replaceChildren(el("p", { class: "note", text: zoned ? `No ${w.noun} ${w.toFrom} ${theZ(zone)} in this period. Choose World or another region.` : `No ${w.noun} in this selection.` })); return; }
   const whole = c == null, keep = whole ? (r) => inZone(r.c, zone) : (r) => r.c === c;
   const sum = (t) => { const o = { lb: 0, usd: 0 }; for (const [k, v] of t.by) if (whole ? inZone(k, zone) : k === c) { o.lb += v.lb; o.usd += v.usd; } return o; };
   const o = sum(cur), p = P.prev ? sum(prev) : null;
-  const ct = whole ? { name: zoned ? `All of ${zone}` : "All countries", region: zoned ? "Region total" : "U.S. total" } : D.countries[c];
+  const ct = whole ? { name: zoned ? `All of ${theZ(zone)}` : "All countries", region: zoned ? "Region total" : "U.S. total" } : D.countries[c];
   const basis = st.measure === "usd" ? "usd" : "lb";
   const ch = change(val(o, st.measure), p ? val(p, st.measure) : null);
   const share = cur.tot[basis] ? (100 * o[basis]) / cur.tot[basis] : 0;
@@ -1374,7 +1383,7 @@ function drawDetail(dir, P, cur, prev, rank) {
   if (st.form === "beef") parts.push(el("div", {}, [el("p", { class: "k", text: "By product (pounds)" }), mixBar(D.products.slice(0, 3).map((n, i) => ({ name: n, v: fm[i], color: PCOL[i] })))]));
   host.replaceChildren(...[
     el("div", {}, [el("p", { class: "k", text: `${ct.region} · ${P.label}` }), el("h3", { text: ct.name }),
-      whole ? null : el("button", { class: "btn alt", type: "button", style: "margin-top:8px", text: `Show ${zoned ? `all of ${zone}` : "all countries"}`, onclick: () => pick(dir, null) })]),
+      whole ? null : el("button", { class: "btn alt", type: "button", style: "margin-top:8px", text: `Show ${zoned ? `all of ${theZ(zone)}` : "all countries"}`, onclick: () => pick(dir, null) })]),
     el("div", { class: "stats" }, [
       el("div", {}, [el("b", { text: lbTxt(o.lb) }), el("span", { text: "pounds" })]),
       el("div", {}, [el("b", { text: usdTxt(o.usd) }), el("span", { text: "value" })]),
@@ -1579,12 +1588,14 @@ function renderQuota() {
   $("#q-ch-seg").replaceChildren(segBtns("q-ch-by", [["lb", "Pounds"], ["usd", "Dollars"]], S.q.chBy, (v) => { S.q.chBy = v; drawChannels(); }));
   $("#q-wto-note").textContent = `Metric tons of product, from U.S. Customs and Border Protection's report of ${dateTxt(Q.asOf)}.`;
   $("#q-wto").replaceChildren(el("table", { class: "qt" }, [
-    el("thead", {}, el("tr", {}, [el("th", { text: "Allocation" }), el("th", { class: "n", text: "Quota" }), el("th", { class: "n", text: "Entered" }), el("th", { text: "Filled" }), el("th", { class: "qs", text: "Status" })])),
+    el("thead", {}, el("tr", {}, [el("th", { text: "Allocation" }), el("th", { class: "n qq", text: "Quota" }), el("th", { class: "n", text: "Entered" }), el("th", { text: "Filled" }), el("th", { class: "qs", text: "Status" })])),
     el("tbody", {}, Q.wto.map((w) => {
       const pct = w.qty ? (100 * (w.entered || 0)) / w.qty : 0;
       const st = w.status === "FILL" && w.fillDate ? `Filled ${dateShort(w.fillDate)}` : STATUS[w.status] || w.status;
       // on phones the Status column is hidden and its text sits under the bar and percent ("100%", then "Filled Oct 13")
-      return el("tr", {}, [el("td", { text: w.name }), el("td", { class: "n", text: mtTxt(w.qty) }), el("td", { class: "n", text: mtTxt(w.entered) }),
+      // under 400 px the Quota column folds into Entered as a second line ("of 378,214 t"), so all four fit at 320 px
+      return el("tr", {}, [el("td", { text: w.name }), el("td", { class: "n qq", text: mtTxt(w.qty) }),
+        el("td", { class: "n" }, [mtTxt(w.entered), el("span", { class: "note qq-in", text: `of ${mtTxt(w.qty)}` })]),
         el("td", { class: "qf" }, [progBar(pct, 100, `${w.name}: ${pctTxt(pct)} full`), el("span", { class: "note", text: pctTxt(pct) }), el("span", { class: "note qs-in", text: st })]),
         el("td", { class: "qs", text: st })]);
     })),
@@ -1767,7 +1778,7 @@ function renderCattle() {
   const mval = (i) => (i == null ? null : v({ head: mh[i], usd: mu[i] }));
   const line = (y) => MON.map((_, k) => mval(IDX.get(`${y}-${String(k + 1).padStart(2, "0")}`)));
   const avg = (y) => MON.map((_, k) => { let h = 0, u = 0; for (let d = 1; d <= 3; d++) { const i = IDX.get(`${y - d}-${String(k + 1).padStart(2, "0")}`); if (i == null) return null; h += mh[i]; u += mu[i]; } return m === "each" ? (h ? u / h : null) : (m === "head" ? h : u) / 3; });
-  const wname = st.country === "all" ? "All countries" : D.countries[+st.country].name;
+  const wname = st.country === "all" ? (st.dir === "imp" ? "All countries" : "Canada and Mexico") : D.countries[+st.country].name;
   $("#cat-month-h").textContent = `By month: ${ly} vs. ${ly - 1}`;
   $("#cat-month-note").textContent = `${wname}. ${clsTxt}The dashed line is the ${ly - 3}–${ly - 1} average.`;
   lineChart($("#cat-month"), { labels: MON, label: `${wname}, monthly cattle ${noun}${lblCls}, ${m === "head" ? "head" : m === "usd" ? "dollars" : "dollars per head"}`, fmt: m === "head" ? compact : (x) => `$${compact(x)}`, tipFmt: fmtV, series: [
@@ -1810,6 +1821,8 @@ const shotUnit = (dir, m) => (m === "lb" ? "pounds (product weight)" : m === "us
 const shotNoun = (dir, st) => `U.S. ${goodsTxt(st)} ${WORD[dir].noun}`;
 const shotWho = (dir, c) => (c == null ? "" : ` ${WORD[dir].toFrom} ${D.countries[c].name}`);
 const BY_WORD = { total: "", country: " and country", chan: " and how they entered", product: " and product" };
+// with one group chosen in the menus the chart draws that group alone, so the title doesn't promise a split
+const byWord = (s) => ((s.by === "chan" && s.chan !== "all") || (s.by === "product" && s.form !== "beef") ? "" : BY_WORD[s.by]);
 const tradeShots = (dir) => {
   const st = () => S[dir], noun = () => shotNoun(dir, st());
   return {
@@ -1817,7 +1830,7 @@ const tradeShots = (dir) => {
       const s = st(), m = s.measure;
       if (m === "price") return { title: `Average price of ${noun()} by year, ${yearsSpan()}`,
         sub: `${cap(shotGoods(dir, s))}, all countries, yearly, dollars per pound.${s.by === "total" ? "" : " All countries and the two largest groups by pounds."} Years under 1,000 lb are left out.`, note: partNote() };
-      return { title: `${cap(noun())} by year${BY_WORD[s.by]}, ${yearsSpan()}`,
+      return { title: `${cap(noun())} by year${byWord(s)}, ${yearsSpan()}`,
         sub: `${cap(shotGoods(dir, s))}, all countries, yearly, ${shotUnit(dir, m)}.${s.by === "country" ? ` The largest ${WORD[dir].plural} of the last three years by name, the rest together.` : ""}`, note: partNote() };
     },
     [`${dir}-sea`]: () => {
@@ -1832,25 +1845,25 @@ const tradeShots = (dir) => {
     },
     [`${dir}-price`]: () => {
       const s = st();
-      return { title: `Average ${dir === "imp" ? "import" : "export"} price of U.S. beef by product, ${yearsSpan()}`,
+      return { title: `${dir === "imp" ? "Average price of U.S. beef imports" : "Average export price of U.S. beef"} by product, ${yearsSpan()}`,
         sub: `${dir === "imp" ? "Customs value (before freight, insurance and duties)" : "Value at the U.S. port"} divided by pounds, all countries, yearly, dollars per pound.${dir === "imp" && s.chan !== "all" ? ` Entered as ${D.channels[+s.chan]} only.` : ""}`,
         note: `${partNote()} Years under 1,000 lb are left out.`.trim() };
     },
     [`${dir}-map`]: () => {
       const s = st(), zoned = s.zoom !== "World", P = period(s);
-      return { title: `${cap(noun())}${zoned ? ` ${WORD[dir].toFrom} ${s.zoom}` : ""} by country, ${P.label}`,
+      return { title: `${cap(noun())}${zoned ? ` ${WORD[dir].toFrom} ${theZ(s.zoom)}` : ""} by country, ${P.label}`,
         sub: `${cap(shotGoods(dir, s))}, total for the period. Circle size shows ${s.measure === "usd" ? shotUnit(dir, "usd") : "pounds (product weight)"}.` };
     },
     [`${dir}-det-years`]: () => {
-      const s = st(), c = s.country, who = c != null ? D.countries[c].name : `all of ${s.zoom}`;
+      const s = st(), c = s.country, who = c != null ? D.countries[c].name : `all of ${theZ(s.zoom)}`;
       return { title: `${cap(noun())} ${WORD[dir].toFrom} ${who} by year, ${yearsSpan()}`,
         sub: `${cap(shotGoods(dir, s))}, yearly, ${shotUnit(dir, s.measure)}.`, note: `${partNote()} The outlined bar is ${period(s).focusYear}.`.trim() };
     },
     [`${dir}-det-month`]: () => {
       const s = st(), c = s.country, zoned = s.zoom !== "World", fy = period(s).focusYear;
-      const who = c != null ? ` ${WORD[dir].toFrom} ${D.countries[c].name}` : zoned ? ` ${WORD[dir].toFrom} ${s.zoom}` : "";
+      const who = c != null ? ` ${WORD[dir].toFrom} ${D.countries[c].name}` : zoned ? ` ${WORD[dir].toFrom} ${theZ(s.zoom)}` : "";
       return { title: `${cap(noun())}${who} by month: ${fy} vs. ${fy - 1} and the 3-year average`,
-        sub: `${cap(shotGoods(dir, s))}, ${c != null ? D.countries[c].name : zoned ? `all of ${s.zoom}` : "all countries"}, monthly, ${shotUnit(dir, s.measure)}.` };
+        sub: `${cap(shotGoods(dir, s))}, ${c != null ? D.countries[c].name : zoned ? `all of ${theZ(s.zoom)}` : "all countries"}, monthly, ${shotUnit(dir, s.measure)}.` };
     },
   };
 };
@@ -1877,13 +1890,15 @@ const cattleShot = (which) => () => {
     // as the page: "All others" only when some other country traded these cattle
     const rows = (st.dir === "imp" ? D.cimp : D.cexp).filter((r) => st.cls === "all" || r.k === +st.cls);
     const others = rows.some((r) => r.head > 0 && !["Canada", "Mexico"].includes(D.countries[r.c].name));
-    const where = st.by === "class" ? "all countries" : `${st.dir === "imp" ? "from" : "to"} ${others ? "Canada, Mexico and all other countries together" : "Canada and Mexico"}`;
-    return { title: m === "each" ? `Average value per head of U.S. cattle ${noun} by year, ${yearsSpan()}` : `U.S. cattle ${noun} by year and ${st.by === "class" ? "class" : "country"}, ${yearsSpan()}`,
+    const where = st.by === "class" ? (st.dir === "imp" ? "all countries" : "to Canada and Mexico")
+      : `${st.dir === "imp" ? "from" : "to"} ${others ? "Canada, Mexico and all other countries together" : "Canada and Mexico"}`;
+    const split = st.by === "class" ? (st.cls === "all" ? " and class" : "") : " and country";
+    return { title: m === "each" ? `Average value per head of U.S. cattle ${noun} by year, ${yearsSpan()}` : `U.S. cattle ${noun} by year${split}, ${yearsSpan()}`,
       sub: `${what}, ${where}, yearly, ${unit}.`, note: partNote() };
   }
   const c = st.country === "all" ? null : +st.country;
   return { title: `U.S. cattle ${noun}${c == null ? "" : ` ${st.dir === "imp" ? "from" : "to"} ${D.countries[c].name}`} by month: ${ly} vs. ${ly - 1} and the 3-year average`,
-    sub: `${what}, ${c == null ? "all countries" : D.countries[c].name}, monthly, ${unit}.` };
+    sub: `${what}, ${c == null ? (st.dir === "imp" ? "all countries" : "Canada and Mexico") : D.countries[c].name}, monthly, ${unit}.` };
 };
 // One title rule per chart, keyed by the chart's id: a new chart needs one (tests/check_share_chart.py checks)
 const SHARE_SPECS = {
@@ -2000,15 +2015,18 @@ async function chartPicture(host, spec) {
     host._redraw(off, Math.max(230, SHOT.H - y - fh - PAD - (spec.xaxis ? 20 : 0)));   // again at the height left
     const svg = off.querySelector(":scope > svg");
     if (!svg) throw new Error("no chart");
-    const vb = svg.viewBox.baseVal;
+    const vb = svg.viewBox.baseVal, isMap = svg.classList.contains("mapsvg");
     ch = Math.round((IW * vb.height) / vb.width);
+    // a region's map is taller than wide (the Americas twice as tall), and drawn unclipped it covered the title and the
+    // source lines (pre-release review, 11/26/2026): held to 400 px and clipped, as the page holds it to 62vh
+    if (isMap) ch = Math.min(ch, 400);
     // the copy carries each element's computed styles, so it draws the same outside the page
     const copy = svg.cloneNode(true), a = [svg, ...svg.querySelectorAll("*")], b = [copy, ...copy.querySelectorAll("*")];
     a.forEach((n, i) => { const cs = getComputedStyle(n);
       b[i].setAttribute("style", SHOT_PROPS.map((p) => `${p}:${cs.getPropertyValue(p)}`).join(";")); b[i].removeAttribute("class"); });
     for (const k of ["role", "aria-label", "tabindex"]) copy.removeAttribute(k);
     copy.querySelectorAll("[tabindex],[role],[aria-label]").forEach((n) => { n.removeAttribute("tabindex"); n.removeAttribute("role"); n.removeAttribute("aria-label"); });
-    for (const [k, v] of Object.entries({ x: PAD, y, width: IW, height: ch, overflow: "visible" })) copy.setAttribute(k, v);
+    for (const [k, v] of Object.entries({ x: PAD, y, width: IW, height: ch, overflow: isMap ? "hidden" : "visible" })) copy.setAttribute(k, v);
     svgXml = new XMLSerializer().serializeToString(copy);
     y += ch;
     if (spec.xaxis) {          // an axis title the page leaves to its controls
