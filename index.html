@@ -75,6 +75,9 @@ a { color: var(--link); }
 .skip { position: absolute; left: 16px; top: -200px; z-index: 30; background: var(--surface); color: var(--ink); border: 1px solid var(--rule); padding: 8px 14px; border-radius: 8px; font-weight: 600; }
 .skip:focus { top: calc(8px + env(safe-area-inset-top, 0px)); }
 main:focus { outline: none; }
+/* the sections the header links focus draw no ring: Safari drew a gold box round the whole tools strip after a tap on
+   the Live Cattle page (11/26/2026). Focus still lands there, and the next Tab goes to the first link inside. */
+#disclaimer:focus, #more-tools:focus { outline: none; }
 .num { font-variant-numeric: tabular-nums; }
 
 /* masthead */
@@ -895,11 +898,13 @@ function barChart(host, cfg) {
 const mixBar = (parts, minShare = 0) => {
   const tot = parts.reduce((s, p) => s + p.v, 0);
   if (!tot) return el("p", { class: "note", text: "None in this period." });
-  // whole percents that add up to 100: round down, then give the leftover points to the largest remainders
-  const exact = parts.map((p) => (100 * p.v) / tot), pct = exact.map(Math.floor);
-  exact.map((v, i) => [v - pct[i], i]).sort((a, b) => b[0] - a[0]).slice(0, 100 - pct.reduce((a, b) => a + b, 0)).forEach(([, i]) => pct[i]++);
-  const ptxt = (p) => (pct[parts.indexOf(p)] ? `${pct[parts.indexOf(p)]}%` : "<1%");
+  // whole percents that add up to 100: round down, then give the leftover points to the largest remainders among the
+  // groups shown, so a hidden group (under minShare) never takes a point and leaves the shown ones at 99 (11/26/2026)
   const shown = parts.filter((p) => p.v && p.v / tot >= minShare);
+  const exact = parts.map((p) => (100 * p.v) / tot), pct = exact.map(Math.floor);
+  exact.map((v, i) => [v - pct[i], i]).filter(([, i]) => shown.includes(parts[i])).sort((a, b) => b[0] - a[0])
+    .slice(0, 100 - pct.reduce((a, b) => a + b, 0)).forEach(([, i]) => pct[i]++);
+  const ptxt = (p) => (pct[parts.indexOf(p)] ? `${pct[parts.indexOf(p)]}%` : "<1%");
   return el("div", {}, [
     el("div", { class: "mix", role: "img", "aria-label": shown.map((p) => `${p.name} ${ptxt(p)}`).join(", ") },
       shown.map((p) => el("span", { style: `width:${(100 * p.v) / tot}%;background:${p.color}`, title: `${p.name}: ${((100 * p.v) / tot).toFixed(1)}%` }))),
@@ -1289,7 +1294,7 @@ function render(dir) {
     if (mb) $(`#${dir}-table`).after(mb);
   } else $(`#${dir}-table`).replaceChildren();
   $(`#${dir}-list-h`).textContent = `${w.list}${zoned ? ` in ${theZ(zone)}` : ""}, ${P.label}`;
-  $(`#${dir}-list-note`).textContent = rank.length ? `Sort by any column. Share is of all U.S. ${goodsTxt(st)} ${w.noun}${filt.length ? " in this selection" : ""}${zoned ? ", from every country" : ""}.${P.prev ? ` Change compares with ${P.prevLabel}.` : ""}` : zoned ? "Choose World or another region." : `No U.S. ${w.noun} in this selection.`;
+  $(`#${dir}-list-note`).textContent = rank.length ? `Sort by any column. Share is of all U.S. ${goodsTxt(st)} ${w.noun}${filt.length ? " in this selection" : ""}${zoned ? `, ${dir === "exp" ? "to" : "from"} every country` : ""}. Shares are rounded and may not add exactly to the total.${P.prev ? ` Change compares with ${P.prevLabel}.` : ""}` : zoned ? "Choose World or another region." : `No U.S. ${w.noun} in this selection.`;
   drawMap(dir, cur);
   drawOverTime(dir);
   drawSeasonal(dir);
@@ -1790,7 +1795,7 @@ function renderCattle() {
   const list = [...by].filter(([, o]) => o.head > 0).sort((a, b) => b[1].head - a[1].head);
   const T = sum(P), Tp = sum(Pp);
   $("#cat-list-h").textContent = `${st.dir === "imp" ? "Supplying countries" : "Destinations"}, 12 months through ${mName(L)}`;
-  $("#cat-list-note").textContent = `${clsTxt}Change compares head with the 12 months before. Sort by any column.`;
+  $("#cat-list-note").textContent = `${clsTxt}Change compares head with the 12 months before. Shares are rounded and may not add exactly to the total. Sort by any column.`;
   const row = (name, o, p, cls) => { const c = change(o.head, p ? p.head : 0); return keyed(el("tr", { class: cls }, [el("td", { text: name }), el("td", { class: "n", text: nf.format(o.head) }), el("td", { class: "n", text: tblUsd(o.usd) }), el("td", { class: "n", text: o.head ? `$${nf.format(Math.round(o.usd / o.head))}` : "–" }), el("td", { class: "n", text: T.head ? `${((100 * o.head) / T.head).toFixed(1)}%` : "–" }), el("td", { class: `n ${c.c}`, text: c.t })]), [name, o.head, o.usd, o.head ? o.usd / o.head : null, T.head ? o.head / T.head : null, chk(o.head, p ? p.head : 0)]); };
   $("#cat-list").replaceChildren(sortable(el("table", { class: "rank" }, [
     el("thead", {}, el("tr", {}, [el("th", { text: "Country" }), el("th", { class: "n", text: "Head" }), el("th", { class: "n", text: "Million $" }), el("th", { class: "n", text: "$/head" }), el("th", { class: "n", text: "Share" }), el("th", { class: "n", text: "Head change" })])),
