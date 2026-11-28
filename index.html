@@ -20,6 +20,14 @@
 <link rel="icon" href="favicon.ico" sizes="32x32">
 <link rel="icon" href="favicon.svg" type="image/svg+xml">
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
+<!-- On a phone's Home Screen the page opens like an app (HOME_SCREEN_STANDARD.md, the project lead, 11/2026): its own
+     short name under the icon, MSU maroon behind the clock and while it starts. The manifest comes from the export. -->
+<link rel="manifest" href="manifest.webmanifest">
+<meta name="apple-mobile-web-app-title" content="Beef Trade">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="theme-color" content="#5d1725" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#6e1d2e" media="(prefers-color-scheme: dark)">
 <!-- Visit counts: GoatCounter, no cookies and no personal data (Josh, 11/2026). It skips localhost. -->
 <!-- Pinned to GoatCounter's versioned script with its integrity hash (security review, 11/25/2026): the browser
      refuses the file if it ever changes, so no outside code can run here. The Watchdog checks the hash daily. -->
@@ -65,7 +73,11 @@
 }
 * { box-sizing: border-box; }
 html { scroll-padding-top: calc(var(--tabs-h, 45px) + 25px); }   /* jumps clear the sticky tab bar; --tabs-h is its real height, set by the page */
-body::before { content: ""; position: fixed; inset: 0 0 auto; height: env(safe-area-inset-top, 0px); z-index: 10; background: var(--bg); }
+body::before { content: ""; position: fixed; inset: 0 0 auto; height: env(safe-area-inset-top, 0px); z-index: 10; background: var(--accent); }
+/* Opened from an iPhone's Home Screen, the page runs up under the clock (black-translucent above): this strip and the
+   masthead's padding keep the clock on MSU maroon in white, scrolled or not (HOME_SCREEN_STANDARD.md, 11/2026). In a
+   browser tab the strip is 0 px tall. */
+.mast { padding-top: env(safe-area-inset-top, 0px); }
 body { margin: 0; background: var(--bg); color: var(--ink); font: 400 16px/1.5 var(--body); -webkit-font-smoothing: antialiased; }
 .wrap { max-width: 1120px; margin: 0 auto; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); }
 button, input, select { font: inherit; color: inherit; }
@@ -127,6 +139,23 @@ footer .legal { display: grid; grid-template-columns: minmax(0, 1fr); gap: 8px; 
 .asof a { color: inherit; }
 .stale-row { padding-block: 14px 0; }
 .warn { margin: 0; border-left: 4px solid var(--warn-ink); background: var(--warn-bg); color: var(--ink); padding: 10px 14px; border-radius: 6px; font-size: 14.5px; }
+/* "Use this tool like an app" tip (HOME_SCREEN_STANDARD.md, the project lead, 11/2026): a small card at the top of the
+   page on phones and tablets, never a pop-up. Its rules are in the script at the end. */
+.a2hs { position: relative; margin: 0 0 22px; padding: 10px 44px 10px 14px; border: 1px solid var(--rule); border-left: 4px solid var(--accent);
+  border-radius: 8px; background: var(--surface); color: var(--ink); font-size: 14px; line-height: 1.45; }
+.a2hs[hidden], .a2hs [hidden] { display: none; }
+.a2hs p { margin: 0; }
+.a2hs-row { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 16px; margin-top: 4px; }
+.a2hs-how { all: unset; cursor: pointer; color: var(--link); text-decoration: underline; font-weight: 600; padding: 3px 0; }
+.a2hs-add { all: unset; cursor: pointer; background: var(--accent); color: var(--accent-ink); font-weight: 600; padding: 6px 14px; border-radius: 999px; }
+.a2hs-how:focus-visible, .a2hs-add:focus-visible, .a2hs-x:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
+.a2hs ol { margin: 8px 0 2px; padding-left: 22px; }
+.a2hs li + li { margin-top: 4px; }
+.a2hs-x { all: unset; cursor: pointer; position: absolute; top: 4px; right: 4px; width: 36px; height: 36px; display: grid; place-items: center;
+  border-radius: 50%; color: var(--muted); font-size: 22px; line-height: 1; }
+.a2hs-x:hover { color: var(--ink); background: var(--accent-soft); }
+.ic { width: 1.15em; height: 1.15em; vertical-align: -0.2em; }
+@media print { .a2hs { display: none; } }
 
 /* tabs */
 .tabs { position: sticky; top: env(safe-area-inset-top, 0px); z-index: 5; background: var(--bg); border-bottom: 1px solid var(--rule); }
@@ -375,6 +404,17 @@ table.qt .qq-in { display: none; }
 
 <main class="wrap" id="main" tabindex="-1">
   <noscript><p class="warn">This page needs JavaScript to show the trade data.</p></noscript>
+  <!-- Use this tool like an app (HOME_SCREEN_STANDARD.md, the project lead, 11/2026): shown by the script at the end on
+       phones and tablets only, never once the page is opened from the Home Screen -->
+  <aside class="a2hs" id="a2hs" aria-labelledby="a2hs-lead" hidden>
+    <p id="a2hs-lead"><b>Use this tool like an app:</b> put it on your Home Screen.</p>
+    <div class="a2hs-row">
+      <button type="button" class="a2hs-add" id="a2hs-add" hidden>Add to Home Screen</button>
+      <button type="button" class="a2hs-how" id="a2hs-how" aria-expanded="false" aria-controls="a2hs-steps">Show me how</button>
+    </div>
+    <ol id="a2hs-steps" hidden></ol>
+    <button type="button" class="a2hs-x" id="a2hs-close" aria-label="Close this tip">&times;</button>
+  </aside>
   <!-- This month -->
   <section class="panel" id="tab-month" role="tabpanel" aria-labelledby="t-month">
     <div><h2 id="month-h">This month</h2><p class="sub" id="month-sub"></p></div>
@@ -525,6 +565,15 @@ table.qt .qq-in { display: none; }
       <h3>When it updates</h3>
       <p>The U.S. Census Bureau releases each month's trade about five weeks after the month ends, and revises recent months
         in later releases. U.S. Customs and Border Protection updates its quota reports weekly; this page shows the newest.</p>
+      <h3>Put this tool on your phone</h3>
+      <p>On a phone or tablet you can put this page on your Home Screen. It then opens from its own icon like an app, with no
+        address bar. Nothing is installed from an app store.</p>
+      <ul>
+        <li><b>iPhone or iPad (Safari):</b> tap the menu button in the address bar, then Share <svg class="ic" aria-hidden="true" focusable="false" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" d="M12 3v12M8 7l4-4 4 4M7 10H5v11h14V10h-2"/></svg>. On older
+          iPhones, Share is at the bottom of the screen. Then tap Add to Home Screen (tap View More or scroll down if it isn't
+          in the list), then Add.</li>
+        <li><b>Android (Chrome):</b> tap the menu button <svg class="ic" aria-hidden="true" focusable="false" viewBox="0 0 24 24"><circle cx="12" cy="5" r="2" fill="currentColor"/><circle cx="12" cy="12" r="2" fill="currentColor"/><circle cx="12" cy="19" r="2" fill="currentColor"/></svg>, then Add to Home screen or Install app.</li>
+      </ul>
     </div>
   </section>
 </main>
@@ -2332,6 +2381,63 @@ Promise.all(["data/beef.json", "data/world.json"].map((u) => fetch(u, { cache: "
     a.href = STATE_TOOLS.includes(a.dataset.tool) && /^[a-z]{2}$/.test(st) ? `${base}?state=${st}` : base;
   };
   document.querySelectorAll("a[data-tool]").forEach(a => ["pointerdown", "focus", "mouseenter", "click"].forEach(ev => a.addEventListener(ev, () => carry(a))));
+})();
+
+// "Use this tool like an app" (HOME_SCREEN_STANDARD.md, the project lead, 11/2026). On a phone or tablet the tip shows from
+// the first visit until it has shown on three visits or the visitor closes it; never on a computer, never once the page is
+// opened from the Home Screen. A visit is one browser session (reloads don't count). Remembered under this tool's own key,
+// since the tools share one web address and one tool's choice must not hide another's tip. Inside Facebook and similar
+// apps, whose browsers can't add to the Home Screen, it says to open the page in Safari or Chrome first. On Android, when
+// Chrome offers to install the page, the tip gets a button that opens Chrome's own prompt.
+(() => {
+  const box = document.getElementById("a2hs"); if (!box) return;
+  const KEY = "beeftrade.homescreen", MAX = 3;
+  const ua = navigator.userAgent || "";
+  const ios = /iPhone|iPad|iPod/.test(ua) || (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1);
+  const android = /Android/.test(ua);
+  const standalone = navigator.standalone === true || ["standalone", "fullscreen", "minimal-ui"].some(m => matchMedia(`(display-mode: ${m})`).matches);
+  if (!(ios || android) || standalone) return;
+  const inApp = /FBAN|FBAV|FB_IAB|Instagram|LinkedInApp|Snapchat|TikTok|musical_ly|Line\/|; wv\)/.test(ua) || (ios && !/Safari\//.test(ua));
+  let st = { visits: 0, closed: false };
+  try { st = Object.assign(st, JSON.parse(localStorage.getItem(KEY) || "{}")); } catch (e) { /* private window: nothing remembered */ }
+  const save = () => { try { localStorage.setItem(KEY, JSON.stringify(st)); } catch (e) { /* private window */ } };
+  let fresh = true;
+  try { fresh = !sessionStorage.getItem(KEY); sessionStorage.setItem(KEY, "1"); } catch (e) { /* counts each load */ }
+  if (st.closed) return;
+  if (fresh) { st.visits += 1; save(); }
+  if (st.visits > MAX) return;
+  const lead = document.getElementById("a2hs-lead"), how = document.getElementById("a2hs-how"),
+        steps = document.getElementById("a2hs-steps"), add = document.getElementById("a2hs-add");
+  const SHARE = '<svg class="ic" aria-hidden="true" focusable="false" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" d="M12 3v12M8 7l4-4 4 4M7 10H5v11h14V10h-2"/></svg>', DOTS = '<svg class="ic" aria-hidden="true" focusable="false" viewBox="0 0 24 24"><circle cx="12" cy="5" r="2" fill="currentColor"/><circle cx="12" cy="12" r="2" fill="currentColor"/><circle cx="12" cy="19" r="2" fill="currentColor"/></svg>';
+  if (inApp) {
+    lead.textContent = `To put this tool on your Home Screen, open this page in ${ios ? "Safari" : "Chrome"} first.`;
+    how.hidden = true;
+  } else if (ios) {
+    const safari = !/CriOS|FxiOS|EdgiOS|OPiOS/.test(ua);
+    steps.innerHTML = (safari
+      ? `<li>Tap the menu button in Safari's address bar, then Share ${SHARE}. On older iPhones, Share is at the bottom of the screen.</li>`
+      : `<li>Tap the Share button ${SHARE} in the address bar or the menu.</li>`) +
+      "<li>Tap Add to Home Screen. If it isn't in the list, tap View More or scroll down.</li><li>Tap Add.</li>";
+  } else {
+    steps.innerHTML = `<li>Tap the menu button ${DOTS} in your browser.</li><li>Tap Add to Home screen or Install app.</li><li>Tap Add or Install.</li>`;
+  }
+  const done = () => { st.closed = true; save(); box.hidden = true; };
+  how.addEventListener("click", () => {
+    const open = steps.hidden; steps.hidden = !open;
+    how.setAttribute("aria-expanded", String(open)); how.textContent = open ? "Hide the steps" : "Show me how";
+  });
+  document.getElementById("a2hs-close").addEventListener("click", () => {
+    done(); const m = document.getElementById("main"); if (m) m.focus({ preventScroll: true });
+  });
+  let offer = null;   // Chrome's install prompt, when it offers one
+  window.addEventListener("beforeinstallprompt", e => { if (inApp) return; e.preventDefault(); offer = e; add.hidden = false; });
+  add.addEventListener("click", async () => {
+    if (!offer) return;
+    const o = offer; offer = null; add.hidden = true;
+    try { o.prompt(); const c = await o.userChoice; if (c && c.outcome === "accepted") done(); } catch (e) { /* the steps still show how */ }
+  });
+  window.addEventListener("appinstalled", done);
+  box.hidden = false;
 })();
 
 // Visit counts (GoatCounter): which tabs people open and how often they share, as plain events with no

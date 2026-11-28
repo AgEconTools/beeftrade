@@ -1,0 +1,32 @@
+{
+ "name": "U.S. Beef Trade",
+ "short_name": "Beef Trade",
+ "description": "Monthly U.S. beef and cattle trade by country, with the import quota and tariffs, since 2015",
+ "lang": "en-US",
+ "id": "./",
+ "start_url": "./",
+ "scope": "./",
+ "display": "standalone",
+ "background_color": "#5d1725",
+ "theme_color": "#5d1725",
+ "icons": [
+  {
+   "src": "icon-192.png",
+   "sizes": "192x192",
+   "type": "image/png",
+   "purpose": "any"
+  },
+  {
+   "src": "icon-512.png",
+   "sizes": "512x512",
+   "type": "image/png",
+   "purpose": "any"
+  },
+  {
+   "src": "icon-maskable-512.png",
+   "sizes": "512x512",
+   "type": "image/png",
+   "purpose": "maskable"
+  }
+ ]
+}
