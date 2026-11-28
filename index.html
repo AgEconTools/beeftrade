@@ -151,10 +151,16 @@ footer .legal { display: grid; grid-template-columns: minmax(0, 1fr); gap: 8px; 
 .a2hs-how:focus-visible, .a2hs-add:focus-visible, .a2hs-x:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
 .a2hs ol { margin: 8px 0 2px; padding-left: 22px; }
 .a2hs li + li { margin-top: 4px; }
+.a2hs-old { display: block; margin-top: 2px; font-size: 13px; color: var(--muted); }
 .a2hs-x { all: unset; cursor: pointer; position: absolute; top: 4px; right: 4px; width: 36px; height: 36px; display: grid; place-items: center;
   border-radius: 50%; color: var(--muted); font-size: 22px; line-height: 1; }
 .a2hs-x:hover { color: var(--ink); background: var(--accent-soft); }
 .ic { width: 1.15em; height: 1.15em; vertical-align: -0.2em; }
+/* a button's icon drawn as a small outlined pill, so the steps show what to look for on screen */
+.key { display: inline-flex; align-items: center; justify-content: center; min-width: 1.9em; height: 1.55em; padding: 0 .3em;
+  box-sizing: border-box; border: 1px solid var(--rule); border-radius: 999px; background: var(--surface);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, .14); vertical-align: -0.4em; margin: 0 .1em; }
+.key .ic { vertical-align: 0; }
 @media print { .a2hs { display: none; } }
 
 /* tabs */
@@ -569,10 +575,10 @@ table.qt .qq-in { display: none; }
       <p>On a phone or tablet you can put this page on your Home Screen. It then opens from its own icon like an app, with no
         address bar. Nothing is installed from an app store.</p>
       <ul>
-        <li><b>iPhone or iPad (Safari):</b> tap the menu button in the address bar, then Share <svg class="ic" aria-hidden="true" focusable="false" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" d="M12 3v12M8 7l4-4 4 4M7 10H5v11h14V10h-2"/></svg>. On older
-          iPhones, Share is at the bottom of the screen. Then tap Add to Home Screen (tap View More or scroll down if it isn't
-          in the list), then Add.</li>
-        <li><b>Android (Chrome):</b> tap the menu button <svg class="ic" aria-hidden="true" focusable="false" viewBox="0 0 24 24"><circle cx="12" cy="5" r="2" fill="currentColor"/><circle cx="12" cy="12" r="2" fill="currentColor"/><circle cx="12" cy="19" r="2" fill="currentColor"/></svg>, then Add to Home screen or Install app.</li>
+        <li><b>iPhone or iPad (Safari):</b> tap <span class="key"><svg class="ic" aria-hidden="true" focusable="false" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" d="M4 7H20M4 12H16M4 17H11"/></svg></span> in the address bar, then Share <span class="key"><svg class="ic" aria-hidden="true" focusable="false" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" d="M12 3v12M8 7l4-4 4 4M7 10H5v11h14V10h-2"/></svg></span>. On older iPhones, Share is at the bottom of the screen. Then tap
+          Add to Home Screen (if you don't see it, tap View More first, or scroll down), then Add.</li>
+        <li><b>Android (Chrome):</b> tap <span class="key"><svg class="ic" aria-hidden="true" focusable="false" viewBox="0 0 24 24"><circle cx="12" cy="5" r="2" fill="currentColor"/><circle cx="12" cy="12" r="2" fill="currentColor"/><circle cx="12" cy="19" r="2" fill="currentColor"/></svg></span> at the top right of Chrome, then Add to Home screen or
+          Install app.</li>
       </ul>
     </div>
   </section>
@@ -2408,18 +2414,22 @@ Promise.all(["data/beef.json", "data/world.json"].map((u) => fetch(u, { cache: "
   if (st.visits > MAX) return;
   const lead = document.getElementById("a2hs-lead"), how = document.getElementById("a2hs-how"),
         steps = document.getElementById("a2hs-steps"), add = document.getElementById("a2hs-add");
-  const SHARE = '<svg class="ic" aria-hidden="true" focusable="false" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" d="M12 3v12M8 7l4-4 4 4M7 10H5v11h14V10h-2"/></svg>', DOTS = '<svg class="ic" aria-hidden="true" focusable="false" viewBox="0 0 24 24"><circle cx="12" cy="5" r="2" fill="currentColor"/><circle cx="12" cy="12" r="2" fill="currentColor"/><circle cx="12" cy="19" r="2" fill="currentColor"/></svg>';
+  // the buttons as they look on screen: Safari's three-line button (left end of the address bar, iOS 26 and later),
+  // Share, and Chrome's three dots
+  const SHARE = '<span class="key"><svg class="ic" aria-hidden="true" focusable="false" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" d="M12 3v12M8 7l4-4 4 4M7 10H5v11h14V10h-2"/></svg></span>', DOTS = '<span class="key"><svg class="ic" aria-hidden="true" focusable="false" viewBox="0 0 24 24"><circle cx="12" cy="5" r="2" fill="currentColor"/><circle cx="12" cy="12" r="2" fill="currentColor"/><circle cx="12" cy="19" r="2" fill="currentColor"/></svg></span>', LINES = '<span class="key"><svg class="ic" aria-hidden="true" focusable="false" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" d="M4 7H20M4 12H16M4 17H11"/></svg></span>';
   if (inApp) {
     lead.textContent = `To put this tool on your Home Screen, open this page in ${ios ? "Safari" : "Chrome"} first.`;
     how.hidden = true;
   } else if (ios) {
     const safari = !/CriOS|FxiOS|EdgiOS|OPiOS/.test(ua);
     steps.innerHTML = (safari
-      ? `<li>Tap the menu button in Safari's address bar, then Share ${SHARE}. On older iPhones, Share is at the bottom of the screen.</li>`
+      ? `<li>Tap ${LINES} in Safari's address bar.
+           <span class="a2hs-old">Older iPhones: tap Share ${SHARE} at the bottom of the screen instead, then go to step 3.</span></li>
+         <li>Tap Share ${SHARE}.</li>`
       : `<li>Tap the Share button ${SHARE} in the address bar or the menu.</li>`) +
-      "<li>Tap Add to Home Screen. If it isn't in the list, tap View More or scroll down.</li><li>Tap Add.</li>";
+      "<li>Tap Add to Home Screen. If you don't see it, tap View More first, or scroll down.</li><li>Tap Add.</li>";
   } else {
-    steps.innerHTML = `<li>Tap the menu button ${DOTS} in your browser.</li><li>Tap Add to Home screen or Install app.</li><li>Tap Add or Install.</li>`;
+    steps.innerHTML = `<li>Tap ${DOTS} at the top right of Chrome.</li><li>Tap Add to Home screen or Install app.</li><li>Tap Add or Install.</li>`;
   }
   const done = () => { st.closed = true; save(); box.hidden = true; };
   how.addEventListener("click", () => {
