@@ -21,7 +21,7 @@
 <link rel="icon" href="favicon.svg" type="image/svg+xml">
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
 <!-- On a phone's Home Screen the page opens like an app (HOME_SCREEN_STANDARD.md, the project lead, 11/2026): its own
-     short name under the icon, MSU maroon behind the clock and while it starts. The manifest comes from the export. -->
+     short name under the icon, no browser bar, MSU maroon while it starts on Android. The manifest comes from the export. -->
 <link rel="manifest" href="manifest.webmanifest">
 <meta name="apple-mobile-web-app-title" content="Beef Trade">
 <meta name="mobile-web-app-capable" content="yes">
@@ -573,9 +573,9 @@ table.qt .qq-in { display: none; }
       <p>On a phone or tablet you can put this page on your Home Screen. It then opens from its own icon like an app, with no
         address bar. Nothing is installed from an app store.</p>
       <ul>
-        <li><b>iPhone or iPad (Safari):</b> tap <span class="key"><svg class="ic" aria-hidden="true" focusable="false" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" d="M4 7H20M4 12H16M4 17H11"/></svg></span> in the address bar, then Share <span class="key"><svg class="ic" aria-hidden="true" focusable="false" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" d="M12 3v12M8 7l4-4 4 4M7 10H5v11h14V10h-2"/></svg></span>. On older iPhones, Share is at the bottom of the screen. Then tap
+        <li><b>iPhone or iPad (Safari):</b> tap <span class="key" role="img" aria-label="the three-line button"><svg class="ic" aria-hidden="true" focusable="false" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" d="M4 7H20M4 12H16M4 17H11"/></svg></span> in the address bar, then Share <span class="key" aria-hidden="true"><svg class="ic" aria-hidden="true" focusable="false" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" d="M12 3v12M8 7l4-4 4 4M7 10H5v11h14V10h-2"/></svg></span>. On older iPhones, Share is at the bottom of the screen. Then tap
           Add to Home Screen (if you don't see it, tap View More first, or scroll down), then Add.</li>
-        <li><b>Android (Chrome):</b> tap <span class="key"><svg class="ic" aria-hidden="true" focusable="false" viewBox="0 0 24 24"><circle cx="12" cy="5" r="2" fill="currentColor"/><circle cx="12" cy="12" r="2" fill="currentColor"/><circle cx="12" cy="19" r="2" fill="currentColor"/></svg></span> at the top right of Chrome, then Add to Home screen or
+        <li><b>Android (Chrome):</b> tap <span class="key" role="img" aria-label="the three-dot button"><svg class="ic" aria-hidden="true" focusable="false" viewBox="0 0 24 24"><circle cx="12" cy="5" r="2" fill="currentColor"/><circle cx="12" cy="12" r="2" fill="currentColor"/><circle cx="12" cy="19" r="2" fill="currentColor"/></svg></span> at the top right of Chrome, then Add to Home screen or
           Install app.</li>
       </ul>
     </div>
@@ -2390,8 +2390,8 @@ Promise.all(["data/beef.json", "data/world.json"].map((u) => fetch(u, { cache: "
 // "Use this tool like an app" (HOME_SCREEN_STANDARD.md, the project lead, 11/2026). On a phone or tablet the tip shows from
 // the first visit until it has shown on three visits or the visitor closes it; never on a computer, never once the page is
 // opened from the Home Screen. A visit is one browser session (reloads don't count). Remembered under this tool's own key,
-// since the tools share one web address and one tool's choice must not hide another's tip. Inside Facebook and similar
-// apps, whose browsers can't add to the Home Screen, it says to open the page in Safari or Chrome first. On Android, when
+// since the tools share one web address and one tool's choice must not hide another's tip. Inside Facebook, the Google
+// app and similar apps, whose browsers can't add to the Home Screen, it says to open the page in Safari or Chrome first. On Android, when
 // Chrome offers to install the page, the tip gets a button that opens Chrome's own prompt.
 (() => {
   const box = document.getElementById("a2hs"); if (!box) return;
@@ -2401,7 +2401,7 @@ Promise.all(["data/beef.json", "data/world.json"].map((u) => fetch(u, { cache: "
   const android = /Android/.test(ua);
   const standalone = navigator.standalone === true || ["standalone", "fullscreen", "minimal-ui"].some(m => matchMedia(`(display-mode: ${m})`).matches);
   if (!(ios || android) || standalone) return;
-  const inApp = /FBAN|FBAV|FB_IAB|Instagram|LinkedInApp|Snapchat|TikTok|musical_ly|Line\/|; wv\)/.test(ua) || (ios && !/Safari\//.test(ua));
+  const inApp = /FBAN|FBAV|FB_IAB|Instagram|LinkedInApp|Snapchat|TikTok|musical_ly|Line\/|GSA\/|; wv\)/.test(ua) || (ios && !/Safari\//.test(ua));
   let st = { visits: 0, closed: false };
   try { st = Object.assign(st, JSON.parse(localStorage.getItem(KEY) || "{}")); } catch (e) { /* private window: nothing remembered */ }
   const save = () => { try { localStorage.setItem(KEY, JSON.stringify(st)); } catch (e) { /* private window */ } };
@@ -2412,9 +2412,10 @@ Promise.all(["data/beef.json", "data/world.json"].map((u) => fetch(u, { cache: "
   if (st.visits > MAX) return;
   const lead = document.getElementById("a2hs-lead"), how = document.getElementById("a2hs-how"),
         steps = document.getElementById("a2hs-steps"), add = document.getElementById("a2hs-add");
-  // the buttons as they look on screen: Safari's three-line button (left end of the address bar, iOS 26 and later),
-  // Share, and Chrome's three dots
-  const SHARE = '<span class="key"><svg class="ic" aria-hidden="true" focusable="false" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" d="M12 3v12M8 7l4-4 4 4M7 10H5v11h14V10h-2"/></svg></span>', DOTS = '<span class="key"><svg class="ic" aria-hidden="true" focusable="false" viewBox="0 0 24 24"><circle cx="12" cy="5" r="2" fill="currentColor"/><circle cx="12" cy="12" r="2" fill="currentColor"/><circle cx="12" cy="19" r="2" fill="currentColor"/></svg></span>', LINES = '<span class="key"><svg class="ic" aria-hidden="true" focusable="false" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" d="M4 7H20M4 12H16M4 17H11"/></svg></span>';
+  // the buttons drawn as they look on screen (the project lead: show the button, don't describe it): current Safari's
+  // three-line button in the address bar, Share, and Chrome's three dots. A drawn button that stands in for words has a
+  // spoken name (role=img); Share's icon only repeats the word beside it, so screen readers skip it.
+  const SHARE = '<span class="key" aria-hidden="true"><svg class="ic" aria-hidden="true" focusable="false" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" d="M12 3v12M8 7l4-4 4 4M7 10H5v11h14V10h-2"/></svg></span>', DOTS = '<span class="key" role="img" aria-label="the three-dot button"><svg class="ic" aria-hidden="true" focusable="false" viewBox="0 0 24 24"><circle cx="12" cy="5" r="2" fill="currentColor"/><circle cx="12" cy="12" r="2" fill="currentColor"/><circle cx="12" cy="19" r="2" fill="currentColor"/></svg></span>', LINES = '<span class="key" role="img" aria-label="the three-line button"><svg class="ic" aria-hidden="true" focusable="false" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" d="M4 7H20M4 12H16M4 17H11"/></svg></span>';
   if (inApp) {
     lead.textContent = `To put this tool on your Home Screen, open this page in ${ios ? "Safari" : "Chrome"} first.`;
     how.hidden = true;
