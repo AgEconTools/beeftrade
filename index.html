@@ -139,18 +139,20 @@ footer .legal { display: grid; grid-template-columns: minmax(0, 1fr); gap: 8px; 
 .warn { margin: 0; border-left: 4px solid var(--warn-ink); background: var(--warn-bg); color: var(--ink); padding: 10px 14px; border-radius: 6px; font-size: 14.5px; }
 /* "Use this tool like an app" tip (HOME_SCREEN_STANDARD.md, the project lead, 11/2026): a small card at the top of the
    page on phones and tablets, never a pop-up. Its rules are in the script at the end. */
-.a2hs { position: relative; margin: 0 0 22px; padding: 10px 44px 10px 14px; border: 1px solid var(--rule); border-left: 4px solid var(--accent);
+.a2hs { position: relative; margin: 0 0 22px; padding: 4px 4px 4px 14px; border: 1px solid var(--rule); border-left: 4px solid var(--accent);
   border-radius: 8px; background: var(--surface); color: var(--ink); font-size: 14px; line-height: 1.45; }
 .a2hs[hidden], .a2hs [hidden] { display: none; }
 .a2hs p { margin: 0; }
-.a2hs-row { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 16px; margin-top: 4px; }
+/* one line on most phones (the project lead, 11/28/2026: a slimmer card, so the page's first numbers stay on screen) */
+.a2hs-row { display: flex; flex-wrap: wrap; align-items: center; gap: 0 10px; min-height: 36px; }
+.a2hs-row p { font-weight: 600; }
 .a2hs-how { all: unset; cursor: pointer; color: var(--link); text-decoration: underline; font-weight: 600; padding: 3px 0; }
 .a2hs-add { all: unset; cursor: pointer; background: var(--accent); color: var(--accent-ink); font-weight: 600; padding: 6px 14px; border-radius: 999px; }
 .a2hs-how:focus-visible, .a2hs-add:focus-visible, .a2hs-x:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
-.a2hs ol { margin: 8px 0 2px; padding-left: 22px; }
+.a2hs ol { margin: 4px 10px 8px 0; padding-left: 22px; }
 .a2hs li + li { margin-top: 4px; }
 .a2hs-old { display: block; margin-top: 2px; font-size: 13px; color: var(--muted); }
-.a2hs-x { all: unset; cursor: pointer; position: absolute; top: 4px; right: 4px; width: 36px; height: 36px; display: grid; place-items: center;
+.a2hs-x { all: unset; cursor: pointer; margin-left: auto; width: 34px; height: 36px; display: grid; place-items: center;
   border-radius: 50%; color: var(--muted); font-size: 22px; line-height: 1; }
 .a2hs-x:hover { color: var(--ink); background: var(--accent-soft); }
 .ic { width: 1.15em; height: 1.15em; vertical-align: -0.2em; }
@@ -160,6 +162,14 @@ footer .legal { display: grid; grid-template-columns: minmax(0, 1fr); gap: 8px; 
   box-shadow: 0 1px 2px rgba(0, 0, 0, .14); vertical-align: -0.4em; margin: 0 .1em; }
 .key .ic { vertical-align: 0; }
 @media print { .a2hs { display: none; } }
+/* "New data is out" (HOME_SCREEN_STANDARD.md, 11/2026): shown when the visitor comes back to a page left open and newer
+   data has been published since it loaded. Never reloads by itself: a reload would wipe anything typed on the page. */
+.fresh { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 12px; margin: 0 0 22px; padding: 8px 14px; border-radius: 8px;
+  background: var(--accent-soft); color: var(--ink); border-left: 4px solid var(--accent); font-size: 14px; font-weight: 600; }
+.fresh[hidden] { display: none; }
+.fresh button { all: unset; cursor: pointer; background: var(--accent); color: var(--accent-ink); padding: 4px 14px; border-radius: 999px; }
+.fresh button:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
+@media print { .fresh { display: none; } }
 
 /* tabs */
 .tabs { position: sticky; top: env(safe-area-inset-top, 0px); z-index: 5; background: var(--bg); border-bottom: 1px solid var(--rule); }
@@ -408,16 +418,17 @@ table.qt .qq-in { display: none; }
 
 <main class="wrap" id="main" tabindex="-1">
   <noscript><p class="warn">This page needs JavaScript to show the trade data.</p></noscript>
-  <!-- Use this tool like an app (HOME_SCREEN_STANDARD.md, the project lead, 11/2026): shown by the script at the end on
-       phones and tablets only, never once the page is opened from the Home Screen -->
+  <!-- Home Screen (HOME_SCREEN_STANDARD.md, the project lead, 11/2026): the "New data is out" note, and the tip, shown by
+       the script at the end on phones and tablets only, never once the page is opened from the Home Screen -->
+  <p class="fresh" id="fresh" role="status" hidden><span>New data is out.</span><button type="button" id="fresh-go">Refresh</button></p>
   <aside class="a2hs" id="a2hs" aria-labelledby="a2hs-lead" hidden>
-    <p id="a2hs-lead"><b>Use this tool like an app:</b> put it on your Home Screen.</p>
     <div class="a2hs-row">
+      <p id="a2hs-lead">Add to your Home Screen.</p>
       <button type="button" class="a2hs-add" id="a2hs-add" hidden>Add to Home Screen</button>
       <button type="button" class="a2hs-how" id="a2hs-how" aria-expanded="false" aria-controls="a2hs-steps">Show me how</button>
+      <button type="button" class="a2hs-x" id="a2hs-close" aria-label="Close this tip">&times;</button>
     </div>
     <ol id="a2hs-steps" hidden></ol>
-    <button type="button" class="a2hs-x" id="a2hs-close" aria-label="Close this tip">&times;</button>
   </aside>
   <!-- This month -->
   <section class="panel" id="tab-month" role="tabpanel" aria-labelledby="t-month">
@@ -2387,7 +2398,26 @@ Promise.all(["data/beef.json", "data/world.json"].map((u) => fetch(u, { cache: "
   document.querySelectorAll("a[data-tool]").forEach(a => ["pointerdown", "focus", "mouseenter", "click"].forEach(ev => a.addEventListener(ev, () => carry(a))));
 })();
 
-// "Use this tool like an app" (HOME_SCREEN_STANDARD.md, the project lead, 11/2026). On a phone or tablet the tip shows from
+// "New data is out" (HOME_SCREEN_STANDARD.md, the project lead, 11/2026). A page left open (a Home Screen app above all:
+// iPhone often shows it from memory instead of reloading) can sit on old numbers for days. When the visitor comes back
+// after 10 minutes or more away, the page fetches data/stamp.json, a fingerprint of the data the export writes; if it
+// differs from the one at load, a note offers Refresh. It never reloads by itself, so nothing typed is lost.
+(() => {
+  const note = document.getElementById("fresh"); if (!note) return;
+  const AWAY = 10 * 60 * 1000;
+  const stamp = () => fetch("data/stamp.json", { cache: "no-store" }).then(r => r.ok ? r.json() : null).then(j => j && j.data).catch(() => null);
+  let base = null, hiddenAt = null;
+  stamp().then(v => { base = v; });
+  document.getElementById("fresh-go").addEventListener("click", () => location.reload());
+  document.addEventListener("visibilitychange", () => {
+    if (document.visibilityState === "hidden") { hiddenAt = Date.now(); return; }
+    if (hiddenAt === null || Date.now() - hiddenAt < AWAY || !base) return;
+    hiddenAt = null;
+    stamp().then(now => { if (now && now !== base) note.hidden = false; });
+  });
+})();
+
+// "Put this tool on your Home Screen" (HOME_SCREEN_STANDARD.md, the project lead, 11/2026). On a phone or tablet the tip shows from
 // the first visit until it has shown on three visits or the visitor closes it; never on a computer, never once the page is
 // opened from the Home Screen. A visit is one browser session (reloads don't count). Remembered under this tool's own key,
 // since the tools share one web address and one tool's choice must not hide another's tip. Inside Facebook, the Google
@@ -2460,6 +2490,18 @@ Promise.all(["data/beef.json", "data/world.json"].map((u) => fetch(u, { cache: "
     if (e.target.closest("#share-view")) count(`${tool}: share`);
     if (e.target.closest(".cs-btn")) count(`${tool}: share chart`);
   });
+  // opened from the Home Screen (HOME_SCREEN_STANDARD.md, 11/2026): one event per launch, once the counter has loaded
+  // (it loads after the page; give up after 10 seconds), so the project lead can see whether people use the icons
+  const fromHome = navigator.standalone === true || matchMedia("(display-mode: standalone)").matches;
+  let firstOpen = true;
+  try { firstOpen = !sessionStorage.getItem(`${tool}.homeopen`); sessionStorage.setItem(`${tool}.homeopen`, "1"); } catch (e) { /* counts each load */ }
+  if (fromHome && firstOpen) {
+    let tries = 0;
+    const wait = setInterval(() => {
+      if (window.goatcounter && window.goatcounter.count) { clearInterval(wait); count(`${tool}: Home Screen open`); }
+      else if (++tries > 40) clearInterval(wait);
+    }, 250);
+  }
 })();
 </script>
 </body>
