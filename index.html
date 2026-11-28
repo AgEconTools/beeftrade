@@ -25,7 +25,6 @@
 <link rel="manifest" href="manifest.webmanifest">
 <meta name="apple-mobile-web-app-title" content="Beef Trade">
 <meta name="mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="theme-color" content="#5d1725" media="(prefers-color-scheme: light)">
 <meta name="theme-color" content="#6e1d2e" media="(prefers-color-scheme: dark)">
 <!-- Visit counts: GoatCounter, no cookies and no personal data (Josh, 11/2026). It skips localhost. -->
@@ -73,11 +72,10 @@
 }
 * { box-sizing: border-box; }
 html { scroll-padding-top: calc(var(--tabs-h, 45px) + 25px); }   /* jumps clear the sticky tab bar; --tabs-h is its real height, set by the page */
-body::before { content: ""; position: fixed; inset: 0 0 auto; height: env(safe-area-inset-top, 0px); z-index: 10; background: var(--accent); }
-/* Opened from an iPhone's Home Screen, the page runs up under the clock (black-translucent above): this strip and the
-   masthead's padding keep the clock on MSU maroon in white, scrolled or not (HOME_SCREEN_STANDARD.md, 11/2026). In a
-   browser tab the strip is 0 px tall. */
-.mast { padding-top: env(safe-area-inset-top, 0px); }
+body::before { content: ""; position: fixed; inset: 0 0 auto; height: env(safe-area-inset-top, 0px); z-index: 10; background: var(--bg); }
+/* No black-translucent status bar (HOME_SCREEN_STANDARD.md): on the project lead's iPhone (11/28/2026) it ran the page
+   up under the clock while reporting no safe area, so the masthead's title sat hidden behind the clock. The standard
+   status bar keeps the page below the clock on every iOS version. */
 body { margin: 0; background: var(--bg); color: var(--ink); font: 400 16px/1.5 var(--body); -webkit-font-smoothing: antialiased; }
 .wrap { max-width: 1120px; margin: 0 auto; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); }
 button, input, select { font: inherit; color: inherit; }
